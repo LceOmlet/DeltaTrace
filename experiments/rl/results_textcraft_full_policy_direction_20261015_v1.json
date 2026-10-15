@@ -1,370 +1,216 @@
 {
-  "recorded_at": "2026-10-15T07:35:17.799029+08:00",
-  "status": "native_full_policy_direction_v86_submitted_PPO25_restore_required",
+  "recorded_at": "2026-10-15T08:15:52.947235+08:00",
+  "status": "v86_completed_full_direction_growth_verified_v90_prepared_PPO25_restored_v88",
+  "upstream_commit": "20bd331b",
   "goal_status": "active",
   "rootcause_repair_verified": false,
-  "upstream_commit": "20bd331b",
-  "actual_job": {
-    "pid": 1806691,
-    "birth": 1792020784.77,
-    "started_unix": 1792020784.86576,
-    "physical_gpus": [
-      2,
-      3
-    ],
-    "scope": "Prepare actual full-policy adjoint exchange using only native interfaces.\n\nTwo original weights and two actual full-loss decoder31 adjoints form a2x2\nderivative comparison on the unchanged original81 complete global64 carrier.\nNo parameter intervention, credit change, training update or quality test.\n",
-    "evidence": "Completedv83 exchanges upper24-31 parameters. The conditional15-target fixed-seed norms still follow the body (1.07808 versus0.08793), but actual full-PG readouts differ (0.78844 versus2.06841). Full-PG B4 direction factors are0.65390/1.43763. This directly prevents using the selected-target seed as a proxy for the complete actual PG. The whole-loss adjoints and original B4 Gram provide the missing direct chain comparison.",
-    "question": "Does the measured internal sensitivity growth amplify the actual complete policy-loss directions, and how much does actual B4 directional accumulation change?",
-    "discriminating_quantity": "Original full81 PG at weights40 and80, followed by unchanged whole BF16 decoder31-output adjoints exchanged between these same weights. Original native full-shard PG/VJP, hidden adjoints and B4 increment Gram; current-session natural baselines and actual old-logprob carriers are saved.",
-    "decision": "Distinguish actual loss-direction alignment and B4 cancellation from conditional propagation on one selected-target direction before attributing the increasing full training norm or accepting a repair.",
-    "counterfactual_scope": "Read-only derivatives of the actual original81 complete first global64 at rho1 and original40/80 weights. Not a reconstruction of the historical41 batch or a full training trajectory.",
-    "limitations": [
-      "Original full256-whitened advantages, source/target/observation masks, IDs, order, B4/global64/1/16 and32k/LoRA8/16 are unchanged. No credit or PPO loss implementation is copied.",
-      "The exact complete BF16 seed is captured by the existing native output hook, serialized once, bound by SHA256, and passed unchanged to the existing native replacement hook. No normalization, rescaling or selected-token replacement.",
-      "Natural full policy gradients and exchanged-seed VJPs are different observables. The latter are not training updates, operator norms or independent causal fractions.",
-      "At weights40 the original81 advantages and inputs are fixed diagnostic data, not the historical41 rollout. This experiment alone cannot prove the entire85-iteration root cause or from-scratch stability.",
-      "Native low-precision variation, actual same-point checks and Gram residuals remain recorded. No extra tolerance or all-layer-decrease requirement."
-    ],
-    "diagnostic_commit": "f05c2a68ff8114162e8f655503e31e6b75bee3c3",
-    "formal_training_changed": false,
-    "accepted_repair": null,
-    "deployed_repair": null,
-    "protected_GRPO": {
-      "pid": 3174448,
-      "birth": 1791793629.73
-    },
-    "inherited_launch": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/launch.json",
-    "inherited_launch_SHA256": "b8d464b717997b344707c1ba305f23a6749b0da4c391a46506c9390546e2dea2",
-    "sources": {
-      "observe_native_gradient_chain_v4.py": "3cbefaf36f2a33712094cd017f0cdf026d1a94fee44d2d1c973eb74ef3251117",
-      "observe_native_optimizer_minibatch.py": "6ed5cd292d8d34d9f701bdf859ec97c7100f9b5e9adc14ab798dbd597645a1c2",
-      "observe_native_actor_loss_gradients.py": "94219328ba644a5c0118f4a3bd2561b16f969643f2cd2915047202a7ff085047"
-    },
-    "case_manifest": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/case-manifest.json",
-    "case_manifest_SHA256": "3870d216c68adeca4808d313bc00a25ef6020b9afb86ae60487a5d60779629d6",
-    "copied_training_function_bodies": 0,
-    "new_optimizer_scheduler_DT_generation_validation_GRPO_calls": 0,
-    "passive_boundary_readout_enabled": true,
-    "native_ratio_chain_readout": true,
-    "checkpoint": 40,
-    "diagnostic_advantage_views": {
-      "full_DT": "diagnostic_full_DT"
-    },
-    "save_native_probability_carrier": true,
-    "decoder_branch_layers": [
-      29,
-      30,
-      31
-    ],
-    "checkpoints": [
-      40,
-      80
-    ],
-    "native_full_policy_gradients": 2,
-    "diagnostic_full_loss_seed_VJPs": 2,
-    "wrapper_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/observe_full_policy_direction_exchange_v86.py",
-    "wrapper_SHA256": "d209e984b69b8877f7668304c03d45f7fe90dec0e56b859e19aa167eba8a2b2f",
-    "protected_DTPO_v3": {
-      "pid": 3140624,
-      "birth": 1791993570.92
-    }
-  },
-  "actual_state": {
-    "scope": "Prepare actual full-policy adjoint exchange using only native interfaces.\n\nTwo original weights and two actual full-loss decoder31 adjoints form a2x2\nderivative comparison on the unchanged original81 complete global64 carrier.\nNo parameter intervention, credit change, training update or quality test.\n",
-    "started_unix": 1792020801.8721488,
-    "observations": [],
-    "optimizer_updates": 0,
-    "scheduler_updates": 0,
-    "DT_calls": 0,
-    "rollout_calls": 0,
-    "validation_calls": 0,
-    "GRPO_calls": 0,
-    "phase": "native_backward_with_passive_boundary_readout",
-    "unix": 1792020901.3841343,
-    "checkpoint": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011/runtime/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_40/actor",
-    "iteration": "full40_native",
-    "bindings": [
-      {
-        "rank": 0,
-        "pid": 1810274,
-        "birth": 1792020807.47,
-        "scheduler": 40,
-        "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
-        "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
-      },
-      {
-        "rank": 1,
-        "pid": 1811859,
-        "birth": 1792020821.88,
-        "scheduler": 40,
-        "actor_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
-        "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
-      }
-    ]
-  },
-  "actual_job_alive": true,
-  "actual_wrapper_SHA256": "d209e984b69b8877f7668304c03d45f7fe90dec0e56b859e19aa167eba8a2b2f",
-  "manifest": {
-    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/case-manifest.json",
-    "SHA256": "3870d216c68adeca4808d313bc00a25ef6020b9afb86ae60487a5d60779629d6"
-  },
-  "staged_sources": {
-    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/resume_PPO_after_direction_probe_v88.py": "52c8ab00c18bfac8a8c6d5a8f72ec1393fc9471fcc200427fbfb6b7cdd9ec63e",
-    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/queue_native_PPO_restore_v88.py": "40deb35797ac08ad5cb708681ae9dbaad160d7dda47915f5788dfec3bab906dd",
-    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/record_native_PPO_restore_v88.py": "7410ec8ddfc2ee302a36bf4e2708965ffd199cc046dcca87e71035fb7e0110d2",
-    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/stop_PPO_for_direction_probe_v88.py": "224ca9c4331bfa500e7dc6e94099365da770287438a40db34504c9aeef5a99a0",
-    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/prepare_PPO_pause_plan_v88.py": "817948c436cdcd7859e91fa6a8be2e75e3c547ef0b357a1bab4f37ff193fc82b",
-    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/observe_full_policy_direction_exchange_v86.py": "d209e984b69b8877f7668304c03d45f7fe90dec0e56b859e19aa167eba8a2b2f"
-  },
-  "completed_previous_native_partition_result": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\experiments\\rl\\results_textcraft_upper_partition_20261015_v1.json",
-  "previous_PPO82_full_restore": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/runtime-overrides/native-PPO-restore-verification-v82.json",
-  "PPO_temporary_stop_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/PPO-temporary-stop-for-direction-v86-v88.json",
-  "PPO_checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25",
-  "PPO_completed_iteration": 25,
-  "PPO_required_native_role_states": [
-    {
-      "role": "actor",
-      "rank": 0,
-      "scheduler": 25,
-      "optimizer_steps": [
-        100.0
-      ],
-      "optimizer_entries": 496,
-      "rng_keys": [
-        "cpu",
-        "cuda",
-        "numpy",
-        "random"
-      ],
-      "rollout_rng_saved": true,
-      "files": {
-        "model": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/actor/model_world_size_2_rank_0.pt",
-          "bytes": 8997781971
-        },
-        "optim": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/actor/optim_world_size_2_rank_0.pt",
-          "bytes": 87091812
-        },
-        "extra_state": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/actor/extra_state_world_size_2_rank_0.pt",
-          "bytes": 15353
-        }
-      }
-    },
-    {
-      "role": "actor",
-      "rank": 1,
-      "scheduler": 25,
-      "optimizer_steps": [
-        100.0
-      ],
-      "optimizer_entries": 496,
-      "rng_keys": [
-        "cpu",
-        "cuda",
-        "numpy",
-        "random"
-      ],
-      "rollout_rng_saved": true,
-      "files": {
-        "model": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/actor/model_world_size_2_rank_1.pt",
-          "bytes": 8997781971
-        },
-        "optim": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/actor/optim_world_size_2_rank_1.pt",
-          "bytes": 87091812
-        },
-        "extra_state": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/actor/extra_state_world_size_2_rank_1.pt",
-          "bytes": 15353
-        }
-      }
-    },
-    {
-      "role": "critic",
-      "rank": 0,
-      "scheduler": 25,
-      "optimizer_steps": [
-        100.0
-      ],
-      "optimizer_entries": 428,
-      "rng_keys": [
-        "cpu",
-        "cuda",
-        "numpy",
-        "random"
-      ],
-      "rollout_rng_saved": true,
-      "files": {
-        "model": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/critic/model_world_size_2_rank_0.pt",
-          "bytes": 16785807531
-        },
-        "optim": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/critic/optim_world_size_2_rank_0.pt",
-          "bytes": 31747249684
-        },
-        "extra_state": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/critic/extra_state_world_size_2_rank_0.pt",
-          "bytes": 15077
-        }
-      }
-    },
-    {
-      "role": "critic",
-      "rank": 1,
-      "scheduler": 25,
-      "optimizer_steps": [
-        100.0
-      ],
-      "optimizer_entries": 428,
-      "rng_keys": [
-        "cpu",
-        "cuda",
-        "numpy",
-        "random"
-      ],
-      "rollout_rng_saved": true,
-      "files": {
-        "model": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/critic/model_world_size_2_rank_1.pt",
-          "bytes": 16785807531
-        },
-        "optim": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/critic/optim_world_size_2_rank_1.pt",
-          "bytes": 31747216916
-        },
-        "extra_state": {
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_25/critic/extra_state_world_size_2_rank_1.pt",
-          "bytes": 15077
-        }
-      }
-    }
-  ],
-  "PPO_data_SHA256": "57ec1bb69d4a08e145f88c86cc73659ce3e8bec2d2a5b3e5cb41a11737c6359c",
-  "PPO_restore_prepared": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-PPO-resume-after-direction-v86-v88-prepared.json",
-  "PPO_actual_restore_completed": false,
-  "formal_DTPO_v3_patch": "f726ee72",
-  "formal_DTPO_v3_deployment": "e05e23cb1bc1cccade732ad192ce15b7e9dc6a1e",
-  "GRPO_restarted": false,
   "hourly_automation": "PAUSED",
-  "next_native_operations": [
-    "Read the same1806691/birth1792020784.77 until authoritative complete/failed. Preserve both natural full-PG and two whole-loss BF16 adjoint-exchange scopes; inspect actual seed SHA bindings, native source and B4 Gram.",
-    "When terminal andGPU2/3 free, immediately run_cpu_remote.py resume_PPO_after_direction_probe_v88.py dt; then queue_native_PPO_restore_v88.py dt and record_native_PPO_restore_v88.py dt. Confirm actor+critic both-rank optimizer100/scheduler25/RNG/data before ending work.",
-    "After original PPO restore is submitted, account actual full-loss directional and B4 accumulation contrasts. No original loss, model or hyperparameter rewrite follows from a selected probe norm alone."
-  ],
-  "prepared_native_comparison": {
-    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/case-manifest.json",
-    "report": {
-      "unix": 1792020142.5727007,
-      "status": "prepared_only_no_GPU_submission",
+  "full_policy_direction_v86": {
+    "job": {
+      "pid": 1806691,
+      "birth": 1792020784.77,
+      "started_unix": 1792020784.86576,
+      "physical_gpus": [
+        2,
+        3
+      ],
       "scope": "Prepare actual full-policy adjoint exchange using only native interfaces.\n\nTwo original weights and two actual full-loss decoder31 adjoints form a2x2\nderivative comparison on the unchanged original81 complete global64 carrier.\nNo parameter intervention, credit change, training update or quality test.\n",
-      "destination": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86",
-      "checkpoint": 40,
-      "checkpoint_path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011/runtime/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_40/actor",
-      "cases": [
-        {
-          "name": "full40_native",
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-DT-QV-gradient-components-v31/original81-QV-components.pkl",
-          "SHA256": "2cedee1461c038d5762d1cf58bdfaa98c72ab87b9d72b54b75773917a17be1a0",
-          "rows": 64,
-          "checkpoint": 40,
-          "checkpoint_path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011/runtime/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_40/actor",
-          "expected_trainable_SHA256_by_rank": {
-            "0": "60b09b23d4c8bfd59f4f2242ea210ae15858972e3ace33ebd4c25ab9e983b2cf",
-            "1": "214400a25c9f638463e7f26fcfa36033537a564529a428fc45e4e7552d05820a"
-          },
-          "capture_boundary_seed": true,
-          "captured_seed_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/captured-full40-seed-bindings.json"
-        },
-        {
-          "name": "full80_native",
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-DT-QV-gradient-components-v31/original81-QV-components.pkl",
-          "SHA256": "2cedee1461c038d5762d1cf58bdfaa98c72ab87b9d72b54b75773917a17be1a0",
-          "rows": 64,
-          "checkpoint": 80,
-          "checkpoint_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_80/actor",
-          "expected_trainable_SHA256_by_rank": {
-            "0": "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
-            "1": "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182"
-          },
-          "capture_boundary_seed": true,
-          "captured_seed_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/captured-full80-seed-bindings.json"
-        },
-        {
-          "name": "full_weights80_seed40",
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-DT-QV-gradient-components-v31/original81-QV-components.pkl",
-          "SHA256": "2cedee1461c038d5762d1cf58bdfaa98c72ab87b9d72b54b75773917a17be1a0",
-          "rows": 64,
-          "checkpoint": 80,
-          "checkpoint_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_80/actor",
-          "expected_trainable_SHA256_by_rank": {
-            "0": "8ceb690d8b62f80db7d921f2e05be155efedb2ada9c960174b56bafee7abcd68",
-            "1": "5f19de20ccfc55aa9f85db5fa9bcd152bea18d7bb3dc00b6bf18445c236a9182"
-          },
-          "boundary_seed_source_case": "full40_native",
-          "boundary_seed_source_directory": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86",
-          "boundary_seed_hash_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/captured-full40-seed-bindings.json"
-        },
-        {
-          "name": "full_weights40_seed80",
-          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-DT-QV-gradient-components-v31/original81-QV-components.pkl",
-          "SHA256": "2cedee1461c038d5762d1cf58bdfaa98c72ab87b9d72b54b75773917a17be1a0",
-          "rows": 64,
-          "checkpoint": 40,
-          "checkpoint_path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011/runtime/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/textcraft-dt/checkpoints/global_step_40/actor",
-          "expected_trainable_SHA256_by_rank": {
-            "0": "60b09b23d4c8bfd59f4f2242ea210ae15858972e3ace33ebd4c25ab9e983b2cf",
-            "1": "214400a25c9f638463e7f26fcfa36033537a564529a428fc45e4e7552d05820a"
-          },
-          "boundary_seed_source_case": "full80_native",
-          "boundary_seed_source_directory": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86",
-          "boundary_seed_hash_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/captured-full80-seed-bindings.json"
-        }
-      ],
-      "diagnostic_advantage_views": {
-        "full_DT": "diagnostic_full_DT"
-      },
-      "passive_boundary_readout_enabled": true,
-      "native_ratio_chain_readout": true,
-      "decoder_branch_layers": [
-        29,
-        30,
-        31
-      ],
-      "save_native_probability_carrier": true,
+      "evidence": "Completedv83 exchanges upper24-31 parameters. The conditional15-target fixed-seed norms still follow the body (1.07808 versus0.08793), but actual full-PG readouts differ (0.78844 versus2.06841). Full-PG B4 direction factors are0.65390/1.43763. This directly prevents using the selected-target seed as a proxy for the complete actual PG. The whole-loss adjoints and original B4 Gram provide the missing direct chain comparison.",
       "question": "Does the measured internal sensitivity growth amplify the actual complete policy-loss directions, and how much does actual B4 directional accumulation change?",
-      "why_needed": "Completedv83 exchanges upper24-31 parameters. The conditional15-target fixed-seed norms still follow the body (1.07808 versus0.08793), but actual full-PG readouts differ (0.78844 versus2.06841). Full-PG B4 direction factors are0.65390/1.43763. This directly prevents using the selected-target seed as a proxy for the complete actual PG. The whole-loss adjoints and original B4 Gram provide the missing direct chain comparison.",
       "discriminating_quantity": "Original full81 PG at weights40 and80, followed by unchanged whole BF16 decoder31-output adjoints exchanged between these same weights. Original native full-shard PG/VJP, hidden adjoints and B4 increment Gram; current-session natural baselines and actual old-logprob carriers are saved.",
       "decision": "Distinguish actual loss-direction alignment and B4 cancellation from conditional propagation on one selected-target direction before attributing the increasing full training norm or accepting a repair.",
       "counterfactual_scope": "Read-only derivatives of the actual original81 complete first global64 at rho1 and original40/80 weights. Not a reconstruction of the historical41 batch or a full training trajectory.",
-      "no_trainable_parameters_above_decoder31": {
-        "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-upper-adapter-partition-v81/iterationDT80_upper24_31_from40-rank0-chain.json",
-        "SHA256": "7662fa41058f5b1e3b47cf96b8fe6cbb91067349f82d23b26e8856d55b1c0ba8",
-        "native_trainable_parameter_count": 496
-      },
-      "planned_native_full_policy_derivatives": 2,
-      "planned_native_fixed_seed_VJPs": 2,
-      "model_training_updates": 0,
-      "optimizer_updates": 0,
-      "scheduler_updates": 0,
-      "DT_calls": 0,
-      "generation_calls": 0,
-      "validation_score_calls": 0,
-      "GRPO_calls": 0,
-      "formal_training_changes": 0,
-      "rootcause_repair_verified": false,
-      "accepted_repair": null,
-      "deployed_repair": null,
-      "limits": [
+      "limitations": [
         "Original full256-whitened advantages, source/target/observation masks, IDs, order, B4/global64/1/16 and32k/LoRA8/16 are unchanged. No credit or PPO loss implementation is copied.",
         "The exact complete BF16 seed is captured by the existing native output hook, serialized once, bound by SHA256, and passed unchanged to the existing native replacement hook. No normalization, rescaling or selected-token replacement.",
         "Natural full policy gradients and exchanged-seed VJPs are different observables. The latter are not training updates, operator norms or independent causal fractions.",
         "At weights40 the original81 advantages and inputs are fixed diagnostic data, not the historical41 rollout. This experiment alone cannot prove the entire85-iteration root cause or from-scratch stability.",
         "Native low-precision variation, actual same-point checks and Gram residuals remain recorded. No extra tolerance or all-layer-decrease requirement."
+      ],
+      "diagnostic_commit": "f05c2a68ff8114162e8f655503e31e6b75bee3c3",
+      "formal_training_changed": false,
+      "accepted_repair": null,
+      "deployed_repair": null,
+      "protected_GRPO": {
+        "pid": 3174448,
+        "birth": 1791793629.73
+      },
+      "inherited_launch": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-formal-native-graph-fresh-20261012-v1/launch.json",
+      "inherited_launch_SHA256": "b8d464b717997b344707c1ba305f23a6749b0da4c391a46506c9390546e2dea2",
+      "sources": {
+        "observe_native_gradient_chain_v4.py": "3cbefaf36f2a33712094cd017f0cdf026d1a94fee44d2d1c973eb74ef3251117",
+        "observe_native_optimizer_minibatch.py": "6ed5cd292d8d34d9f701bdf859ec97c7100f9b5e9adc14ab798dbd597645a1c2",
+        "observe_native_actor_loss_gradients.py": "94219328ba644a5c0118f4a3bd2561b16f969643f2cd2915047202a7ff085047"
+      },
+      "case_manifest": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/case-manifest.json",
+      "case_manifest_SHA256": "3870d216c68adeca4808d313bc00a25ef6020b9afb86ae60487a5d60779629d6",
+      "copied_training_function_bodies": 0,
+      "new_optimizer_scheduler_DT_generation_validation_GRPO_calls": 0,
+      "passive_boundary_readout_enabled": true,
+      "native_ratio_chain_readout": true,
+      "checkpoint": 40,
+      "diagnostic_advantage_views": {
+        "full_DT": "diagnostic_full_DT"
+      },
+      "save_native_probability_carrier": true,
+      "decoder_branch_layers": [
+        29,
+        30,
+        31
+      ],
+      "checkpoints": [
+        40,
+        80
+      ],
+      "native_full_policy_gradients": 2,
+      "diagnostic_full_loss_seed_VJPs": 2,
+      "wrapper_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/observe_full_policy_direction_exchange_v86.py",
+      "wrapper_SHA256": "d209e984b69b8877f7668304c03d45f7fe90dec0e56b859e19aa167eba8a2b2f",
+      "protected_DTPO_v3": {
+        "pid": 3140624,
+        "birth": 1791993570.92
+      }
+    },
+    "completed_accounting": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\completed-full-policy-direction-accounting-v89.json",
+    "matrix": [
+      [
+        2.0614273924051525,
+        0.1499581399620368
+      ],
+      [
+        24.525829045165366,
+        2.200127041593584
       ]
+    ],
+    "weight40_to80_same_direction_gains": [
+      11.897498372014,
+      14.671607971068227
+    ],
+    "natural_PG": {
+      "40": {
+        "parameter_VJP_norm": 2.0614273924051525,
+        "decoder31_adjoint_RSS": 0.0034775347048492575,
+        "B4_increment_energy_sqrt": 1.4209586827914786,
+        "B4_directional_accumulation_factor": 1.4507300017727967,
+        "Gram_reconstruction_difference": 1.724398401847793e-11
+      },
+      "80": {
+        "parameter_VJP_norm": 2.200127041593584,
+        "decoder31_adjoint_RSS": 0.0017216393936281802,
+        "B4_increment_energy_sqrt": 2.3110233163479488,
+        "B4_directional_accumulation_factor": 0.9520142120722471,
+        "Gram_reconstruction_difference": -9.346301510504418e-12
+      }
+    },
+    "scope": [
+      "The original81 complete first-global64, full256-whitened advantages and original1/16 reduction are fixed; weight40 is not the historical41 rollout.",
+      "Each seed remains its actual original BF16 tensor with no normalization or token selection. Directional gains are not operator norms or independent causal shares.",
+      "Old-trajectory derivatives cannot establish a from-scratch counterfactual, nor accept a repair on their own."
+    ]
+  },
+  "actual_PPO_restore_v88": {
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/runtime-overrides/native-PPO-restore-verification-v88.json",
+    "pid": 1881878,
+    "birth": 1792021498.38,
+    "status": "native_PPO_full_checkpoint25_restore_verified",
+    "actual_role_states": [
+      {
+        "pid": 1890746,
+        "birth": 1792021571.3,
+        "role": "actor_rollout",
+        "rank": 1,
+        "scheduler": 25,
+        "optimizer_step": 100,
+        "optimizer_entries": 496
+      },
+      {
+        "pid": 1890746,
+        "birth": 1792021571.3,
+        "role": "critic",
+        "rank": 1,
+        "scheduler": 25,
+        "optimizer_step": 100,
+        "optimizer_entries": 428
+      },
+      {
+        "pid": 1888881,
+        "birth": 1792021554.5,
+        "role": "actor_rollout",
+        "rank": 0,
+        "scheduler": 25,
+        "optimizer_step": 100,
+        "optimizer_entries": 496
+      },
+      {
+        "pid": 1888881,
+        "birth": 1792021554.5,
+        "role": "critic",
+        "rank": 0,
+        "scheduler": 25,
+        "optimizer_step": 100,
+        "optimizer_entries": 428
+      }
+    ],
+    "native_data_SHA256": "57ec1bb69d4a08e145f88c86cc73659ce3e8bec2d2a5b3e5cb41a11737c6359c",
+    "native_RNG_owner_verified": true,
+    "checkpoint_owner_SHA256": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+    "source_bindings": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/config/ppo_trainer.yaml": "e2ad9ebd91b2d9184528fef0ebb1998ff07b77bc29941f9573393977e654a8fb",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8"
+    }
+  },
+  "prepared_v90": {
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-saved-update-feedback-v90/case-manifest.json",
+    "status": "prepared_only_no_GPU_submission",
+    "question": "Do the already executed native original, zero-group-ablated and full-v3 updates change internal sensitivity along the actual complete PG direction in the same way as the selected-target probe?",
+    "cases": [
+      "old80_before",
+      "v47_full_original_after",
+      "v47_without_constant_positive_component_after",
+      "v69_full_original_after",
+      "v69_approved_v3_full_method_after",
+      "GRPO160_same_full80_seed"
+    ],
+    "seed": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-full-policy-direction-exchange-v86/captured-full80-seed-bindings.json",
+      "SHA256": "a2b0b39892eec2b62d2c5740e3523596da581979226817e2211ff470bb3e3d41"
+    },
+    "planned_native_fixed_seed_derivatives": 6,
+    "new_optimizer_DT_generation_calls": 0,
+    "formal_training_changes": 0,
+    "source_binding_correction": "Backup finished and original immutable staging snapshot was cleaned by original backup owner. Original fully SHA256-verified shared copy of the same GRPO160 checkpoint is now hard-linked for diagnostic preservation. Original pre-correction prepared source retained; no GPU run failed."
+  },
+  "formal_v3": {
+    "pid": 3140624,
+    "birth": 1791993570.92,
+    "method_patch": "f726ee72",
+    "deployment_commit": "e05e23cb1bc1cccade732ad192ce15b7e9dc6a1e",
+    "original_actor": "3a65e173",
+    "original_core": "fc2f992b",
+    "original_reduction": "1/16 sum_j S_j/N_j",
+    "normalization": "official masked_var + A*rsqrt(var+1e-8), no mean subtraction",
+    "canonical_patch_unchanged": true
+  },
+  "backup": {
+    "status": "passed",
+    "local_full_sha256_verified": true,
+    "full_sha256_verified": true,
+    "shared_backup": {
+      "unix": 1792022632.3749642,
+      "stage": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/backup-access/local-snapshots/1792008986210692700",
+      "destination": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-20261011",
+      "files": 2705,
+      "bytes": 56261000703,
+      "completed_checkpoints": {
+        "dt": 5,
+        "grpo": 160
+      },
+      "full_sha256_verified": true
     }
   }
 }
