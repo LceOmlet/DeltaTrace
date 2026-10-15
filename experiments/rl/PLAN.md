@@ -38,7 +38,7 @@ b_k*(-expm1(-d_ik))；同一target的self-token仅替代该事件项为Q=b_k/V=0
 同时仍可接收其他未来事件的source贡献。不把不同事件的d先合并再指数。
 
 事件必须在driver上先展平，再复用原DataProto去重/pad、原长度平衡器与DP RPC；
-按原readout实际使用的因果prefix长度平衡。所有rank保持同数B4调用，不能到
+沿用已部署readout完整历史长度的原生平衡。所有rank保持同数B4调用，不能到
 worker内部各自展开不同数量的target而破坏FSDP collective顺序。返回后仅对
 原token位置上的各事件Q/V/A作加法，再复用同一个原retained-position scatter。
 整批官方masked_var缩放只在全部事件汇总之后执行一次。没有source u分母。

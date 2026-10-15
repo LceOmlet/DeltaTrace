@@ -197,16 +197,11 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
           f'nonzero_requests={len(indices)} target_tokens={int(target.sum())} '
           f'source_tokens={int((policy & ~target).sum())}', flush=True)
     if len(indices):
-        # The readout omits the suffix after each target's final predictor.
-        # Balance the actual causal prefixes, including explicit multi-target
-        # events, rather than identical full histories with different targets.
-        causal_lengths = prompt_masks.sum(-1) + last_target + 1
-        requests.batch['dt_causal_length'] = causal_lengths
-        indices = indices[torch.argsort(causal_lengths[indices], stable=True)]
+        indices = indices[torch.argsort(attention.sum(-1)[indices], stable=True)]
         active = requests.select_idxs(indices)
         active, padding = pad_dataproto_to_divisor(active, worker_group.world_size * 4)
         partitions = get_seqlen_balanced_partitions(
-            active.batch['dt_causal_length'].tolist(),
+            active.batch['attention_mask'].sum(-1).tolist(),
             k_partitions=worker_group.world_size, equal_size=True)
         order = torch.tensor([index for partition in partitions for index in partition])
         active.reorder(order)

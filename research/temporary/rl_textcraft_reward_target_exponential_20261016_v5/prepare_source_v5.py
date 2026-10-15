@@ -68,7 +68,7 @@ for name in ('textcraft_owner_rollout.py', 'reward_readout.py', 'counterfactual.
         # snapshot before adding the event packing seam in its owning module.
         assert hashlib.sha256(source.read_bytes()).hexdigest()=='61cacb7957d912040c12e7282c42d5d6fd17376e97051c78bfa5e3d103ef0b46'
         text = (REPO/'experiments/rl/dt_training_batch.py').read_text(encoding='utf-8')
-        assert hashlib.sha256(text.encode()).hexdigest()=='e2ea059d006afed956e8860cdddc263286de272084a99e9fdc89714c700a965d','Use this version snapshot, not future canonical edits'
+        assert hashlib.sha256(text.encode()).hexdigest()=='5a5474084dd939339830595e58366fbff881be2d11a6d236b867bc89ed6c9643','Use this version snapshot, not future canonical edits'
     ast.parse(text)
     destination = HERE / 'candidate-source' / name
     destination.parent.mkdir(exist_ok=True)

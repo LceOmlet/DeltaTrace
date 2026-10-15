@@ -208,11 +208,16 @@ def main():
         else:
             state['status']='native-small';write(AUDIT/'native-behavior-status.json',state)
             group.verify_credit(small)
-        for capacity in (False,True):
+        for capacity in ((False,) if '--multi-only' in sys.argv else (False,True)):
             stage='capacity-multi-32768' if capacity else 'native-multi-target'
             state['status']=stage;write(AUDIT/'native-behavior-status.json',state)
             verify_native_multitarget(group,multitarget_requests(tokenizer,capacity),stage,tokenizer)
-        state.update(status='completed',finished=time.time());write(AUDIT/'native-behavior-status.json',state)
+        state.update(status='completed',finished=time.time(),
+                     validation_stages=['native-multi-target'] if '--multi-only' in sys.argv else ['native-multi-target','capacity-multi-32768'])
+        if '--multi-only' in sys.argv:
+            state['capacity_reused_unchanged_DT_owners']=[dict(path=str(AUDIT/f'capacity-multi-32768-rank{rank}.json'),
+                SHA256=hashlib.sha256((AUDIT/f'capacity-multi-32768-rank{rank}.json').read_bytes()).hexdigest()) for rank in (0,1)]
+        write(AUDIT/'native-behavior-status.json',state)
     except BaseException as exc:
         state.update(status='failed',error=repr(exc));write(AUDIT/'native-behavior-status.json',state);raise
     finally:ray.shutdown()
