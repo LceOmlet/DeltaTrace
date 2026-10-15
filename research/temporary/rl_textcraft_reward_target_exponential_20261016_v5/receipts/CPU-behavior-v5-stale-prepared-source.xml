@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="21" time="27.358" timestamp="2026-10-16T02:42:34.107878+08:00" hostname="224f07201.cloud.f09.sm132"><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_original_exponential_credit_is_bitwise_preserved" time="0.652" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_signed_multi_event_credit_exponentiates_before_sum_without_u_normalization" time="0.001" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_observation_padding_self_target_and_causal_masks" time="0.001" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_native_zero_settlement_selects_only_its_original_action" time="6.570" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_original_two_payloads_supply_exact_multitarget_offsets" time="3.934" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_v5_mode_disables_withdrawn_affine_credit" time="0.009" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_official_GRPO_PPO_and_fast_owner_bindings" time="0.705" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_multi_target_v5" name="test_multitarget_DP_preserves_signed_components_and_retained_slots[credits0]" time="0.003"><failure message="KeyError: 'key &quot;dt_future_event_mask&quot; not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'">self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 11]), device=cpu, dtype=torch.int64, is_s... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;, kwargs = {}
+
+    def _get_str(self, key, default, **kwargs):
+        try:
+&gt;           return self._tensordict[key]
+                   ^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'dt_future_event_mask'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2729: KeyError
+
+During handling of the above exception, another exception occurred:
+
+credits = (-0.1, 1.0)
+
+    @pytest.mark.parametrize('credits',[(-.1,1.),(-1.,1.)])
+    def test_multitarget_DP_preserves_signed_components_and_retained_slots(credits):
+        items=[events(artifact(i),credits) for i in range(5)]
+        # Duplicate an original trajectory with different retained response slots.
+        repeated=deepcopy(items[0]);repeated['retained_response_positions']=[3,4,5,-1]
+        data=native_training_data(items+[repeated],identities=[f'uid-{i}' for i in range(5)]+['uid-0'],
+                                  multipliers=[sum(credits)]*6)
+        worker=EventTransportWorker()
+&gt;       output=compute_direct_target_credit(data,worker,eos_token_id=99,pad_token_id=0)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:61: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/dt_training_batch.py:198: in compute_direct_target_credit
+    values = worker_group.compute_dt_token_advantages(active)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:33: in compute_dt_token_advantages
+    chunk.batch['dt_future_event_mask'][:,None,:],chunk.batch['policy_mask'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:589: in __getitem__
+    return self._get_tuple_maybe_non_tensor(idx_unravel, NO_DEFAULT)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6955: in _get_tuple_maybe_non_tensor
+    result = self._get_tuple(key, default, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2734: in _get_tuple
+    first = self._get_str(key[0], default, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2731: in _get_str
+    return self._default_get(key, default)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 11]), device=cpu, dtype=torch.int64, is_s... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;
+
+    def _default_get(self, key: NestedKey, default: Any = NO_DEFAULT) -&gt; CompatibleType:
+        if default is not NO_DEFAULT:
+            return default
+        else:
+            # raise KeyError
+&gt;           raise KeyError(
+                _KEY_ERROR.format(key, type(self).__name__, sorted(self.keys()))
+            )
+E           KeyError: 'key "dt_future_event_mask" not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6892: KeyError</failure></testcase><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_multi_target_v5" name="test_multitarget_DP_preserves_signed_components_and_retained_slots[credits1]" time="0.003"><failure message="assert 0 == 1&#10; +  where 0 = len([])&#10; +    where [] = &lt;test_multi_target_v5.EventTransportWorker object at 0x7ff281840f50&gt;.calls">credits = (-1.0, 1.0)
+
+    @pytest.mark.parametrize('credits',[(-.1,1.),(-1.,1.)])
+    def test_multitarget_DP_preserves_signed_components_and_retained_slots(credits):
+        items=[events(artifact(i),credits) for i in range(5)]
+        # Duplicate an original trajectory with different retained response slots.
+        repeated=deepcopy(items[0]);repeated['retained_response_positions']=[3,4,5,-1]
+        data=native_training_data(items+[repeated],identities=[f'uid-{i}' for i in range(5)]+['uid-0'],
+                                  multipliers=[sum(credits)]*6)
+        worker=EventTransportWorker()
+        output=compute_direct_target_credit(data,worker,eos_token_id=99,pad_token_id=0)
+&gt;       assert len(worker.calls)==1
+E       assert 0 == 1
+E        +  where 0 = len([])
+E        +    where [] = &lt;test_multi_target_v5.EventTransportWorker object at 0x7ff281840f50&gt;.calls
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:62: AssertionError</failure></testcase><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_multi_target_v5" name="test_earlier_target_is_source_for_later_event_and_future_masks_are_retained" time="0.002"><failure message="KeyError: 'key &quot;dt_future_event_mask&quot; not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'">self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;, kwargs = {}
+
+    def _get_str(self, key, default, **kwargs):
+        try:
+&gt;           return self._tensordict[key]
+                   ^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'dt_future_event_mask'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2729: KeyError
+
+During handling of the above exception, another exception occurred:
+
+    def test_earlier_target_is_source_for_later_event_and_future_masks_are_retained():
+        item=events(artifact(0))
+        data=native_training_data([item],multipliers=[.9]);worker=EventTransportWorker()
+&gt;       compute_direct_target_credit(data,worker,eos_token_id=99,pad_token_id=0)
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/dt_training_batch.py:198: in compute_direct_target_credit
+    values = worker_group.compute_dt_token_advantages(active)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:33: in compute_dt_token_advantages
+    chunk.batch['dt_future_event_mask'][:,None,:],chunk.batch['policy_mask'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:589: in __getitem__
+    return self._get_tuple_maybe_non_tensor(idx_unravel, NO_DEFAULT)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6955: in _get_tuple_maybe_non_tensor
+    result = self._get_tuple(key, default, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2734: in _get_tuple
+    first = self._get_str(key[0], default, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2731: in _get_str
+    return self._default_get(key, default)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;
+
+    def _default_get(self, key: NestedKey, default: Any = NO_DEFAULT) -&gt; CompatibleType:
+        if default is not NO_DEFAULT:
+            return default
+        else:
+            # raise KeyError
+&gt;           raise KeyError(
+                _KEY_ERROR.format(key, type(self).__name__, sorted(self.keys()))
+            )
+E           KeyError: 'key "dt_future_event_mask" not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6892: KeyError</failure></testcase><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_multi_target_v5" name="test_multiple_payload_pieces_of_one_event_are_not_credited_twice" time="0.002"><failure message="KeyError: 'key &quot;dt_future_event_mask&quot; not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'">self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;, kwargs = {}
+
+    def _get_str(self, key, default, **kwargs):
+        try:
+&gt;           return self._tensordict[key]
+                   ^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'dt_future_event_mask'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2729: KeyError
+
+During handling of the above exception, another exception occurred:
+
+    def test_multiple_payload_pieces_of_one_event_are_not_credited_twice():
+        item=artifact(0)
+        item['dt_reward_target_events']=[dict(event_id=0,target_offsets=[1,4],credit=.75,
+                                             future_policy_mask=[True]*6)]
+        worker=EventTransportWorker()
+&gt;       result=compute_direct_target_credit(native_training_data([item]),worker,eos_token_id=99,pad_token_id=0)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/dt_training_batch.py:198: in compute_direct_target_credit
+    values = worker_group.compute_dt_token_advantages(active)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:33: in compute_dt_token_advantages
+    chunk.batch['dt_future_event_mask'][:,None,:],chunk.batch['policy_mask'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:589: in __getitem__
+    return self._get_tuple_maybe_non_tensor(idx_unravel, NO_DEFAULT)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6955: in _get_tuple_maybe_non_tensor
+    result = self._get_tuple(key, default, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2734: in _get_tuple
+    first = self._get_str(key[0], default, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2731: in _get_str
+    return self._default_get(key, default)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;
+
+    def _default_get(self, key: NestedKey, default: Any = NO_DEFAULT) -&gt; CompatibleType:
+        if default is not NO_DEFAULT:
+            return default
+        else:
+            # raise KeyError
+&gt;           raise KeyError(
+                _KEY_ERROR.format(key, type(self).__name__, sorted(self.keys()))
+            )
+E           KeyError: 'key "dt_future_event_mask" not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6892: KeyError</failure></testcase><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_multi_target_v5" name="test_invalid_event_contract_is_rejected_before_collective[duplicate_event]" time="0.002"><failure message="KeyError: 'key &quot;dt_future_event_mask&quot; not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'">self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;, kwargs = {}
+
+    def _get_str(self, key, default, **kwargs):
+        try:
+&gt;           return self._tensordict[key]
+                   ^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'dt_future_event_mask'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2729: KeyError
+
+During handling of the above exception, another exception occurred:
+
+defect = 'duplicate_event'
+
+    @pytest.mark.parametrize('defect',['duplicate_event','missing_credit','observation_target','wrong_future_slots'])
+    def test_invalid_event_contract_is_rejected_before_collective(defect):
+        item=events(artifact(0));worker=EventTransportWorker()
+        if defect=='duplicate_event':item['dt_reward_target_events'][1]['event_id']='first'
+        elif defect=='missing_credit':del item['dt_reward_target_events'][1]['credit']
+        elif defect=='observation_target':item['dt_reward_target_events'][1]['target_offsets']=[2]
+        else:item['dt_reward_target_events'][1]['future_policy_mask']=[True]
+        with pytest.raises(ValueError):
+&gt;           compute_direct_target_credit(native_training_data([item]),worker,eos_token_id=99,pad_token_id=0)
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/dt_training_batch.py:198: in compute_direct_target_credit
+    values = worker_group.compute_dt_token_advantages(active)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:33: in compute_dt_token_advantages
+    chunk.batch['dt_future_event_mask'][:,None,:],chunk.batch['policy_mask'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:589: in __getitem__
+    return self._get_tuple_maybe_non_tensor(idx_unravel, NO_DEFAULT)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6955: in _get_tuple_maybe_non_tensor
+    result = self._get_tuple(key, default, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2734: in _get_tuple
+    first = self._get_str(key[0], default, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2731: in _get_str
+    return self._default_get(key, default)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;
+
+    def _default_get(self, key: NestedKey, default: Any = NO_DEFAULT) -&gt; CompatibleType:
+        if default is not NO_DEFAULT:
+            return default
+        else:
+            # raise KeyError
+&gt;           raise KeyError(
+                _KEY_ERROR.format(key, type(self).__name__, sorted(self.keys()))
+            )
+E           KeyError: 'key "dt_future_event_mask" not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6892: KeyError</failure></testcase><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_multi_target_v5" name="test_invalid_event_contract_is_rejected_before_collective[missing_credit]" time="0.003"><failure message="KeyError: 'key &quot;dt_future_event_mask&quot; not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'">self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;, kwargs = {}
+
+    def _get_str(self, key, default, **kwargs):
+        try:
+&gt;           return self._tensordict[key]
+                   ^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'dt_future_event_mask'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2729: KeyError
+
+During handling of the above exception, another exception occurred:
+
+defect = 'missing_credit'
+
+    @pytest.mark.parametrize('defect',['duplicate_event','missing_credit','observation_target','wrong_future_slots'])
+    def test_invalid_event_contract_is_rejected_before_collective(defect):
+        item=events(artifact(0));worker=EventTransportWorker()
+        if defect=='duplicate_event':item['dt_reward_target_events'][1]['event_id']='first'
+        elif defect=='missing_credit':del item['dt_reward_target_events'][1]['credit']
+        elif defect=='observation_target':item['dt_reward_target_events'][1]['target_offsets']=[2]
+        else:item['dt_reward_target_events'][1]['future_policy_mask']=[True]
+        with pytest.raises(ValueError):
+&gt;           compute_direct_target_credit(native_training_data([item]),worker,eos_token_id=99,pad_token_id=0)
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/dt_training_batch.py:198: in compute_direct_target_credit
+    values = worker_group.compute_dt_token_advantages(active)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:33: in compute_dt_token_advantages
+    chunk.batch['dt_future_event_mask'][:,None,:],chunk.batch['policy_mask'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:589: in __getitem__
+    return self._get_tuple_maybe_non_tensor(idx_unravel, NO_DEFAULT)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6955: in _get_tuple_maybe_non_tensor
+    result = self._get_tuple(key, default, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2734: in _get_tuple
+    first = self._get_str(key[0], default, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2731: in _get_str
+    return self._default_get(key, default)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;
+
+    def _default_get(self, key: NestedKey, default: Any = NO_DEFAULT) -&gt; CompatibleType:
+        if default is not NO_DEFAULT:
+            return default
+        else:
+            # raise KeyError
+&gt;           raise KeyError(
+                _KEY_ERROR.format(key, type(self).__name__, sorted(self.keys()))
+            )
+E           KeyError: 'key "dt_future_event_mask" not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6892: KeyError</failure></testcase><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_multi_target_v5" name="test_invalid_event_contract_is_rejected_before_collective[observation_target]" time="0.003"><failure message="KeyError: 'key &quot;dt_future_event_mask&quot; not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'">self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;, kwargs = {}
+
+    def _get_str(self, key, default, **kwargs):
+        try:
+&gt;           return self._tensordict[key]
+                   ^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'dt_future_event_mask'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2729: KeyError
+
+During handling of the above exception, another exception occurred:
+
+defect = 'observation_target'
+
+    @pytest.mark.parametrize('defect',['duplicate_event','missing_credit','observation_target','wrong_future_slots'])
+    def test_invalid_event_contract_is_rejected_before_collective(defect):
+        item=events(artifact(0));worker=EventTransportWorker()
+        if defect=='duplicate_event':item['dt_reward_target_events'][1]['event_id']='first'
+        elif defect=='missing_credit':del item['dt_reward_target_events'][1]['credit']
+        elif defect=='observation_target':item['dt_reward_target_events'][1]['target_offsets']=[2]
+        else:item['dt_reward_target_events'][1]['future_policy_mask']=[True]
+        with pytest.raises(ValueError):
+&gt;           compute_direct_target_credit(native_training_data([item]),worker,eos_token_id=99,pad_token_id=0)
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/dt_training_batch.py:198: in compute_direct_target_credit
+    values = worker_group.compute_dt_token_advantages(active)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:33: in compute_dt_token_advantages
+    chunk.batch['dt_future_event_mask'][:,None,:],chunk.batch['policy_mask'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:589: in __getitem__
+    return self._get_tuple_maybe_non_tensor(idx_unravel, NO_DEFAULT)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6955: in _get_tuple_maybe_non_tensor
+    result = self._get_tuple(key, default, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2734: in _get_tuple
+    first = self._get_str(key[0], default, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2731: in _get_str
+    return self._default_get(key, default)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;
+
+    def _default_get(self, key: NestedKey, default: Any = NO_DEFAULT) -&gt; CompatibleType:
+        if default is not NO_DEFAULT:
+            return default
+        else:
+            # raise KeyError
+&gt;           raise KeyError(
+                _KEY_ERROR.format(key, type(self).__name__, sorted(self.keys()))
+            )
+E           KeyError: 'key "dt_future_event_mask" not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6892: KeyError</failure></testcase><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_multi_target_v5" name="test_invalid_event_contract_is_rejected_before_collective[wrong_future_slots]" time="0.002"><failure message="KeyError: 'key &quot;dt_future_event_mask&quot; not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'">self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;, kwargs = {}
+
+    def _get_str(self, key, default, **kwargs):
+        try:
+&gt;           return self._tensordict[key]
+                   ^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'dt_future_event_mask'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2729: KeyError
+
+During handling of the above exception, another exception occurred:
+
+defect = 'wrong_future_slots'
+
+    @pytest.mark.parametrize('defect',['duplicate_event','missing_credit','observation_target','wrong_future_slots'])
+    def test_invalid_event_contract_is_rejected_before_collective(defect):
+        item=events(artifact(0));worker=EventTransportWorker()
+        if defect=='duplicate_event':item['dt_reward_target_events'][1]['event_id']='first'
+        elif defect=='missing_credit':del item['dt_reward_target_events'][1]['credit']
+        elif defect=='observation_target':item['dt_reward_target_events'][1]['target_offsets']=[2]
+        else:item['dt_reward_target_events'][1]['future_policy_mask']=[True]
+        with pytest.raises(ValueError):
+&gt;           compute_direct_target_credit(native_training_data([item]),worker,eos_token_id=99,pad_token_id=0)
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/dt_training_batch.py:198: in compute_direct_target_credit
+    values = worker_group.compute_dt_token_advantages(active)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_multi_target_v5.py:33: in compute_dt_token_advantages
+    chunk.batch['dt_future_event_mask'][:,None,:],chunk.batch['policy_mask'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:589: in __getitem__
+    return self._get_tuple_maybe_non_tensor(idx_unravel, NO_DEFAULT)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6955: in _get_tuple_maybe_non_tensor
+    result = self._get_tuple(key, default, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2734: in _get_tuple
+    first = self._get_str(key[0], default, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/_td.py:2731: in _get_str
+    return self._default_get(key, default)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = TensorDict(
+    fields={
+        attention_mask: Tensor(shape=torch.Size([4, 7]), device=cpu, dtype=torch.int64, is_sh... device=cpu, dtype=torch.bool, is_shared=False)},
+    batch_size=torch.Size([4]),
+    device=None,
+    is_shared=False)
+key = 'dt_future_event_mask', default = &lt;_NoDefault.ZERO: 0&gt;
+
+    def _default_get(self, key: NestedKey, default: Any = NO_DEFAULT) -&gt; CompatibleType:
+        if default is not NO_DEFAULT:
+            return default
+        else:
+            # raise KeyError
+&gt;           raise KeyError(
+                _KEY_ERROR.format(key, type(self).__name__, sorted(self.keys()))
+            )
+E           KeyError: 'key "dt_future_event_mask" not found in TensorDict with keys [\'attention_mask\', \'dt_direct_reward\', \'input_ids\', \'policy_mask\', \'position_ids\', \'prompts\', \'responses\', \'target_mask\']'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/tensordict/base.py:6892: KeyError</failure></testcase><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_native_adjust_pad_dispatch_deduplicates_and_restores_retained_slots" time="0.005" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_trace_required_excludes_analytic_cases_before_native_collective" time="0.003" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_group_multiplier_controls_trace_routing_without_rewriting_rewards" time="0.003" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_one_terminal_reward_is_not_repeated_for_multiple_target_spans" time="0.001" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_observation_cannot_be_an_executed_action_target" time="0.001" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_retained_transport_rejects_changed_native_token_identity" time="0.002" /></testsuite></testsuites>

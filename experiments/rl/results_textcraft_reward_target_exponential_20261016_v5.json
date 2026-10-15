@@ -1,0 +1,1484 @@
+{
+  "version": "textcraft-dt-reward-target-exponential-20261016-v5",
+  "recorded_unix": 1792090908.8125424,
+  "status": "verified_prepared_not_submitted",
+  "method_specification": "experiments/rl/PLAN.md only",
+  "upstream_commit": "20bd331b",
+  "local_patch_commit": null,
+  "remote_run": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-reward-target-exponential-20261016-v5",
+  "remote_audit": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5",
+  "semantics": {
+    "credit": "Official fixed VERL GRPO group multiplier for native TextCraft. Explicit multi-target events accept their already determined signed stable b_k on the same scale.",
+    "target": "Native reward-settlement action payload, score 0 included. Multiple payload pieces of one settlement form one offset union.",
+    "multi_target": "Original per-event EOS DT vector d_ik; Q=sum b_k, V=sum b_k*exp(-d_ik), A=sum b_k*-expm1(-d_ik). Exponent before aggregation.",
+    "normalization": "No b/DeltaF seed, d normalization, source u normalization, log(signed credit), or repetition of rollout g per event.",
+    "zero_total_credit": "Nonzero cancelling components are retained, including B=0.",
+    "masks": "Original explicit per-component future mask; observation/padding excluded, earlier target may be source for a later event.",
+    "self_target": "Per event Q=b_k,V=0,A=b_k replaces that event term, then other future event terms may still contribute.",
+    "dispatch": "Flatten events on driver, original DataProto pad/sequence balance/DP RPC, exact native retained-slot scatter. Each FSDP rank has equal B4 call count.",
+    "advantage_preprocessing": {
+      "owner": "verl.utils.torch_functional.masked_var",
+      "epsilon": 1e-08,
+      "subtract_mean": false,
+      "expression": "A * torch.rsqrt(verl_F.masked_var(A, response_mask) + 1e-8)",
+      "official_shift_mean_false_is_different": true
+    },
+    "PPO_reduction": "unchanged official token-mean; 1/16 sum_j(S_j/N_j)"
+  },
+  "efficiency": {
+    "DT_numeric": "26bef6c8",
+    "DT_gate_capture_host": "3f51f5f7 GDN / original bounded replay",
+    "native_vLLM_graph": true,
+    "frozen_head_patch": "7a33e61a",
+    "unaccepted_head_selection_enabled": false
+  },
+  "effective_options": {
+    "ray_init.num_cpus": 16,
+    "actor_rollout_ref.model.path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+    "actor_rollout_ref.model.trust_remote_code": true,
+    "actor_rollout_ref.model.lora_rank": 8,
+    "actor_rollout_ref.model.lora_alpha": 16,
+    "actor_rollout_ref.model.enable_gradient_checkpointing": true,
+    "actor_rollout_ref.model.enable_activation_offload": true,
+    "actor_rollout_ref.model.use_fused_kernels": true,
+    "+actor_rollout_ref.model.fused_kernel_options.impl_backend": "torch",
+    "actor_rollout_ref.actor.strategy": "fsdp2",
+    "actor_rollout_ref.actor.ppo_mini_batch_size": 64,
+    "actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu": 4,
+    "actor_rollout_ref.actor.ppo_max_token_len_per_gpu": 32768,
+    "actor_rollout_ref.actor.use_torch_compile": true,
+    "actor_rollout_ref.actor.fsdp_config.offload_policy": true,
+    "+actor_rollout_ref.actor.fsdp_config.model_dtype": "bfloat16",
+    "actor_rollout_ref.actor.fsdp_config.param_offload": true,
+    "actor_rollout_ref.actor.fsdp_config.optimizer_offload": true,
+    "actor_rollout_ref.rollout.name": "vllm",
+    "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu": 4,
+    "actor_rollout_ref.rollout.tensor_model_parallel_size": 1,
+    "actor_rollout_ref.rollout.load_format": "safetensors",
+    "actor_rollout_ref.rollout.gpu_memory_utilization": 0.75,
+    "actor_rollout_ref.rollout.max_model_len": 32768,
+    "actor_rollout_ref.rollout.max_num_seqs": 32,
+    "actor_rollout_ref.rollout.max_num_batched_tokens": 32768,
+    "+actor_rollout_ref.rollout.engine_kwargs.vllm.limit_mm_per_prompt": {
+      "image": 0,
+      "video": 0
+    },
+    "trainer.n_gpus_per_node": 2,
+    "trainer.nnodes": 1,
+    "+ray_init.runtime_env.worker_process_setup_hook": "metax_fsdp_event_wait.worker_setup",
+    "+ray_init.runtime_env.env_vars.DT_FSDP_EVENT_WAIT_RECEIPTS": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-reward-target-exponential-20261016-v5/worker-runtime-overrides",
+    "+ray_init.runtime_env.env_vars.VERL_RELEASE_UNUSED_HOST_CACHE": "1",
+    "algorithm.adv_estimator": "deltatrace",
+    "data.train_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/train.parquet",
+    "data.val_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/validation.parquet",
+    "data.train_batch_size": 32,
+    "data.val_batch_size": 32,
+    "data.max_prompt_length": 32256,
+    "data.max_response_length": 512,
+    "data.return_raw_chat": true,
+    "data.truncation": "error",
+    "+data.dataloader_num_workers": 0,
+    "actor_rollout_ref.actor.use_invalid_action_penalty": false,
+    "actor_rollout_ref.actor.ppo_epochs": 1,
+    "actor_rollout_ref.actor.optim.lr": 1e-06,
+    "actor_rollout_ref.actor.use_kl_loss": true,
+    "actor_rollout_ref.actor.kl_loss_coef": 0.001,
+    "actor_rollout_ref.actor.kl_loss_type": "low_var_kl",
+    "actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu": 4,
+    "actor_rollout_ref.rollout.multi_turn.enable": true,
+    "actor_rollout_ref.rollout.temperature": 1.0,
+    "actor_rollout_ref.rollout.top_p": 1,
+    "actor_rollout_ref.rollout.val_kwargs.do_sample": true,
+    "actor_rollout_ref.rollout.val_kwargs.temperature": 1,
+    "actor_rollout_ref.rollout.val_kwargs.top_p": 1,
+    "env.env_name": "TextCraft",
+    "env.rollout.n": 8,
+    "env.max_steps": 30,
+    "+env.factory._target_": "textcraft_environment_entry.make_textcraft_environments",
+    "+env.textcraft": {
+      "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v4/textcraft-owner",
+      "client": {
+        "task_name": "textcraft",
+        "env_addr": "http://127.0.0.1:36005",
+        "max_retries": 10,
+        "max_rounds": 10,
+        "timeout": 600
+      },
+      "eval_client": {
+        "task_name": "textcraft",
+        "env_addr": "http://127.0.0.1:36005",
+        "max_retries": 10,
+        "max_rounds": 30,
+        "timeout": 500
+      }
+    },
+    "trainer.logger": [
+      "console"
+    ],
+    "trainer.project_name": "deltatrace_official_environments",
+    "trainer.experiment_name": "textcraft-dt-reward-target-exponential-20261016-v5",
+    "trainer.default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-reward-target-exponential-20261016-v5/textcraft-dt/checkpoints",
+    "trainer.rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-reward-target-exponential-20261016-v5/textcraft-dt/rollouts",
+    "trainer.validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-reward-target-exponential-20261016-v5/textcraft-dt/validation",
+    "trainer.max_actor_ckpt_to_keep": 2,
+    "trainer.total_epochs": 30,
+    "trainer.total_training_steps": null,
+    "trainer.save_freq": 5,
+    "trainer.test_freq": -1,
+    "trainer.val_before_train": false,
+    "trainer.resume_mode": "auto",
+    "trainer.resume_from_path": null,
+    "actor_rollout_ref.rollout.enforce_eager": false,
+    "actor_rollout_ref.rollout.free_cache_engine": false,
+    "+ray_init.runtime_env.env_vars.DT_CREDIT_MODE": "reward_target_exponential_v5"
+  },
+  "budget": {
+    "epochs": 30,
+    "total_iterations": 330,
+    "groups": 32,
+    "trajectories_per_group": 8,
+    "optimizer_minibatch": 64,
+    "optimizer_updates_per_iteration": 4
+  },
+  "actual_source_bindings": {
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/textcraft_owner_rollout.py": "6fab54b978f722b65112e8ff0e261b441182391080fba38d3d262a982f8bf245",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/executed_target_spans.py": "91919c128781386c0e8242000966a12bbcb3b76da72dc9956e3ca9c1caea8a66",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/dt_training_batch.py": "e2ea059d006afed956e8860cdddc263286de272084a99e9fdc89714c700a965d",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/counterfactual.py": "14ca2a3c875b42cad0bb267268a61671a6c7b3dee81114df41bf5ff47c0379bf",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/metax_fsdp_event_wait.py": "78eb717d787100850d8a42b9840bc9a17c334383c0349ef34ce7be88bd8425ee",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_answer_finite.py": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/ray_trainer.py": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/fsdp_workers.py": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v4/textcraft-owner/AgentGym-RL/verl/workers/rollout/agent_vllm_rollout/vllm_rollout.py": "04148278478913787dc2f69d364c03d66eee50b586ef62595f73ae079cd54897",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v4/textcraft-owner/AgentGym-RL/verl/utils/agentgym/client.py": "79b794e829e3a2936bf340f9b4677ad3c486a5e5cf300d6bdcc446962fc88c89",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/reward_readout.py": "1797faaaa89537f5369f82b18b613100f92344f2160f3ca68c5bddfb53009017",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/owner_environment_configs.json": "69af7f858cd25f2f76f8ccc4c6831d0e9eb51dc072817489257bcb84cd0faafd",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/utils/experimental/torch_functional.py": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/models/transformers/qwen3_vl.py": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py": "198f78db4abf58cd8461c5bab86d1ce9c325a46e4295c8cc54d83bd9e20e59cd",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_gdn_finite.py": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/accelerated/qwen35/qwen35_retained_capture.py": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/experiments/rl/deltatrace_credit.py": "8046762ae2fd149b299e29f9a331d8ae1aed665f2de895573e78e61ebc2d8497",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/passive_reward_readout_v5.py": "e6b01693279d1558c137e79223e5efaaa3770b7cb8c9ad5baaf3091bd05676dc",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/install_passive_records_v5.py": "dbde75913bbbfeaf6dcc22cd8be54da03649b05677af4b2555bbe6f54d8a7602"
+  },
+  "verification": {
+    "version": "textcraft-dt-reward-target-exponential-20261016-v5",
+    "unix": 1792090837.5095773,
+    "checks": {
+      "native_owner_zero_reward_settlement_target_selection": true,
+      "signed_multi_event_exp_before_sum_no_u_normalization": true,
+      "native_original_transport_dedup_padding_scatter": true,
+      "native_two_rank_original_unscaled_DT_to_exponential_QVA": true,
+      "native_B4_per_rank_exact_32768_capacity_finite": true,
+      "actor_optimizer_scheduler_unchanged_by_verification": true,
+      "official_GRPO_PPO_owners_and_verified_efficiency_SHAs": true,
+      "no_withdrawn_affine_seed_or_head_selection_candidate": true
+    },
+    "unique_passing_behavior_tests": 22,
+    "CPU_result_SHA256": "88a79c0ab9c69340aa1d8ab7da3bdbc14fb746eed2f9a24f821f465e00406af5",
+    "capacity_seconds_by_rank": [
+      335.510092601995,
+      335.4354284859728
+    ],
+    "verification_limits": "Native interface/capacity and exact composition checks; not training quality, long-term gradient repair, or a new DT prediction-accuracy experiment.",
+    "numerical_acceptance": "Unchanged accepted DT and update owners by SHA. Exponential composition exact tensor equality; no invented tolerance.",
+    "coefficient_artifact": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/credit-records/rank0-pid3151306/joint-1791994978199816256.pt",
+      "SHA256": "733bbb5da70caa2d4d7d44d1e891f7a971b2d1ca52227c0311681daf931d884a",
+      "coefficient_kind": "Recorded native official GRPO group multipliers",
+      "values": [
+        0.7245674133300781,
+        0.7245674133300781,
+        0.7245674133300781,
+        0.7245674133300781
+      ]
+    },
+    "reused_native_small_computation": [
+      {
+        "rank": 0,
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/failed-binding-metadata-r2/native-small-rank0.json",
+        "SHA256": "0e332538ef83f186176a86f7b21ad814565733ffe3934979f70fcff7c0f49b89",
+        "completed_computation_preserved": true,
+        "metadata_failure": "KeyError('verl.utils.experimental.torch_functional')"
+      },
+      {
+        "rank": 1,
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/failed-binding-metadata-r2/native-small-rank1.json",
+        "SHA256": "f7cc2a2b850591fca88ba3640e392887faf4ee00e4c94580c0e1fc779c7906ba",
+        "completed_computation_preserved": true,
+        "metadata_failure": "KeyError('verl.utils.experimental.torch_functional')"
+      }
+    ],
+    "optimizer_updates": 0,
+    "generated_rollouts": 0,
+    "quality_evaluations": 0
+  },
+  "native_multi_target": [
+    {
+      "stage": "native-multi-target",
+      "status": "completed",
+      "rank": 0,
+      "pid": 722186,
+      "birth": 1792090304.62,
+      "before": {
+        "trainable_SHA256": "e00de9b1d5732d36472155b43eddc46e07451ac1705022afafd3764c58920641",
+        "scheduler": 0,
+        "optimizer_steps": [],
+        "optimizer_states": 0
+      },
+      "optimizer_updates": 0,
+      "generated_rollouts": 0,
+      "quality_evaluations": 0,
+      "finite_calls": [
+        {
+          "shape": [
+            8,
+            586
+          ],
+          "target_offsets": [
+            [
+              228,
+              229,
+              230
+            ],
+            [
+              228,
+              229,
+              230
+            ],
+            [
+              254,
+              255,
+              256
+            ],
+            [
+              254,
+              255,
+              256
+            ]
+          ],
+          "original_unscaled_seed": true,
+          "signed_min": -0.03526201756010286,
+          "signed_max": 17.773504043263316,
+          "seconds": 16.424044176004827
+        }
+      ],
+      "credit_calls": [
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            -0.10000000149011612
+          ],
+          "active_d_min": 0.1777656376361847,
+          "active_d_max": 17.77350425720215,
+          "advantages_min": -0.10000000149011612,
+          "advantages_max": 0.0,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            -0.10000000149011612
+          ],
+          "active_d_min": 0.1777656376361847,
+          "active_d_max": 17.77350425720215,
+          "advantages_min": -0.10000000149011612,
+          "advantages_max": 0.0,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            1.0
+          ],
+          "active_d_min": -0.03526201844215393,
+          "active_d_max": 10.550281524658203,
+          "advantages_min": -0.0358910970389843,
+          "advantages_max": 1.0,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            1.0
+          ],
+          "active_d_min": -0.03526201844215393,
+          "active_d_max": 10.550281524658203,
+          "advantages_min": -0.0358910970389843,
+          "advantages_max": 1.0,
+          "exact_expression_equality": true
+        }
+      ],
+      "seconds": 31.40577311895322,
+      "report": {
+        "task": "TextCraft",
+        "target_semantics": "reward_settlement_action_spans",
+        "target_normalization": "original_full_vocabulary",
+        "reward_events": 4,
+        "trajectories": 4,
+        "finite_trace_calls": 1,
+        "joint_target_requests": 4,
+        "minibatch_size": 4,
+        "query_tokens": 0,
+        "synthetic_labels": 0,
+        "reference_token_samples": 0,
+        "per_token_probability_queries": 0,
+        "prefix_lease_used": true,
+        "target_self_tokens": 12,
+        "prior_source_tokens": 38,
+        "policy_tokens": 72,
+        "empty_joint_targets": 0,
+        "zero_reward_trajectories": 0,
+        "actual_context_lengths": [
+          586,
+          586,
+          586,
+          586
+        ],
+        "original_response_rows": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "traces": [
+          {
+            "trajectory_index": 0,
+            "traj_uid": "('native-multi-0', 'int', 0)",
+            "reward": -0.1,
+            "target_tokens": 3,
+            "actual_context_tokens": 586,
+            "compute_tokens": 586,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 5,
+            "root_effect": 27.443582215579227,
+            "signed_sum": 27.386932133419833,
+            "conservation_residual": 0.05665008215939338,
+            "factual_target_logp": -1.6525417033117265,
+            "reference_target_logp": -29.096123918890953
+          },
+          {
+            "trajectory_index": 1,
+            "traj_uid": "('native-multi-2', 'int', 0)",
+            "reward": -0.1,
+            "target_tokens": 3,
+            "actual_context_tokens": 586,
+            "compute_tokens": 586,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 5,
+            "root_effect": 27.443582215579227,
+            "signed_sum": 27.386932133419833,
+            "conservation_residual": 0.05665008215939338,
+            "factual_target_logp": -1.6525417033117265,
+            "reference_target_logp": -29.096123918890953
+          },
+          {
+            "trajectory_index": 2,
+            "traj_uid": "('native-multi-0', 'int', 1)",
+            "reward": 1.0,
+            "target_tokens": 3,
+            "actual_context_tokens": 586,
+            "compute_tokens": 586,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 14,
+            "root_effect": 27.963299079798162,
+            "signed_sum": 27.86257810885712,
+            "conservation_residual": 0.10072097094104038,
+            "factual_target_logp": -0.25350717175751925,
+            "reference_target_logp": -28.21680625155568
+          },
+          {
+            "trajectory_index": 3,
+            "traj_uid": "('native-multi-3', 'int', 1)",
+            "reward": 1.0,
+            "target_tokens": 3,
+            "actual_context_tokens": 586,
+            "compute_tokens": 586,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 14,
+            "root_effect": 27.963299079798162,
+            "signed_sum": 27.86257810885712,
+            "conservation_residual": 0.10072097094104038,
+            "factual_target_logp": -0.25350717175751925,
+            "reference_target_logp": -28.21680625155568
+          }
+        ],
+        "shared_native_prefix": {
+          "capture_rounds": 1,
+          "local_unique_histories": 4,
+          "consumer_batches": 1,
+          "capture_token_slots": 2048,
+          "original_shared_prefix_token_slots": 2048,
+          "capture_and_preparation_seconds": 14.811588822980411
+        },
+        "credit_transform": "per_event_exponential_then_credit_sum",
+        "output_seed": "original_unscaled_native_span_logp",
+        "coefficient_kind": "stable_target_credit; native_TextCraft_uses_official_GRPO",
+        "source_credit_normalization": null,
+        "raw_advantage_groups": {
+          "self_target": {
+            "tokens": 12,
+            "sum": 5.399999991059303,
+            "sumsq": 6.06000000178814,
+            "max": 1.0,
+            "min": -0.10000000149011612,
+            "max_abs": 1.0
+          },
+          "prior_source": {
+            "tokens": 38,
+            "sum": 12.894317218102515,
+            "sumsq": 11.033055468958954,
+            "max": 0.9999738335609436,
+            "min": -0.10000000149011612,
+            "max_abs": 0.9999738335609436
+          },
+          "other_policy": {
+            "tokens": 22,
+            "sum": 0.0,
+            "sumsq": 0.0,
+            "max": 0.0,
+            "min": 0.0,
+            "max_abs": 0.0
+          }
+        },
+        "seconds": 31.257481912965886
+      },
+      "after": {
+        "trainable_SHA256": "e00de9b1d5732d36472155b43eddc46e07451ac1705022afafd3764c58920641",
+        "scheduler": 0,
+        "optimizer_steps": [],
+        "optimizer_states": 0
+      },
+      "bindings": {
+        "qwen35_answer_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+          "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e"
+        },
+        "qwen35_dense_finite_runner": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+          "SHA256": "198f78db4abf58cd8461c5bab86d1ce9c325a46e4295c8cc54d83bd9e20e59cd"
+        },
+        "qwen35_gdn_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+          "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1"
+        },
+        "counterfactual": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/counterfactual.py",
+          "SHA256": "14ca2a3c875b42cad0bb267268a61671a6c7b3dee81114df41bf5ff47c0379bf"
+        },
+        "reward_readout": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/reward_readout.py",
+          "SHA256": "1797faaaa89537f5369f82b18b613100f92344f2160f3ca68c5bddfb53009017"
+        },
+        "deltatrace_credit": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/experiments/rl/deltatrace_credit.py",
+          "SHA256": "8046762ae2fd149b299e29f9a331d8ae1aed665f2de895573e78e61ebc2d8497"
+        },
+        "verl.workers.actor.dp_actor": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.experimental.torch_functional": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/utils/experimental/torch_functional.py",
+          "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+        }
+      },
+      "binding_imports_for_metadata_only": [
+        "verl.utils.experimental.torch_functional"
+      ]
+    },
+    {
+      "stage": "native-multi-target",
+      "status": "completed",
+      "rank": 1,
+      "pid": 723837,
+      "birth": 1792090320.98,
+      "before": {
+        "trainable_SHA256": "1c1db8d32f21c089d0e53c0f16c7ea34409c1f1e556986609fa32ae15d72cb0d",
+        "scheduler": 0,
+        "optimizer_steps": [],
+        "optimizer_states": 0
+      },
+      "optimizer_updates": 0,
+      "generated_rollouts": 0,
+      "quality_evaluations": 0,
+      "finite_calls": [
+        {
+          "shape": [
+            8,
+            586
+          ],
+          "target_offsets": [
+            [
+              228,
+              229,
+              230
+            ],
+            [
+              228,
+              229,
+              230
+            ],
+            [
+              254,
+              255,
+              256
+            ],
+            [
+              254,
+              255,
+              256
+            ]
+          ],
+          "original_unscaled_seed": true,
+          "signed_min": -0.03526201756010286,
+          "signed_max": 17.773504043263316,
+          "seconds": 16.42514963191934
+        }
+      ],
+      "credit_calls": [
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            -0.10000000149011612
+          ],
+          "active_d_min": 0.1777656376361847,
+          "active_d_max": 17.77350425720215,
+          "advantages_min": -0.10000000149011612,
+          "advantages_max": 0.0,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            -0.10000000149011612
+          ],
+          "active_d_min": 0.1777656376361847,
+          "active_d_max": 17.77350425720215,
+          "advantages_min": -0.10000000149011612,
+          "advantages_max": 0.0,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            1.0
+          ],
+          "active_d_min": -0.03526201844215393,
+          "active_d_max": 10.550281524658203,
+          "advantages_min": -0.0358910970389843,
+          "advantages_max": 1.0,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            1.0
+          ],
+          "active_d_min": -0.03526201844215393,
+          "active_d_max": 10.550281524658203,
+          "advantages_min": -0.0358910970389843,
+          "advantages_max": 1.0,
+          "exact_expression_equality": true
+        }
+      ],
+      "seconds": 31.41734511195682,
+      "report": {
+        "task": "TextCraft",
+        "target_semantics": "reward_settlement_action_spans",
+        "target_normalization": "original_full_vocabulary",
+        "reward_events": 4,
+        "trajectories": 4,
+        "finite_trace_calls": 1,
+        "joint_target_requests": 4,
+        "minibatch_size": 4,
+        "query_tokens": 0,
+        "synthetic_labels": 0,
+        "reference_token_samples": 0,
+        "per_token_probability_queries": 0,
+        "prefix_lease_used": true,
+        "target_self_tokens": 12,
+        "prior_source_tokens": 38,
+        "policy_tokens": 72,
+        "empty_joint_targets": 0,
+        "zero_reward_trajectories": 0,
+        "actual_context_lengths": [
+          586,
+          586,
+          586,
+          586
+        ],
+        "original_response_rows": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "traces": [
+          {
+            "trajectory_index": 0,
+            "traj_uid": "('native-multi-1', 'int', 0)",
+            "reward": -0.1,
+            "target_tokens": 3,
+            "actual_context_tokens": 586,
+            "compute_tokens": 586,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 5,
+            "root_effect": 27.443582215579227,
+            "signed_sum": 27.386932133419833,
+            "conservation_residual": 0.05665008215939338,
+            "factual_target_logp": -1.6525417033117265,
+            "reference_target_logp": -29.096123918890953
+          },
+          {
+            "trajectory_index": 1,
+            "traj_uid": "('native-multi-3', 'int', 0)",
+            "reward": -0.1,
+            "target_tokens": 3,
+            "actual_context_tokens": 586,
+            "compute_tokens": 586,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 5,
+            "root_effect": 27.443582215579227,
+            "signed_sum": 27.386932133419833,
+            "conservation_residual": 0.05665008215939338,
+            "factual_target_logp": -1.6525417033117265,
+            "reference_target_logp": -29.096123918890953
+          },
+          {
+            "trajectory_index": 2,
+            "traj_uid": "('native-multi-1', 'int', 1)",
+            "reward": 1.0,
+            "target_tokens": 3,
+            "actual_context_tokens": 586,
+            "compute_tokens": 586,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 14,
+            "root_effect": 27.963299079798162,
+            "signed_sum": 27.86257810885712,
+            "conservation_residual": 0.10072097094104038,
+            "factual_target_logp": -0.25350717175751925,
+            "reference_target_logp": -28.21680625155568
+          },
+          {
+            "trajectory_index": 3,
+            "traj_uid": "('native-multi-2', 'int', 1)",
+            "reward": 1.0,
+            "target_tokens": 3,
+            "actual_context_tokens": 586,
+            "compute_tokens": 586,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 14,
+            "root_effect": 27.963299079798162,
+            "signed_sum": 27.86257810885712,
+            "conservation_residual": 0.10072097094104038,
+            "factual_target_logp": -0.25350717175751925,
+            "reference_target_logp": -28.21680625155568
+          }
+        ],
+        "shared_native_prefix": {
+          "capture_rounds": 1,
+          "local_unique_histories": 4,
+          "consumer_batches": 1,
+          "capture_token_slots": 2048,
+          "original_shared_prefix_token_slots": 2048,
+          "capture_and_preparation_seconds": 14.810086882091127
+        },
+        "credit_transform": "per_event_exponential_then_credit_sum",
+        "output_seed": "original_unscaled_native_span_logp",
+        "coefficient_kind": "stable_target_credit; native_TextCraft_uses_official_GRPO",
+        "source_credit_normalization": null,
+        "raw_advantage_groups": {
+          "self_target": {
+            "tokens": 12,
+            "sum": 5.399999991059303,
+            "sumsq": 6.06000000178814,
+            "max": 1.0,
+            "min": -0.10000000149011612,
+            "max_abs": 1.0
+          },
+          "prior_source": {
+            "tokens": 38,
+            "sum": 12.894317218102515,
+            "sumsq": 11.033055468958954,
+            "max": 0.9999738335609436,
+            "min": -0.10000000149011612,
+            "max_abs": 0.9999738335609436
+          },
+          "other_policy": {
+            "tokens": 22,
+            "sum": 0.0,
+            "sumsq": 0.0,
+            "max": 0.0,
+            "min": 0.0,
+            "max_abs": 0.0
+          }
+        },
+        "seconds": 31.25726964196656
+      },
+      "after": {
+        "trainable_SHA256": "1c1db8d32f21c089d0e53c0f16c7ea34409c1f1e556986609fa32ae15d72cb0d",
+        "scheduler": 0,
+        "optimizer_steps": [],
+        "optimizer_states": 0
+      },
+      "bindings": {
+        "qwen35_answer_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+          "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e"
+        },
+        "qwen35_dense_finite_runner": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+          "SHA256": "198f78db4abf58cd8461c5bab86d1ce9c325a46e4295c8cc54d83bd9e20e59cd"
+        },
+        "qwen35_gdn_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+          "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1"
+        },
+        "counterfactual": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/counterfactual.py",
+          "SHA256": "14ca2a3c875b42cad0bb267268a61671a6c7b3dee81114df41bf5ff47c0379bf"
+        },
+        "reward_readout": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/reward_readout.py",
+          "SHA256": "1797faaaa89537f5369f82b18b613100f92344f2160f3ca68c5bddfb53009017"
+        },
+        "deltatrace_credit": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/experiments/rl/deltatrace_credit.py",
+          "SHA256": "8046762ae2fd149b299e29f9a331d8ae1aed665f2de895573e78e61ebc2d8497"
+        },
+        "verl.workers.actor.dp_actor": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.experimental.torch_functional": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/utils/experimental/torch_functional.py",
+          "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+        }
+      },
+      "binding_imports_for_metadata_only": [
+        "verl.utils.experimental.torch_functional"
+      ]
+    }
+  ],
+  "native_32768_capacity": [
+    {
+      "stage": "capacity-multi-32768",
+      "status": "completed",
+      "rank": 0,
+      "pid": 722186,
+      "birth": 1792090304.62,
+      "before": {
+        "trainable_SHA256": "e00de9b1d5732d36472155b43eddc46e07451ac1705022afafd3764c58920641",
+        "scheduler": 0,
+        "optimizer_steps": [],
+        "optimizer_states": 0
+      },
+      "optimizer_updates": 0,
+      "generated_rollouts": 0,
+      "quality_evaluations": 0,
+      "finite_calls": [
+        {
+          "shape": [
+            8,
+            32768
+          ],
+          "target_offsets": [
+            [
+              32424,
+              32425,
+              32426
+            ],
+            [
+              32424,
+              32425,
+              32426
+            ],
+            [
+              32450,
+              32451,
+              32452
+            ],
+            [
+              32450,
+              32451,
+              32452
+            ]
+          ],
+          "original_unscaled_seed": true,
+          "signed_min": -0.7883005277357342,
+          "signed_max": 12.72125729748361,
+          "seconds": 332.7085851150332
+        }
+      ],
+      "credit_calls": [
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            -0.10000000149011612
+          ],
+          "active_d_min": -0.7883005142211914,
+          "active_d_max": 8.710158348083496,
+          "advantages_min": -0.10000000149011612,
+          "advantages_max": 0.11996549367904663,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            -0.10000000149011612
+          ],
+          "active_d_min": -0.7883005142211914,
+          "active_d_max": 8.710158348083496,
+          "advantages_min": -0.10000000149011612,
+          "advantages_max": 0.11996549367904663,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            1.0
+          ],
+          "active_d_min": -0.19100439548492432,
+          "active_d_max": 12.721257209777832,
+          "advantages_min": -0.21046477556228638,
+          "advantages_max": 1.0,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            1.0
+          ],
+          "active_d_min": -0.19100439548492432,
+          "active_d_max": 12.721257209777832,
+          "advantages_min": -0.21046477556228638,
+          "advantages_max": 1.0,
+          "exact_expression_equality": true
+        }
+      ],
+      "seconds": 335.510092601995,
+      "report": {
+        "task": "TextCraft",
+        "target_semantics": "reward_settlement_action_spans",
+        "target_normalization": "original_full_vocabulary",
+        "reward_events": 4,
+        "trajectories": 4,
+        "finite_trace_calls": 1,
+        "joint_target_requests": 4,
+        "minibatch_size": 4,
+        "query_tokens": 0,
+        "synthetic_labels": 0,
+        "reference_token_samples": 0,
+        "per_token_probability_queries": 0,
+        "prefix_lease_used": true,
+        "target_self_tokens": 12,
+        "prior_source_tokens": 128822,
+        "policy_tokens": 128852,
+        "empty_joint_targets": 0,
+        "zero_reward_trajectories": 0,
+        "actual_context_lengths": [
+          32768,
+          32768,
+          32768,
+          32768
+        ],
+        "original_response_rows": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "traces": [
+          {
+            "trajectory_index": 0,
+            "traj_uid": "('native-multi-0', 'int', 0)",
+            "reward": -0.1,
+            "target_tokens": 3,
+            "actual_context_tokens": 32768,
+            "compute_tokens": 32768,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 32201,
+            "root_effect": 30.98181659146212,
+            "signed_sum": 30.958139602481026,
+            "conservation_residual": 0.023676988981094382,
+            "factual_target_logp": -2.721363238990307,
+            "reference_target_logp": -33.70317983045243
+          },
+          {
+            "trajectory_index": 1,
+            "traj_uid": "('native-multi-2', 'int', 0)",
+            "reward": -0.1,
+            "target_tokens": 3,
+            "actual_context_tokens": 32768,
+            "compute_tokens": 32768,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 32201,
+            "root_effect": 30.98181659146212,
+            "signed_sum": 30.958139602481026,
+            "conservation_residual": 0.023676988981094382,
+            "factual_target_logp": -2.721363238990307,
+            "reference_target_logp": -33.70317983045243
+          },
+          {
+            "trajectory_index": 2,
+            "traj_uid": "('native-multi-0', 'int', 1)",
+            "reward": 1.0,
+            "target_tokens": 3,
+            "actual_context_tokens": 32768,
+            "compute_tokens": 32768,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 32210,
+            "root_effect": 23.916345877572894,
+            "signed_sum": 23.89600744464706,
+            "conservation_residual": 0.020338432925832706,
+            "factual_target_logp": -0.30432289466261864,
+            "reference_target_logp": -24.220668772235513
+          },
+          {
+            "trajectory_index": 3,
+            "traj_uid": "('native-multi-3', 'int', 1)",
+            "reward": 1.0,
+            "target_tokens": 3,
+            "actual_context_tokens": 32768,
+            "compute_tokens": 32768,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 32210,
+            "root_effect": 23.916345877572894,
+            "signed_sum": 23.89600744464706,
+            "conservation_residual": 0.020338432925832706,
+            "factual_target_logp": -0.30432289466261864,
+            "reference_target_logp": -24.220668772235513
+          }
+        ],
+        "shared_native_prefix": {
+          "capture_rounds": 1,
+          "local_unique_histories": 4,
+          "consumer_batches": 1,
+          "capture_token_slots": 2048,
+          "original_shared_prefix_token_slots": 2048,
+          "capture_and_preparation_seconds": 0.7420747380238026
+        },
+        "credit_transform": "per_event_exponential_then_credit_sum",
+        "output_seed": "original_unscaled_native_span_logp",
+        "coefficient_kind": "stable_target_credit; native_TextCraft_uses_official_GRPO",
+        "source_credit_normalization": null,
+        "raw_advantage_groups": {
+          "self_target": {
+            "tokens": 12,
+            "sum": 5.399999991059303,
+            "sumsq": 6.06000000178814,
+            "max": 1.0,
+            "min": -0.10000000149011612,
+            "max_abs": 1.0
+          },
+          "prior_source": {
+            "tokens": 128822,
+            "sum": 6.1665457679476505,
+            "sumsq": 9.380923762942572,
+            "max": 0.9999970197677612,
+            "min": -0.21046477556228638,
+            "max_abs": 0.9999970197677612
+          },
+          "other_policy": {
+            "tokens": 18,
+            "sum": 0.0,
+            "sumsq": 0.0,
+            "max": 0.0,
+            "min": 0.0,
+            "max_abs": 0.0
+          }
+        },
+        "seconds": 333.4795910170069
+      },
+      "after": {
+        "trainable_SHA256": "e00de9b1d5732d36472155b43eddc46e07451ac1705022afafd3764c58920641",
+        "scheduler": 0,
+        "optimizer_steps": [],
+        "optimizer_states": 0
+      },
+      "bindings": {
+        "qwen35_answer_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+          "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e"
+        },
+        "qwen35_dense_finite_runner": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+          "SHA256": "198f78db4abf58cd8461c5bab86d1ce9c325a46e4295c8cc54d83bd9e20e59cd"
+        },
+        "qwen35_gdn_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+          "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1"
+        },
+        "counterfactual": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/counterfactual.py",
+          "SHA256": "14ca2a3c875b42cad0bb267268a61671a6c7b3dee81114df41bf5ff47c0379bf"
+        },
+        "reward_readout": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/reward_readout.py",
+          "SHA256": "1797faaaa89537f5369f82b18b613100f92344f2160f3ca68c5bddfb53009017"
+        },
+        "deltatrace_credit": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/experiments/rl/deltatrace_credit.py",
+          "SHA256": "8046762ae2fd149b299e29f9a331d8ae1aed665f2de895573e78e61ebc2d8497"
+        },
+        "verl.workers.actor.dp_actor": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.experimental.torch_functional": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/utils/experimental/torch_functional.py",
+          "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+        }
+      },
+      "binding_imports_for_metadata_only": []
+    },
+    {
+      "stage": "capacity-multi-32768",
+      "status": "completed",
+      "rank": 1,
+      "pid": 723837,
+      "birth": 1792090320.98,
+      "before": {
+        "trainable_SHA256": "1c1db8d32f21c089d0e53c0f16c7ea34409c1f1e556986609fa32ae15d72cb0d",
+        "scheduler": 0,
+        "optimizer_steps": [],
+        "optimizer_states": 0
+      },
+      "optimizer_updates": 0,
+      "generated_rollouts": 0,
+      "quality_evaluations": 0,
+      "finite_calls": [
+        {
+          "shape": [
+            8,
+            32768
+          ],
+          "target_offsets": [
+            [
+              32424,
+              32425,
+              32426
+            ],
+            [
+              32424,
+              32425,
+              32426
+            ],
+            [
+              32450,
+              32451,
+              32452
+            ],
+            [
+              32450,
+              32451,
+              32452
+            ]
+          ],
+          "original_unscaled_seed": true,
+          "signed_min": -0.7883005277357342,
+          "signed_max": 12.72125729748361,
+          "seconds": 332.64838649798185
+        }
+      ],
+      "credit_calls": [
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            -0.10000000149011612
+          ],
+          "active_d_min": -0.7883005142211914,
+          "active_d_max": 8.710158348083496,
+          "advantages_min": -0.10000000149011612,
+          "advantages_max": 0.11996549367904663,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            -0.10000000149011612
+          ],
+          "active_d_min": -0.7883005142211914,
+          "active_d_max": 8.710158348083496,
+          "advantages_min": -0.10000000149011612,
+          "advantages_max": 0.11996549367904663,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            1.0
+          ],
+          "active_d_min": -0.19100439548492432,
+          "active_d_max": 12.721257209777832,
+          "advantages_min": -0.21046477556228638,
+          "advantages_max": 1.0,
+          "exact_expression_equality": true
+        },
+        {
+          "per_event_exponent_before_sum": true,
+          "source_normalization": false,
+          "coefficient": [
+            1.0
+          ],
+          "active_d_min": -0.19100439548492432,
+          "active_d_max": 12.721257209777832,
+          "advantages_min": -0.21046477556228638,
+          "advantages_max": 1.0,
+          "exact_expression_equality": true
+        }
+      ],
+      "seconds": 335.4354284859728,
+      "report": {
+        "task": "TextCraft",
+        "target_semantics": "reward_settlement_action_spans",
+        "target_normalization": "original_full_vocabulary",
+        "reward_events": 4,
+        "trajectories": 4,
+        "finite_trace_calls": 1,
+        "joint_target_requests": 4,
+        "minibatch_size": 4,
+        "query_tokens": 0,
+        "synthetic_labels": 0,
+        "reference_token_samples": 0,
+        "per_token_probability_queries": 0,
+        "prefix_lease_used": true,
+        "target_self_tokens": 12,
+        "prior_source_tokens": 128822,
+        "policy_tokens": 128852,
+        "empty_joint_targets": 0,
+        "zero_reward_trajectories": 0,
+        "actual_context_lengths": [
+          32768,
+          32768,
+          32768,
+          32768
+        ],
+        "original_response_rows": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "traces": [
+          {
+            "trajectory_index": 0,
+            "traj_uid": "('native-multi-1', 'int', 0)",
+            "reward": -0.1,
+            "target_tokens": 3,
+            "actual_context_tokens": 32768,
+            "compute_tokens": 32768,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 32201,
+            "root_effect": 30.98181659146212,
+            "signed_sum": 30.958139602481026,
+            "conservation_residual": 0.023676988981094382,
+            "factual_target_logp": -2.721363238990307,
+            "reference_target_logp": -33.70317983045243
+          },
+          {
+            "trajectory_index": 1,
+            "traj_uid": "('native-multi-3', 'int', 0)",
+            "reward": -0.1,
+            "target_tokens": 3,
+            "actual_context_tokens": 32768,
+            "compute_tokens": 32768,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 32201,
+            "root_effect": 30.98181659146212,
+            "signed_sum": 30.958139602481026,
+            "conservation_residual": 0.023676988981094382,
+            "factual_target_logp": -2.721363238990307,
+            "reference_target_logp": -33.70317983045243
+          },
+          {
+            "trajectory_index": 2,
+            "traj_uid": "('native-multi-1', 'int', 1)",
+            "reward": 1.0,
+            "target_tokens": 3,
+            "actual_context_tokens": 32768,
+            "compute_tokens": 32768,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 32210,
+            "root_effect": 23.916345877572894,
+            "signed_sum": 23.89600744464706,
+            "conservation_residual": 0.020338432925832706,
+            "factual_target_logp": -0.30432289466261864,
+            "reference_target_logp": -24.220668772235513
+          },
+          {
+            "trajectory_index": 3,
+            "traj_uid": "('native-multi-2', 'int', 1)",
+            "reward": 1.0,
+            "target_tokens": 3,
+            "actual_context_tokens": 32768,
+            "compute_tokens": 32768,
+            "target_self_tokens": 3,
+            "prior_source_tokens": 32210,
+            "root_effect": 23.916345877572894,
+            "signed_sum": 23.89600744464706,
+            "conservation_residual": 0.020338432925832706,
+            "factual_target_logp": -0.30432289466261864,
+            "reference_target_logp": -24.220668772235513
+          }
+        ],
+        "shared_native_prefix": {
+          "capture_rounds": 1,
+          "local_unique_histories": 4,
+          "consumer_batches": 1,
+          "capture_token_slots": 2048,
+          "original_shared_prefix_token_slots": 2048,
+          "capture_and_preparation_seconds": 0.7307817770633847
+        },
+        "credit_transform": "per_event_exponential_then_credit_sum",
+        "output_seed": "original_unscaled_native_span_logp",
+        "coefficient_kind": "stable_target_credit; native_TextCraft_uses_official_GRPO",
+        "source_credit_normalization": null,
+        "raw_advantage_groups": {
+          "self_target": {
+            "tokens": 12,
+            "sum": 5.399999991059303,
+            "sumsq": 6.06000000178814,
+            "max": 1.0,
+            "min": -0.10000000149011612,
+            "max_abs": 1.0
+          },
+          "prior_source": {
+            "tokens": 128822,
+            "sum": 6.1665457679476505,
+            "sumsq": 9.380923762942572,
+            "max": 0.9999970197677612,
+            "min": -0.21046477556228638,
+            "max_abs": 0.9999970197677612
+          },
+          "other_policy": {
+            "tokens": 18,
+            "sum": 0.0,
+            "sumsq": 0.0,
+            "max": 0.0,
+            "min": 0.0,
+            "max_abs": 0.0
+          }
+        },
+        "seconds": 333.41509436198976
+      },
+      "after": {
+        "trainable_SHA256": "1c1db8d32f21c089d0e53c0f16c7ea34409c1f1e556986609fa32ae15d72cb0d",
+        "scheduler": 0,
+        "optimizer_steps": [],
+        "optimizer_states": 0
+      },
+      "bindings": {
+        "qwen35_answer_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+          "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e"
+        },
+        "qwen35_dense_finite_runner": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+          "SHA256": "198f78db4abf58cd8461c5bab86d1ce9c325a46e4295c8cc54d83bd9e20e59cd"
+        },
+        "qwen35_gdn_finite": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+          "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1"
+        },
+        "counterfactual": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/counterfactual.py",
+          "SHA256": "14ca2a3c875b42cad0bb267268a61671a6c7b3dee81114df41bf5ff47c0379bf"
+        },
+        "reward_readout": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/entry/reward_readout.py",
+          "SHA256": "1797faaaa89537f5369f82b18b613100f92344f2160f3ca68c5bddfb53009017"
+        },
+        "deltatrace_credit": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/experiments/rl/deltatrace_credit.py",
+          "SHA256": "8046762ae2fd149b299e29f9a331d8ae1aed665f2de895573e78e61ebc2d8497"
+        },
+        "verl.workers.actor.dp_actor": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.experimental.torch_functional": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/utils/experimental/torch_functional.py",
+          "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+        }
+      },
+      "binding_imports_for_metadata_only": []
+    }
+  ],
+  "multi_target_driver_check": {
+    "status": "completed",
+    "trajectories": 4,
+    "target_events": 8,
+    "component_credits": [
+      -0.1,
+      1.0
+    ],
+    "credit_source": "User-supplied multi-target interface example; not extra TextCraft rewards",
+    "native_per_event_QVA_sum_exact": true,
+    "source_u_normalization": false,
+    "original_DP_pad_balance_collect_scatter": true,
+    "optimizer_updates": 0,
+    "input_sha256": "3760680e6cd621997bf473fb74625445fefc64a0c7fee902c5a57edd621055e3",
+    "capacity_scope": "Two original native parser payloads, distinct target effects"
+  },
+  "capacity_driver_check": {
+    "status": "completed",
+    "trajectories": 4,
+    "target_events": 8,
+    "component_credits": [
+      -0.1,
+      1.0
+    ],
+    "credit_source": "User-supplied multi-target interface example; not extra TextCraft rewards",
+    "native_per_event_QVA_sum_exact": true,
+    "source_u_normalization": false,
+    "original_DP_pad_balance_collect_scatter": true,
+    "optimizer_updates": 0,
+    "input_sha256": "814270073ba2d5f7c9b000733173706c6b02d593a14c3e2680594c1c12d3b6d2",
+    "capacity_scope": "Exact 32768 artificial storage fixture, not natural task quality"
+  },
+  "limits": {
+    "TextCraft": "Native production has one terminal settlement; generic two-target interface is tested with real original parser payloads and the user-specified (-.1,1) credits, not fabricated environment rewards.",
+    "capacity": "Artificial exact-32768 inputs, B4/rank and dual B8. No natural-task quality or whole-training speed claim.",
+    "equivalence": "Accepted exact-counterfactual and same-relative-credit idealization; these behavior checks do not establish identical clipped finite-batch updates.",
+    "gradient_rootcause": "Old goal remains paused; no long-term gradient repair claim."
+  },
+  "optimizer_updates_in_verification": 0,
+  "generated_rollouts_in_GPU_verification": 0,
+  "quality_evaluations": 0,
+  "prior_failed_check_scope": "Initial CPU lazy-import assumption, stale prepared-source test, Ray harness import alias, and metadata lookup after successful small DT; original receipts retained. No package/cache/config repair or formal training changes.",
+  "exact_receipts": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\baseline-manifest.json",
+      "SHA256": "f7bc4fb8626e394f634484f0aa19c118aac630625517e3910037b72ca7f5e35b",
+      "bytes": 3423
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\capacity-multi-32768-driver.json",
+      "SHA256": "d19757dcce64ef0854221f1fa7ccb3e08e1d2331a915f59525e5ad0056180e29",
+      "bytes": 543
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\capacity-multi-32768-rank0.json",
+      "SHA256": "07b763c9f8d7a7d54f279dc7ccbb77aa907b5a7f02acc4f3c5e2c6746a76222f",
+      "bytes": 9606
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\capacity-multi-32768-rank1.json",
+      "SHA256": "0194440b2be72a8136a536a3c0bf8ea329d0b9bc42b8642f5d98ebfe801a4906",
+      "bytes": 9609
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\CPU-behavior-v5-r1.xml",
+      "SHA256": "8f43d5430e4619b6fcb7478bc7c96769cf3dfedb10a80db34f8a36e026c8b4bd",
+      "bytes": 5288
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\CPU-behavior-v5-single-target.xml",
+      "SHA256": "be51a429fcd315585a11e922d70b0abcfbb02d7ea4bb810bcee3f5bdd4056e76",
+      "bytes": 2452
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\CPU-behavior-v5-stale-prepared-source.xml",
+      "SHA256": "a5593918c53e2f4bcd1371371041f6928ea2f8ed0a57379115edd235384dd1a6",
+      "bytes": 37871
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\CPU-behavior-v5.xml",
+      "SHA256": "88a79c0ab9c69340aa1d8ab7da3bdbc14fb746eed2f9a24f821f465e00406af5",
+      "bytes": 4380
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\interface-verification.json",
+      "SHA256": "44e02773ada26031cf83c6bc3e802178038c3ba06ec163b0b835a4ab7d353153",
+      "bytes": 2680
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\native-behavior-job.json",
+      "SHA256": "a972422387416f6e9d101558cf200d50020fb0a841f9ddba8a3a9c9380db171e",
+      "bytes": 251
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\native-behavior-status.json",
+      "SHA256": "71b74f80d35aead0c42d10581196770bbb0caca418303382f50fbaec04849068",
+      "bytes": 1874
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\native-harness-r1-source.py",
+      "SHA256": "f08b7072f79e91b3d4ebeb817f6ae921c043f7f98e54e1aa3785b581f9e638d0",
+      "bytes": 9417
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\native-harness-r2-source.py",
+      "SHA256": "b005bdc10057635bc71fce1956307353299a08bb0a24400c4de6f9b7a7c81139",
+      "bytes": 13678
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\native-multi-target-driver.json",
+      "SHA256": "ce74d15d6426a4fc979a93e3b37f1fa91d0da12c93de4b81180a24023bbde7d6",
+      "bytes": 539
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\native-multi-target-rank0.json",
+      "SHA256": "565d1304928b92a6aafd310eaf25b4101988bcb6b75da5e265c0aef251959a75",
+      "bytes": 9549
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\native-multi-target-rank1.json",
+      "SHA256": "d98b76b16ac76df2f72e46b09cf683f9e42ff3dd4f4223c554e2bf151fdb1020",
+      "bytes": 9547
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\native-small-rank0-reused.json",
+      "SHA256": "0e332538ef83f186176a86f7b21ad814565733ffe3934979f70fcff7c0f49b89",
+      "bytes": 9314
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\native-small-rank1-reused.json",
+      "SHA256": "f7cc2a2b850591fca88ba3640e392887faf4ee00e4c94580c0e1fc779c7906ba",
+      "bytes": 9315
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_reward_target_exponential_20261016_v5\\receipts\\prepared-launch.json",
+      "SHA256": "c118528358c4aa274189f29538e9e9d972609806e1a86244c503aeed813f045b",
+      "bytes": 29008
+    }
+  ]
+}

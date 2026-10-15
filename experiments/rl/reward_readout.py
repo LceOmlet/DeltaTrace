@@ -389,6 +389,7 @@ class DirectActionTargetReadout:
         self.runner, self.tokenizer = runner, tokenizer
         self.task, self.max_length = task, max_length
         self.weighted_target_credit = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
+        self.reward_target_exponential = os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_v5'
         self.minibatch_size = minibatch_size
         self.packed_answer_targets = packed_answer_targets
         # A joint target can contain predictors before a later source span.
@@ -438,13 +439,17 @@ class DirectActionTargetReadout:
             prior = prior & (torch.arange(width) < int(target.nonzero()[-1]))
         else:
             prior = torch.zeros_like(policy)
+        future = row.get('dt_future_event_mask', torch.ones_like(policy)).detach().cpu()
+        if future.shape != policy.shape or future.dtype != torch.bool:
+            raise ValueError('Reward event future mask must retain original boolean suffix slots')
+        prior = prior & future
         value = float(row['dt_direct_reward'])
         if not math.isfinite(value):
             raise ValueError('The original terminal reward must be finite')
         return dict(index=index, row=row, width=width, selected=selected,
                     full_context_length=full_context_length,
                     suffix_positions=suffix_positions, prompt_length=prompt_length,
-                    policy=policy, target=target, prior=prior,
+                    policy=policy, target=target, prior=prior, future_event_mask=future,
                     valid_policy=valid_policy, valid_target=valid_target,
                     target_offsets=target_offsets, reward=value,
                     span_credits=row.get('dt_target_span_credits'),
@@ -548,7 +553,7 @@ class DirectActionTargetReadout:
             credit = reward_event_token_credit(
                 item['ratios'][None, None, :],
                 torch.tensor([[item['reward']]], dtype=torch.float32),
-                torch.ones((1, 1, width), dtype=torch.bool), item['policy'][None, :],
+                item['future_event_mask'][None, None, :], item['policy'][None, :],
                 self_target_mask=item['target'][None, None, :],
                 linear_attribution=self.weighted_target_credit,
             )
@@ -566,6 +571,12 @@ class DirectActionTargetReadout:
             report.update(target_semantics='reward_settlement_action_spans',
                           credit_transform='linear_finite_allocation',
                           output_seed='c_k / native_span_EOS_logp_difference')
+        elif self.reward_target_exponential:
+            report.update(target_semantics='reward_settlement_action_spans',
+                          credit_transform='per_event_exponential_then_credit_sum',
+                          output_seed='original_unscaled_native_span_logp',
+                          coefficient_kind='stable_target_credit; native_TextCraft_uses_official_GRPO',
+                          source_credit_normalization=None)
         report['raw_advantage_groups'] = groups
         report['seconds'] = time.perf_counter() - started
         self.last_report = report

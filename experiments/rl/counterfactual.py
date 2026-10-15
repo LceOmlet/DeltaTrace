@@ -47,10 +47,12 @@ def reward_event_token_credit(
     This replaces its DT term; it is never added to a second attribution of
     the same event. No log(0) or numerical infinite ratio is evaluated.
 
-    With linear_attribution=True, the input entries are the approved v4
+    With linear_attribution=True, the input entries are the withdrawn v4
     normalized finite allocations. They are multiplied by each supplied
     event coefficient directly: A=r*d, V=Q-A. They are not exponentiated or
-    interpreted as log probability ratios. The default ratio path is unchanged.
+    interpreted as log probability ratios. DTPO v5 uses the original default
+    exponential path, with official group-relative credit as the supplied
+    event coefficient. No source normalization is performed.
 
     Q_hat_i = sum_k discount_ki * r_k
     V_hat_i = sum_k discount_ki * r_k * exp(-d_ki)

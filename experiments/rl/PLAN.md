@@ -1,3 +1,102 @@
+**2026-10-16 用户批准实现、提交推送并从基础权重训练 DTPO v5。**
+本次采用刚讨论完成的同一官方GRPO组相对信用目标：固定VERL原GRPO计算g，
+原逐事件EOS有限传播保留未缩放的d_ik，先计算u_ik=-expm1(-d_ik)，
+再在值域合并A_i=sum_k b_k*u_ik，Q_i=sum_k b_k，V_i=sum_k b_k*exp(-d_ik)。
+不把带符号信用取log，不将信用放进有限seed，不除以端点差，不额外归一化u。
+此处精确critic PPO等价比较使用同一个组相对目标；不再以原回报幅度的显然
+尺度差异替代组合论证。理论同一期望策略梯度范围仍是原始优势/on-policy；
+不扩称有限批次方差缩放、clipped PPO更新或未来训练轨迹逐值相同。
+正式TextCraft原owner每条rollout只有一个真实终局结算，结算0也保留，
+故b_1=g，目标为该结算动作的原parser payload联合token集合。多个文本片段
+不重复计入同一结算；早先非结算动作从target移为历史source，观察mask保持。
+其余多个实际奖励事件的组合仍由原reward_event_token_credit逐事件指数后求和，
+不将全部target的log信用先合并后指数；本次不制造TextCraft不存在的奖励事件。
+原self-target每token Q=g/V=0/A=g，原整批官方masked_var仅方差缩放，原官方
+PPO actor/core及L=(1/16)*sum(S_j/N_j)、32k/LoRA8/16/B4/global64/330/save5/keep2保持。
+使用实际验收的最快DT数值/内存路径、原生vLLM图和已部署冻结head更新优化；
+未接受的head-selection、旧分母候选及v4仿射seed不部署。v4撤回记录保留，
+新版本标记v5、独立run，不拼接v3/v4曲线。现有原生PPO继续，不重跑已停GRPO；
+旧梯度根因goal保持暂停。本条解除本次新版本的先讨论不部署限制，版本与行为、
+容量、实际导入、进程出生及推送事实由RUNTIME_RECORD/current_runtime登记。
+
+**v5多target的实际接口、执行顺序与边界（同一方法规范，不是另一份方案）。**
+`dt_direct_target_artifact.dt_reward_target_events`可承接多个已经确定信用的事件。
+每项包含`event_id`、原完整response中的`target_offsets`、带符号`credit=b_k`，
+以及原完整response位置上的bool `future_policy_mask`。多片段属于同一次结算时，
+只放入同一项的offset并集；同一event_id禁止重复。b_k是值域的稳定信用，不能
+用rollout的同一个g给每项各乘一次，不能对每项单独标准化，更不对b取log。
+原official outcome GRPO提供rollout g；现有TextCraft一结算直接使用b_1=g。
+多结算接口接收调用方已经确定的b_k分解，保持同一官方总回报标准差尺度，
+不声称现有TextCraft产生了不存在的中间奖励，也不重写官方组均值/方差算法。
+
+调用方按信用分量是否已经由当前prefix固定提供future mask；不能仅按原始
+reward时间或target文本位置猜测，尤其共享组标准差仍依赖后续结果时。
+每个事件单独保留原target mask，EOS同位替换该事件尚需归因的较早policy source，
+其他事件的较早Action在该请求中仍可作为source。观察原文保留、policy系数为0。
+每项得到未缩放原d_ik后，由原Q/V primitive计算b_k、b_k*exp(-d_ik)、
+b_k*(-expm1(-d_ik))；同一target的self-token仅替代该事件项为Q=b_k/V=0/A=b_k，
+同时仍可接收其他未来事件的source贡献。不把不同事件的d先合并再指数。
+
+事件必须在driver上先展平，再复用原DataProto去重/pad、原长度平衡器与DP RPC；
+按原readout实际使用的因果prefix长度平衡。所有rank保持同数B4调用，不能到
+worker内部各自展开不同数量的target而破坏FSDP collective顺序。返回后仅对
+原token位置上的各事件Q/V/A作加法，再复用同一个原retained-position scatter。
+整批官方masked_var缩放只在全部事件汇总之后执行一次。没有source u分母。
+外部总信用B=0时也不能跳过非零b_k：例如(-1,1)仍可产生非零token优势。
+单事件无扩展字段时仍走原native高效路径，不增加额外DT请求。
+
+验收覆盖带符号/抵消信用、变长事件数、重复轨迹与不同保留位置、每rank等数B4、
+明确future/观察/self mask、多片段一结算及重复身份拒绝；另用原parser的两个
+实际payload验证真正DT逐事件调用、指数后的汇总和每rank B4精确32768容量。
+用户例(-0.1,1)仅作为多target接口信用输入，不冒称TextCraft额外发了两次奖励。
+具体已完成项与原始失败/修正记录以验证回执为准，不把准备或代码shape称验收。
+
+**2026-10-16 完整组合推导结果：当时未改训练代码，未启动新训练。**
+按用户前提接受EOS精确反事实。官方GRPO组内信用g_j=(R_j-mu_G)/(s_G+epsilon)
+作为输入，固定其余组rollout C_j后，将g_j视为当前rollout结果的确定函数；
+这保留当前样本对官方组均值/方差的影响，不把detach伪称为统计独立。
+若真实结算已给出r_jk分解，可在同一官方总回报尺度下作线性分解
+b_jk=(r_jk-mu_Gk)/(s_G+epsilon)，sum_k b_jk=g_j；不是各span独立标准化。
+同一次结算的多个文本片段仍是一个联合target，不重复乘同一g。
+原逐target EOS有限传播给出d_ik，先逐项u_ik=-expm1(-d_ik)，再以b_jk在
+值域合并A_i=sum_k b_jk*u_ik。优势可负，不取log；不把d乘c或除DeltaF，
+不归一化u，也不在合并log向量之后才指数。B=sum b非零时B*sum(b/B)*u
+只是相同组合的重写；B=0时保留直接sum b*u，不引入epsilon或丢弃抵消分量。
+精确change-of-measure使该估计的条件均值为Q_g(h,a,C)-V_cf,g(h,C)。
+因此它与同一官方组信用目标下的精确critic PPO具有相同on-policy期望梯度；
+无需V_cf,g逐值等于V_g，也不因有限归因守恒扩大到全部clipped更新相同。
+若用户比较的是原环境回报R的精确critic PPO，官方有限组标准化一般使
+该强等价不成立，不能偷偷改PPO目标来凑等价。原官方8条组/epsilon1e-6
+CPU全计数枚举：奖励a与2a对应GRPO期望梯度0.4339509313/0.4339513654，
+原回报精确PPO为0.25/0.5；EOS精确前提完全未改变。该结果只定位数学范围，
+0模型/0optimizer/0正式进程信号。目标仍保留原用户要求，不能宣称已证明
+与现有原回报PPO完全相同，也不能据此部署新方法。细节在同名推导结果JSON。
+
+**2026-10-16 再次明确已接受前提：EOS有限传播预测精确反事实，不重新审理其准确性。**
+用户再次指出这一理想化前提早已确定。不得把EOS是否精确、是否逐值等于PPO
+的V重新设为实现前置问题。沿用已约定的当前动作无关稳定反事实基线时，
+A_DT-A_PPO=V^pi(h)-V_cf(h)，其score梯度期望为零；不需要两个V逐值相等。
+后续只检查给定target相对优势/信用、log读出、指数变换与Q/V的组合是否保持
+上述等价，不转去研究DT误差或要求世界模拟器。下条关于不同V的区分仅作
+数学说明，不得作为重新检验EOS预测能力或阻止既定理想化推导的门槛。
+
+**2026-10-16 最新要求：先论证稳定相对价值基线，PPO critic按完全精确处理；不部署。**
+用户明确讨论的是与PPO相同期望策略梯度的等价性，同时要求稳定的基线，
+不能因任意环境奖励/EOS差可写成Q-V就认定满足要求。精确PPO的基线是V^pi(h)。
+原官方GRPO组均值/尺度或其他已明确的相对价值基准须在事实与参考端保持同一
+定义；冻结的是这次比较的基线与尺度，不能把所有反事实结果的相对价值都固定
+为事实样本的那个数。优势可为负，不对优势取log；指数转换仍作用于模型log比。
+固定、对当前动作无关的mu/s下，g(Y)=(R(Y)-mu)/s，精确概率比组合的条件期望
+为(Q^pi(h,a)-V_ref(h))/s。mu在两个端点之差中抵消，所以中心化可改变采样方差，
+但不会自动令V_ref等于精确V^pi。逐值优势等价需要对应值语义一致；同一期望
+策略梯度允许差一个动作无关的状态基线，归一化/状态权重亦须按同一标准比较。
+动作无关本身不保证低方差。实际官方有限组mu/s含当前样本，detach不等于
+统计上动作无关，不能把固定mu/s的理想论证直接冒充实际有限组严格无偏证明。
+保留官方组件，不制造组均值/方差/critic影子实现，不改变超参或重启训练。
+rollout内target系数b_k/B的分母B与上述基线尺度s不同；外部B保持原总量。
+不额外加入sum_source(1-exp(-d))归一化；它不是等价性要求。v4继续已撤回，
+旧梯度goal继续paused。本段仅收紧研究问题和记录组合条件，不宣称新方法已验收。
+
 **2026-10-16 最新纠正：v4线性优势替代已撤回，原Q/V指数构造不能被默默取消。**
 用户指出取消指数可能破坏原等价性质。此前把“带权multi-target种子合并的
 线性归因等价”扩展为可用g*C直接替代原g*(1-exp(-d))的决定不成立；总信用

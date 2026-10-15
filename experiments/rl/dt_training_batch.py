@@ -133,6 +133,12 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
     if not selected:
         return DataProto.from_dict(tensors=destination)
 
+    import os
+    if os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_v5' and any(
+            'dt_reward_target_events' in item for item in selected):
+        return _compute_multi_target_credit(data, selected, first, inverse, rewards,
+            worker_group, eos_token_id=eos_token_id, pad_token_id=pad_token_id)
+
     prompt_width = max(len(item['prompt_ids']) for item in selected)
     prompts, prompt_masks = zip(*(postprocess_data(
         torch.tensor([item['prompt_ids']], dtype=torch.long),
@@ -145,6 +151,9 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
         [len(item['response_ids']) for item in selected])[:, None]
     policy = pad_2d_list_to_length([item['policy_mask'] for item in selected], 0).bool()
     target = pad_2d_list_to_length([item['target_mask'] for item in selected], 0).bool()
+    future = pad_2d_list_to_length([
+        item.get('future_policy_mask', [True] * len(item['response_ids']))
+        for item in selected], 0).bool()
     if policy.shape != responses.shape or target.shape != responses.shape:
         raise ValueError('native direct target masks must retain the full response IDs')
     if bool((target & ~policy).any()):
@@ -154,7 +163,8 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
         input_ids=torch.cat((prompts, responses), -1), prompts=prompts,
         responses=responses, attention_mask=attention,
         position_ids=compute_position_id_with_mask(attention),
-        policy_mask=policy, target_mask=target, dt_direct_reward=rewards),
+        policy_mask=policy, target_mask=target, dt_future_event_mask=future,
+        dt_direct_reward=rewards),
         non_tensors=dict(traj_uid=np.array([str(identities[index]) for index in first], dtype=object)))
     import os
     weighted = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
@@ -169,7 +179,7 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
     result = {key: torch.zeros_like(responses, dtype=torch.float32) for key in CREDIT_KEYS}
     positions = torch.arange(width)[None, :]
     last_target = torch.where(target, positions, -1).max(-1).values
-    preceding_source = (policy & ~target & (positions < last_target[:, None])).any(-1)
+    preceding_source = (policy & future & ~target & (positions < last_target[:, None])).any(-1)
     trace_required = (rewards != 0) & target.any(-1) & preceding_source
     # Known self/empty-target/causal-zero cases use the SAME Q/V primitive on
     # the driver. Only actual DT requests enter the collective worker call;
@@ -177,7 +187,7 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
     from counterfactual import reward_event_token_credit
     analytic = reward_event_token_credit(
         torch.zeros((len(first), 1, width), dtype=torch.float32), rewards[:, None],
-        torch.ones((len(first), 1, width), dtype=torch.bool), policy,
+        future[:, None, :], policy,
         self_target_mask=target[:, None, :], linear_attribution=weighted)
     result.update(dt_token_advantages=analytic.advantages.float(),
                   dt_q_estimates=analytic.q_estimates.float(),
@@ -187,11 +197,16 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
           f'nonzero_requests={len(indices)} target_tokens={int(target.sum())} '
           f'source_tokens={int((policy & ~target).sum())}', flush=True)
     if len(indices):
-        indices = indices[torch.argsort(attention.sum(-1)[indices], stable=True)]
+        # The readout omits the suffix after each target's final predictor.
+        # Balance the actual causal prefixes, including explicit multi-target
+        # events, rather than identical full histories with different targets.
+        causal_lengths = prompt_masks.sum(-1) + last_target + 1
+        requests.batch['dt_causal_length'] = causal_lengths
+        indices = indices[torch.argsort(causal_lengths[indices], stable=True)]
         active = requests.select_idxs(indices)
         active, padding = pad_dataproto_to_divisor(active, worker_group.world_size * 4)
         partitions = get_seqlen_balanced_partitions(
-            active.batch['attention_mask'].sum(-1).tolist(),
+            active.batch['dt_causal_length'].tolist(),
             k_partitions=worker_group.world_size, equal_size=True)
         order = torch.tensor([index for partition in partitions for index in partition])
         active.reorder(order)
@@ -200,6 +215,16 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
         values = unpad_dataproto(values, padding)
         for key in CREDIT_KEYS:
             result[key][indices] = values.batch[key].cpu()
+    return _restore_direct_target_credit(data, selected, inverse, result, destination)
+
+
+def _restore_direct_target_credit(data, selected, inverse, result, destination=None):
+    """Restore the owner's exact retained positions for both event packings."""
+    from verl import DataProto
+    if destination is None:
+        destination = {key: torch.zeros_like(data.batch['responses'], dtype=torch.float32)
+                       for key in CREDIT_KEYS}
+    artifacts = data.non_tensor_batch['dt_direct_target_artifact']
     for row, source_index in enumerate(inverse):
         item = artifacts[row]
         positions = torch.as_tensor(item['retained_response_positions'], dtype=torch.long)
@@ -215,3 +240,86 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
             for key in CREDIT_KEYS:
                 destination[key][row, kept] = result[key][source_index, positions[kept]]
     return DataProto.from_dict(tensors=destination)
+
+
+def _compute_multi_target_credit(data, selected, first, inverse, rewards, worker_group,
+                                 *, eos_token_id, pad_token_id):
+    """Pack explicit credited target events before the original collective DP.
+
+    dt_reward_target_events contains unique event_id, original target_offsets,
+    detached signed credit b_k, and an explicit future_policy_mask. The caller
+    owns these credits and reward identities. No group statistics, b/B, d,
+    or u normalization is reconstructed here. Multiple payload pieces of one
+    event belong in that event's single target_offsets union.
+
+    Flatten BEFORE dispatch so all FSDP ranks receive the same B4 call count.
+    The existing one-event readout exponentiates each native DT vector, then
+    only the returned Q/V/A are summed at their original trajectory slots.
+    """
+    import math
+    import numpy as np
+    from verl import DataProto
+    from verl.utils.torch_functional import pad_2d_list_to_length
+
+    flattened, coefficients, identities, owners, event_ids = [], [], [], [], []
+    for source_index, item in enumerate(selected):
+        events = item.get('dt_reward_target_events')
+        if events is None:
+            events = [dict(event_id=0, target_offsets=[i for i,t in enumerate(item['target_mask']) if t],
+                           credit=float(rewards[source_index]),
+                           future_policy_mask=[True] * len(item['response_ids']))]
+        if not events:
+            raise ValueError('Explicit reward target events must retain their settlement identities')
+        seen = set()
+        for event in events:
+            event_id = event['event_id']
+            if not isinstance(event_id, (int, str)):
+                raise ValueError('Reward target event identity must be an original integer or string')
+            identity = (type(event_id).__name__, event_id)
+            if identity in seen:
+                raise ValueError('One reward settlement cannot be repeated as multiple credit events')
+            seen.add(identity)
+            # A full signed component is required. Repeating rollout g for
+            # every span would silently change the agreed credit construction.
+            if 'credit' not in event:
+                raise ValueError('Each target event requires its own already computed stable credit')
+            coefficient = float(event['credit'])
+            if not math.isfinite(coefficient):
+                raise ValueError('Target event credit must be finite')
+            width = len(item['response_ids'])
+            target = [False] * width
+            offsets = event['target_offsets']
+            if len(set(offsets)) != len(offsets):
+                raise ValueError('A target event must select each original token position once')
+            for position in offsets:
+                if not 0 <= position < width or not item['policy_mask'][position]:
+                    raise ValueError('Target event offsets must refer to original policy tokens')
+                target[position] = True
+            future = torch.as_tensor(event['future_policy_mask'])
+            if future.shape != (width,) or future.dtype != torch.bool:
+                raise ValueError('Target event future mask must be bool at original full suffix slots')
+            artifact = dict(item, target_mask=target, future_policy_mask=future.tolist(),
+                            retained_response_positions=list(range(width)))
+            artifact.pop('dt_reward_target_events', None)
+            flattened.append(artifact)
+            coefficients.append(coefficient)
+            original_uid = str(data.non_tensor_batch['traj_uid'][first[source_index]])
+            identities.append(str((original_uid, *identity)))
+            owners.append(source_index);event_ids.append(event_id)
+    responses = pad_2d_list_to_length([item['response_ids'] for item in flattened], int(pad_token_id))
+    width = responses.shape[-1]
+    for item in flattened:
+        item['retained_response_positions'] += [-1] * (width-len(item['response_ids']))
+    objects = np.empty(len(flattened), dtype=object);objects[:] = flattened
+    event_data = DataProto.from_dict(tensors=dict(responses=responses,
+        dt_grpo_multipliers=torch.tensor(coefficients, dtype=torch.float64)),
+        non_tensors=dict(traj_uid=np.array(identities,dtype=object),dt_direct_target_artifact=objects))
+    # Same owner dedup/pad/balance/RPC/scatter implementation as the K=1 path.
+    per_event = compute_direct_target_credit(event_data, worker_group,
+        eos_token_id=eos_token_id, pad_token_id=pad_token_id)
+    owner_index = torch.tensor(owners, dtype=torch.long)
+    result = {key: torch.zeros((len(selected), width),dtype=torch.float32).index_add_(
+        0, owner_index, per_event.batch[key].cpu()) for key in CREDIT_KEYS}
+    print(f'[DT multi-target credit] trajectories={len(selected)} events={len(flattened)} '
+          f'event_ids={event_ids} transform=per_event_exponential_then_sum',flush=True)
+    return _restore_direct_target_credit(data, selected, inverse, result)

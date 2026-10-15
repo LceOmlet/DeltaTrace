@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="12" time="27.394" timestamp="2026-10-16T02:17:42.787810+08:00" hostname="224f07201.cloud.f09.sm132"><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_original_exponential_credit_is_bitwise_preserved" time="0.669" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_signed_multi_event_credit_exponentiates_before_sum_without_u_normalization" time="0.001" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_observation_padding_self_target_and_causal_masks" time="0.001" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_native_zero_settlement_selects_only_its_original_action" time="7.537" /><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_v5_mode_disables_withdrawn_affine_credit" time="0.045"><failure message="ModuleNotFoundError: No module named 'qwen35_answer_finite'">def test_v5_mode_disables_withdrawn_affine_credit():
+        from reward_readout import DirectActionTargetReadout
+        from types import SimpleNamespace
+        readout=DirectActionTargetReadout(SimpleNamespace(),SimpleNamespace(eos_token_id=1),
+            task='TextCraft',packed_answer_targets=None)
+        assert os.environ['DT_CREDIT_MODE']=='reward_target_exponential_v5'
+        assert readout.reward_target_exponential and not readout.weighted_target_credit
+        # Actual DT answer owner is the fast original, without v4 seed transforms.
+&gt;       from qwen35_answer_finite import PackedAnswerTargets
+E       ModuleNotFoundError: No module named 'qwen35_answer_finite'
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_behavior_v5.py:76: ModuleNotFoundError</failure></testcase><testcase classname="textcraft-reward-target-exponential-20261016-v5.source.test_behavior_v5" name="test_official_GRPO_PPO_and_fast_owner_bindings" time="0.823"><failure message="ModuleNotFoundError: No module named 'qwen35_answer_finite'">def test_official_GRPO_PPO_and_fast_owner_bindings():
+        import hashlib
+        import importlib
+        import inspect
+        expected={
+            'verl.trainer.ppo.core_algos':'fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299',
+            'verl.workers.actor.dp_actor':'3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c',
+            'verl.utils.experimental.torch_functional':'bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2',
+            'qwen35_answer_finite':'1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e',
+            'qwen35_dense_finite_runner':'198f78db4abf58cd8461c5bab86d1ce9c325a46e4295c8cc54d83bd9e20e59cd',
+        }
+        for name,digest in expected.items():
+&gt;           path=Path(inspect.getsourcefile(importlib.import_module(name)))
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-reward-target-exponential-20261016-v5/source/test_behavior_v5.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/conda/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap&gt;:1387: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'qwen35_answer_finite'
+import_ = &lt;function _gcd_import at 0x7f4a7dac80e0&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'qwen35_answer_finite'
+
+&lt;frozen importlib._bootstrap&gt;:1324: ModuleNotFoundError</failure></testcase><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_native_adjust_pad_dispatch_deduplicates_and_restores_retained_slots" time="0.005" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_trace_required_excludes_analytic_cases_before_native_collective" time="0.003" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_group_multiplier_controls_trace_routing_without_rewriting_rewards" time="0.003" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_one_terminal_reward_is_not_repeated_for_multiple_target_spans" time="0.001" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_observation_cannot_be_an_executed_action_target" time="0.001" /><testcase classname="textcraft-weighted-reward-targets-20261015-v4.source.test_direct_target_transport" name="test_retained_transport_rejects_changed_native_token_identity" time="0.002" /></testsuite></testsuites>
