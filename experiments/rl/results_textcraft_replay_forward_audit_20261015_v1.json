@@ -1,0 +1,158 @@
+{
+  "recorded_at": "2026-10-15T09:12:19.695096+08:00",
+  "status": "completed_CPU_saved_input_and_frozen_state_audit_root_unresolved",
+  "goal_status": "active",
+  "rootcause_repair_verified": false,
+  "summary": "尚未找到并验证旧DTPO梯度范数加速增长的完整根因。已测得内部反传敏感性增加，但此前选择target的更新正反馈不能推广到完整策略梯度；当前进一步核查已完成回放的可比性，不把诊断差异当训练根因。",
+  "saved_input_audit": {
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/completed-native-carrier-values-audit-v95.json",
+    "local_receipt": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\audit_completed_full_direction_inputs_v95-dt.json",
+    "local_receipt_SHA256": "650f6312d186abfb31293ba09359ccf249fc3570c91dc6e798d399b3b9d9d275",
+    "cases": [
+      "full40_native",
+      "full80_native",
+      "full_weights80_seed40",
+      "full_weights40_seed80"
+    ],
+    "non_logprob_tensor_fields_per_case": 21,
+    "all_values_and_strides_equal": true,
+    "all_UIDs_equal": true,
+    "same_v90_original_manifest_source": true,
+    "limits": [
+      "The current v90 before-backward GPU inputs were not saved separately. Its manifest binds the identical original global64 carrier, but this alone does not verify every native worker transformation or complete model/buffer state.",
+      "Fresh old/ref log-probabilities are expected to change with the actual forward point and are intentionally not claimed equal.",
+      "Schema/identity checks and rho1 scalar equality cannot establish identical forward logits."
+    ]
+  },
+  "serialized_frozen_state_audit": {
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/saved-frozen-parameter-equality-v96.json",
+    "local_receipt": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\audit_saved_frozen_parameters_v96-dt.json",
+    "local_receipt_SHA256": "c11546b1d463c03bf206d044003bbdf5c31d0d19eaa0761d45883f7c7b00cee8",
+    "comparisons": [
+      {
+        "rank": 0,
+        "left": "DT80",
+        "right": "DT40",
+        "tensors_compared": 427,
+        "local_elements": 4476901632,
+        "all_equal": true,
+        "differing_tensor_names": []
+      },
+      {
+        "rank": 0,
+        "left": "DT80",
+        "right": "GRPO160",
+        "tensors_compared": 427,
+        "local_elements": 4476901632,
+        "all_equal": true,
+        "differing_tensor_names": []
+      },
+      {
+        "rank": 1,
+        "left": "DT80",
+        "right": "DT40",
+        "tensors_compared": 427,
+        "local_elements": 4476901632,
+        "all_equal": true,
+        "differing_tensor_names": []
+      },
+      {
+        "rank": 1,
+        "left": "DT80",
+        "right": "GRPO160",
+        "tensors_compared": 427,
+        "local_elements": 4476901632,
+        "all_equal": true,
+        "differing_tensor_names": []
+      }
+    ],
+    "all_equal": true,
+    "actual_LoRA_identities_rechecked": true,
+    "limits": [
+      "The equality covers serialized non-LoRA tensors at the saved checkpoints, not every actual in-memory parameter or nonpersistent buffer of the completed probes.",
+      "Matching saved frozen tensors and LoRA identities still cannot by themselves establish identical native forward numerical execution. A failed invariant must be diagnosed separately from a training-root-cause claim."
+    ]
+  },
+  "native_owner_source_audit": {
+    "receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/textcraft-gradient-rootcause-20261013-v1/native-load-forward-contract-v97.json",
+    "torch_version": "2.8.0+metax3.5.3.9",
+    "literal_VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+    "native_PEFT_LoraConfig_default_dropout": 0.0,
+    "source_files": [
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param.py",
+        "SHA256": "12e459491589b623158627846f837175eae353e685f691875b5eb6b7884896e1"
+      },
+      {
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fsdp_param_group.py",
+        "SHA256": "2798a87b2631091df738afaff6dfcead38ce0cc421585b4331ecaaefb4e784f5"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/utils/fsdp_utils.py",
+        "SHA256": "d65281f248e048cf749175506868de087cc33779dec4e62b00ccfc781ab15060"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/fsdp_workers.py",
+        "SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+        "SHA256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8"
+      }
+    ],
+    "contract": "Installed native FSDP2 has pre-load to-sharded and post-load reset-sharded-parameter hooks. Their source presence alone does not prove complete identical actual forward state.",
+    "limit": "A native source contract is not proof that the completed workers had identical in-memory forward state."
+  },
+  "completed_forward_summary_comparison": {
+    "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\existing-forward-scalar-discrepancy-v98.json",
+    "SHA256": "0f2490d4ee7b712018f45505938e37c7bbe6d74087beb3e0bcd7e8a22830452a",
+    "rank0": "All 8 B4 batches and 33 saved forward RMS boundary summaries per batch match exactly.",
+    "rank1": "All 8 B4 batches first differ in saved output RMS summaries at decoder layer1; layer0 summaries match.",
+    "interpretation": "Earliest differing saved summary, not proof of earliest differing tensor or faulty operator. No new forward/backward call; no proposed official model patch.",
+    "limits": [
+      "An RMS summary may remain equal while tensor values differ. These scalars cannot establish full activation or in-memory state equality.",
+      "A different saved summary localizes a diagnostic comparability gap, not the historical training root cause or an accepted official-kernel defect."
+    ]
+  },
+  "existing_counterevidence": {
+    "same_original80_same_full_seed_native_VJP_v86": 2.200127041593584,
+    "same_original80_same_full_seed_native_VJP_v90": 1.0164618842533348,
+    "original_native_saved_update_VJP_change_v47": -0.11323996,
+    "original_native_saved_update_VJP_change_v69": -0.11625823,
+    "decision": "Do not assert that same-reward-group common components cause full-policy positive sensitivity feedback from the selected-target probe alone; do not accept v3 from a small gradient norm alone."
+  },
+  "source_scripts": [
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\audit_completed_full_direction_inputs_v95.py",
+      "SHA256": "7d5b48bc8ae9edeb0b6c8909a5a75e32cef2ae1f5850241c78878e64562dc6c9"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\audit_saved_frozen_parameters_v96.py",
+      "SHA256": "e5bd6142d68209d54538f3cedcd41acd40e1682da24e1517ce9d087b1b701120"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\read_native_load_forward_contract_v97.py",
+      "SHA256": "d95ed26e755c2bf74d20db0a9dd23596438431fd00d904ccd1e249e67aca7191"
+    },
+    {
+      "path": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_textcraft_gradient_rootcause_20261013_v1\\account_existing_forward_discrepancy_v98.py",
+      "SHA256": "88ddacccbac0f9748c35d8b4b25bd94709806a4a3d8da7c3e2598650fb67c7be"
+    }
+  ],
+  "audit_new_model_calls": 0,
+  "audit_new_backward_calls": 0,
+  "audit_optimizer_updates": 0,
+  "formal_training_changes": 0,
+  "version_boundary": "v95-v98 are diagnostic/audit receipt revisions only. Approved formal DTPO remains v3 method f726ee72, deployed e05e23cb; pinned native 1/16/PPO/optimizer unchanged.",
+  "protected_runtime": {
+    "DTPO_v3": "3140624/1791993570.92",
+    "GRPO": "3174448/1791793629.73",
+    "PPO_restored_v91": "2208929/1792024569.01",
+    "hourly_automation": "PAUSED",
+    "old_DTPO": "stopped"
+  },
+  "limits": [
+    "No claim of a new training defect, accepted root-cause repair, universal exact numerical replay requirement or from-scratch outcome follows from these CPU audits.",
+    "No new GPU experiment or change of official code is justified solely by observing nonidentical saved forward summaries."
+  ]
+}
