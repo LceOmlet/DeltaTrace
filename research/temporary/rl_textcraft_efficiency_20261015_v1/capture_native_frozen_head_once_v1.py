@@ -102,9 +102,53 @@ def install_forward(worker):
     return dict(rank=w.rank,pid=os.getpid(),birth=psutil.Process().create_time(),installed=True)
 
 
+def install_full_forward(worker):
+    import hashlib,json,os,sys,time
+    from pathlib import Path
+    import psutil,torch
+    from verl.utils.experimental import torch_functional as owner
+    assert psutil.Process().create_time()==WORKERS[os.getpid()]
+    w=next(w for w in worker.worker_dict.values() if getattr(w,'_is_actor',False))
+    if w.rank!=0:return dict(rank=w.rank,pid=os.getpid(),birth=psutil.Process().create_time(),installed=False)
+    assert hashlib.sha256(Path(owner.__file__).read_bytes()).hexdigest()=='bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2'
+    assert not hasattr(owner,'_efficiency_head_full_forward_capture_v2')
+    owner._efficiency_head_full_forward_capture_v2=True
+    original=owner.FusedLinearForPPO.forward
+    from verl.models.transformers.qwen3_vl import forward_with_torch_backend
+    def observed(instance,*args,**kwargs):
+        frame=sys._getframe(1)
+        original_ids=frame.f_locals.get('input_ids')
+        keep=frame.f_locals.get('kwargs',{}).get('logits_to_keep',0)
+        try:result=original(instance,*args,**kwargs)
+        finally:owner.FusedLinearForPPO.forward=original
+        try:
+            assert frame.f_code is forward_with_torch_backend.__code__
+            assert original_ids is not None
+            assert not args
+            artifact={k:(v.detach().cpu() if isinstance(v,torch.Tensor) else v) for k,v in kwargs.items()}
+            artifact['log_probs'],artifact['entropy']=[v.detach().cpu() for v in result]
+            artifact['original_input_ids']=original_ids.detach().cpu()
+            artifact['logits_to_keep']=keep.detach().cpu() if isinstance(keep,torch.Tensor) else keep
+            torch.save(artifact,DEST/'native-frozen-head-full-chunk.pt')
+            (DEST/'native-frozen-head-full-chunk.json').write_text(json.dumps(dict(
+                unix=time.time(),rank=w.rank,pid=os.getpid(),birth=psutil.Process().create_time(),
+                hidden_shape=list(artifact['hidden_states'].shape),vocab_shape=list(artifact['vocab_weights'].shape),
+                original_input_shape=list(artifact['original_input_ids'].shape),
+                requested_logits_to_keep=keep if isinstance(keep,int) else 'exact_saved_index_tensor',
+                actual_returned_head_shape=list(result[0].shape),
+                original_function_restored=owner.FusedLinearForPPO.forward is original,
+                additional_model_DT_backward_optimizer_calls=0,training_math_changes=0),indent=2)+'\n')
+        except Exception as exc:
+            (DEST/'native-frozen-head-full-v2-error.json').write_text(json.dumps(dict(error=repr(exc))))
+        return result
+    owner.FusedLinearForPPO.forward=observed
+    return dict(rank=w.rank,pid=os.getpid(),birth=psutil.Process().create_time(),installed=True)
+
+
+full_mode=any(x in sys.argv for x in ('--full','--full-client','--full-v2','--full-v2-client'))
 forward_mode=any(x in sys.argv for x in ('--forward','--forward-client'))
-prefix='native-frozen-head-forward' if forward_mode else 'native-frozen-head'
-if '--client' in sys.argv or '--forward-client' in sys.argv:
+prefix='native-frozen-head-full-v2' if full_mode else 'native-frozen-head-forward' if forward_mode else 'native-frozen-head'
+if '--client' in sys.argv or '--forward-client' in sys.argv or '--full-client' in sys.argv or '--full-v2-client' in sys.argv:
     import ray
     launch=json.loads((RUN/'launch.json').read_bytes());p=psutil.Process(launch['pid']);assert p.create_time()==launch['birth']
     gcs=next(c for c in p.children(recursive=True) if c.name()=='gcs_server')
@@ -114,7 +158,7 @@ if '--client' in sys.argv or '--forward-client' in sys.argv:
     try:
         names=[a for a in ray.util.list_named_actors(all_namespaces=True) if 'WorkerDict_' in a['name'] and 'register_center' not in a['name']]
         assert len(names)==2
-        values=ray.get([ray.get_actor(a['name'],namespace=a['namespace']).execute_with_func_generator.remote(func=install_forward if forward_mode else install) for a in names],timeout=7200)
+        values=ray.get([ray.get_actor(a['name'],namespace=a['namespace']).execute_with_func_generator.remote(func=install_full_forward if full_mode else install_forward if forward_mode else install) for a in names],timeout=7200)
         assert {v['pid']:v['birth'] for v in values}==WORKERS
         (DEST/(prefix+'-installation.json')).write_text(json.dumps(dict(unix=time.time(),workers=values,
             source=__file__,source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()),indent=2)+'\n')
@@ -124,7 +168,7 @@ elif '--read' not in sys.argv and not (DEST/(prefix+'-client.json')).exists():
     env=dict(os.environ);env.update(launch['effective_environment']);env['CUDA_VISIBLE_DEVICES']=''
     stdout,stderr=DEST/(prefix+'-client.stdout.log'),DEST/(prefix+'-client.stderr.log')
     with stdout.open('xb') as out,stderr.open('xb') as err:
-        p=subprocess.Popen([env['VENV_PYTHON'],'-u',__file__,'--forward-client' if forward_mode else '--client'],env=env,
+        p=subprocess.Popen([env['VENV_PYTHON'],'-u',__file__,'--full-v2-client' if full_mode else '--forward-client' if forward_mode else '--client'],env=env,
             stdin=subprocess.DEVNULL,stdout=out,stderr=err,start_new_session=True)
     (DEST/(prefix+'-client.json')).write_text(json.dumps(dict(pid=p.pid,birth=psutil.Process(p.pid).create_time(),
         stdout=str(stdout),stderr=str(stderr)),indent=2)+'\n')
