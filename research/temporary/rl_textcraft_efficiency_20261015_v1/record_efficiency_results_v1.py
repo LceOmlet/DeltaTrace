@@ -4,6 +4,7 @@ from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 from zoneinfo import ZoneInfo
 
 HERE=Path(__file__).resolve().parent
@@ -114,6 +115,12 @@ report['further_findings']=[
     'Current TextCraft prompts are315 tokens. The chunk-preserving logits_to_keep candidate has exact outputs/VJP at32768 but no measured speed gain on the actual full B4 head artifact, and remains outside the launch path.',
     'No all-layer retention or modified LoRA finite arithmetic was introduced to obtain a benchmark improvement.']
 report['head_verification_completed_at']=datetime.fromtimestamp(boundary['completed_unix'],ZoneInfo('Asia/Shanghai')).isoformat()
+report['head_selection_candidate']['source_patch_commit']=subprocess.run(
+    ['git','log','-1','--format=%H','--','experiments/rl/patch_actor_head_selection.py'],
+    cwd=REPO,check=True,capture_output=True,text=True).stdout.strip()
+report['pinned_VERL_upstream_commit']='20bd331b'
+report['unchanged_DTPO_method_source_patch_commit']='f726ee72'
+report['unchanged_DTPO_method_deployment_commit']='e05e23cb1bc1cccade732ad192ce15b7e9dc6a1e'
 report['evidence_files'][str((HERE/'selection-progress.json').relative_to(REPO))]=hashlib.sha256((HERE/'selection-progress.json').read_bytes()).hexdigest()
 final=json.loads((HERE/'final-efficiency-readout.json').read_bytes())
 assert final['no_candidate_in_current_launch_path']
