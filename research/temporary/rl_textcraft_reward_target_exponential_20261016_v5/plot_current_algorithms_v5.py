@@ -8,7 +8,7 @@ code=source.read_text()
 lines=code.splitlines()
 matches=[i for i,line in enumerate(lines) if line.startswith('new="snapshot[\'DT_display_label\']')]
 assert len(matches)==1
-label="assert current_DT['version']=='textcraft-dt-reward-target-exponential-20261016-v5'\nsnapshot['DT_display_label']='DTPO v5（结算target，指数信用）'"
+label="assert current_DT['version']=='textcraft-dt-reward-target-exponential-20261016-v5'; snapshot['DT_display_label']='DTPO v5（结算target，指数信用）'"
 lines[matches[0]]='new='+repr(label)
 code='\n'.join(lines)+'\n'
 code=code.replace('DTPO v4尚无完成迭代，共同窗口为空','DTPO v5尚无完成迭代，共同窗口为空')

@@ -1,3 +1,14 @@
+## 2026-10-16T03:27:42.013833+08:00 DTPO v5实际部署：逐target指数信用、原GRPO与高效原生DT/PPO
+
+正式v5版本textcraft-dt-reward-target-exponential-20261016-v5，源提交4545c55807e7d002287717b6a4254f9b083dd5fc，固定VERL上游20bd331b。原官方组内信用g保留；原reward结算动作target含结算0，较早非结算Action移为source。多target显式事件在driver展平、复用原pad/balance/DP/RPC，原d逐事件指数后汇总Q/V/A，不用v4仿射seed/端点差归一化或source u分母。B=0的抵消分量仍保留；one-event多文本片段只算一次信用。原观察/self/future mask、原整批masked_var仅方差缩放和1/16 sum(S_j/N_j) PPO保持。
+
+22项CPU检查通过；真正双rank DT的两个原parser payload逐事件读取及指数后汇总逐值检查通过，原参数/optimizer/scheduler保持。每rank B4、双B8、精确32768多target容量通过，0 optimizer/生成/质量测试；人工容量输入不称自然任务质量或整轮吞吐。首轮native small的数学/mask/状态已通过，后续metadata lazy模块查询失败原始记录保留，并复用已完成计算，未重做该DT。其他早期fixture/导入错误及修正回执亦保留。
+
+实际继承验收数值26bef6c8、GDN3f51f5f7、gate CPU捕获/有界回传、原prefix cache、默认vLLM图与冻结head更新补丁7a33e61a（bb46ebe9），不启用head-selection或分母候选。原actor3a65e173/corefc2f992b/worker9dfd6ce7/checkpoint f65b6538及32k/LoRA8/16/B4/global64/330/save5/keep2保持。全部完整路径与SHA、配置、行为/容量/实际绑定回执见results_textcraft_reward_target_exponential_20261016_v5.json。
+
+新run从基础权重启动，driver878971/出生1792091830.03、physical0/1；实际worker及phase为[{"pid": 888009, "birth": 1792091912.27, "rank": 0, "phase": "ray::WorkerDict.actor_rollout_generate_sequences"}, {"pid": 899327, "birth": 1792092009.49, "rank": 1, "phase": "ray::WorkerDict.actor_rollout_generate_sequences"}]。原RPC已核对初始optimizer0/scheduler0与实际v5模式、路径，并安装数学AST不变被动记录器。当前原日志完成0/330；初始化与首轮采样不称已完成健康更新。现有原PPO 3946004/1792041120.19保持，GRPO已停191轮，v3已停45轮，v4撤回0轮，不拼接旧DT。旧梯度goal仍paused；小时绘图继续依最新v5正式身份刷新，不恢复旧硬件/双备份任务。
+
+
 ## 2026-10-12 16:34 当前已验证正式组合（覆盖下方旧入口）
 
 本次DTPO3172194/GPU2/3、GRPO3174448/GPU4/5，native-graph-fresh-20261012-v1两run均完整330预算，save_freq=5。四worker实际原生图、LoRA8/16、每卡B4、32k、optimizer0/scheduler0已回读。原VENV_PYTHON与平台修复保持；数值26bef6c8+内存799224868，实际DT_ROOT=textcraft-gate-capture-host-20261012-v1/deltatrace、GDN3f51f5f7；环境direct-target-consumed-cache-release-20261007-v1/environment.json。VERL_ROOT=textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner，worker9dfd6ce7/checkpointmanagerf65b6538，仅补存现有rollout RNG；原actor/core/inference不变。最小patch提交0b12b202已推送。准确绝对路径、完整SHA、原32k DT/update/完整state恢复验收及PID出生见RUNTIME_RECORD最新条目与results_textcraft_native_graph_deployment_20261012.json。原生enforce_eager=False/free_cache_engine=False已生效，不沿用旧save25/eager配置或旧未卸载DT路径。先source底座，再合并实际launch环境；不要只继承底座旧DT/VERL_ROOT，也不要把metadata-only integration-launch.json误作有效环境。原权重、环境资产和持久cache复用，不重装。
