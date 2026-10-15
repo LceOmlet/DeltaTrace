@@ -1,0 +1,80 @@
+{
+  "recorded_at": "2026-10-15T16:41:40.718855+08:00",
+  "version": "textcraft-probability-comparator-analysis-20261015-v1",
+  "status": "definitions_separated_existing_joint_endpoint_comparison_only",
+  "scope": "Analyze the correct reference before checking. Only arithmetic on saved native iteration24 records; no native single deletion, model, DT, GPU or training mutation.",
+  "accepted_PLAN": "experiments/rl/PLAN.md: d_i is the factual-minus-single-EOS-deletion log ratio, while the native finite runner returns a joint all-source contrast allocation used as its estimate.",
+  "comparators": {
+    "finite_runner_numerical_consistency": {
+      "reference": "R_all=exp(F(x_all_EOS;Y)-F(x_factual;Y))",
+      "DT_quantity": "R_DT_all=exp(-sum_i c_i)",
+      "reason": "Exactly the same two endpoints, target, weights and finite attribution contract.",
+      "limitation": "This checks aggregate numerical consistency, not each token estimate, legal per-token probabilities, policy-gradient unbiasedness or task quality."
+    },
+    "RL_per_token_estimator": {
+      "reference": "R_i_native=exp(F(x_only_i_EOS;Y)-F(x_factual;Y))",
+      "estimated_quantity": "R_i_DT=exp(-c_i_joint)",
+      "reason": "PLAN explicitly assigns each token a single-deletion d_i; the model must compute the numerator independently of c_i.",
+      "necessary_identity": "d_i_native=F(x_factual;Y)-F(x_only_i_EOS;Y)",
+      "limitation": "Single-deletion values are a direct reference for the chosen fixed-history model intervention, not a mathematical identity defining joint finite allocations, nor an independently validated full environment causal effect."
+    },
+    "finite_single_changed_pair": {
+      "reference": "Use the existing runner on x_only_i_EOS versus x_factual; only embedding i changes, so its single nonzero contribution should match that pair native endpoint score difference.",
+      "discrimination": "Joint c_i versus native single deletion tests the joint-to-single estimate. Finite single-pair c_i versus its own native endpoint difference tests finite propagation numerical consistency. Neither comparison is replaced by a one-update quality score.",
+      "implementation": "Reuse existing trace_token_attribution/PackedAnswerTargets/runner.attribute; no new probability head, softmax, model or finite implementation.",
+      "execution_status": "Not executed. Historical theta23/per-layer state absent, no new GPU diagnosis launched."
+    }
+  },
+  "incident_same_endpoint_comparison": {
+    "traj_uid": "52808f60-1f4b-4005-98f5-0c2179376ea3",
+    "source": {
+      "worker": "3153050",
+      "source": "/tmp/ray/session_2026-10-14_23-59-52_775176_3140624/logs/worker-200f60cdb6cb8e1a8c0eba23181b02de322652b1fc893edb4f466d0c-01000000-3153050.out",
+      "line": 1509,
+      "trace": {
+        "trajectory_index": 78,
+        "traj_uid": "52808f60-1f4b-4005-98f5-0c2179376ea3",
+        "reward": 1.20761239528656,
+        "target_tokens": 275,
+        "actual_context_tokens": 4756,
+        "compute_tokens": 4756,
+        "target_self_tokens": 275,
+        "prior_source_tokens": 3343,
+        "root_effect": 390.19883304477275,
+        "signed_sum": 390.73538994539985,
+        "conservation_residual": -0.5365569006270903,
+        "factual_target_logp": -1.0323052763799296,
+        "reference_target_logp": -391.2311383211527
+      }
+    },
+    "factual_F_recorded": -1.0323052763799296,
+    "all_source_EOS_reference_F_recorded": -391.2311383211527,
+    "native_joint_d_recorded": 390.19883304477275,
+    "DT_original_signed_sum_recorded": 390.73538994539985,
+    "native_joint_log_ratio": -390.19883304477275,
+    "DT_sum_joint_log_ratio": -390.73538994539985,
+    "DT_minus_native_joint_log_ratio": -0.5365569006270903,
+    "FP64_exp_of_recorded_native_log_ratio": 3.457800745247518e-170,
+    "FP64_exp_of_recorded_DT_sum_log_ratio": 2.0219772384531686e-170,
+    "ratio_of_the_two_exp_values": 0.5847581707049551,
+    "numerical_scope": "Exponentials are FP64 calculations from saved FP32-logsoftmax/FP64-reduction records, not claims of exact model probabilities. Log-domain comparison is primary; FP32 exponentiation of this joint ratio would underflow.",
+    "interpretation": "These are joint all-source quantities. The observed difference neither measures the pointwise single-delete error nor locates the -11.873 coefficient source. No arbitrary acceptance tolerance or passed label assigned."
+  },
+  "future_reference_requirements": [
+    "Same original theta, input token IDs, target labels/offsets and observation/policy masks.",
+    "Only source token i is replaced with the original EOS token; no physical sequence shortening, re-tokenization or target re-selection.",
+    "Reuse native owner endpoint likelihood and original dtype/cache interfaces; record actual imported paths/SHA and any layout differences.",
+    "A future or checkpoint25/current-weight measurement must be explicitly labeled a different fixed-point experiment, never a replay of iteration24."
+  ],
+  "preservation": {
+    "exact_model_value_equals_corresponding_world_value_idealization_preserved": true,
+    "new_world_simulator_not_required": true,
+    "existing_PLAN_not_redefined": true,
+    "training_changes": 0,
+    "new_forward_DT_backward_optimizer_calls": 0,
+    "new_tolerance": null
+  },
+  "receipts": {
+    "research\\temporary\\rl_textcraft_efficiency_20261015_v1\\step24-existing-passive-reports.json": "9bb44d2c06e52462a60a83cf6431ba2a25c4de9c6d4261fc8aeb8ad2d1ba5d81"
+  }
+}
