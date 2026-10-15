@@ -7,6 +7,7 @@ caller supplies target offsets explicitly: no default whole-response objective,
 padding labels, tokenizer-size vocabulary crop or implicit sink convention.
 """
 import copy
+import math
 import torch
 from compiled_logprob_seed import seed_with_checks
 from qwen35_decoder_finite import _linear_transpose
@@ -19,7 +20,7 @@ class PackedAnswerTargets:
     sink intervals must be expanded by the caller. The causal predictor is at
     prompt_length + target_offset - 1. CPU validation happens once.
     """
-    def __init__(self,cases,target_offsets,padded_length,device,*,outcome_token_ids=None):
+    def __init__(self,cases,target_offsets,padded_length,device,*,outcome_token_ids=None,target_span_credits=None):
         if not cases or len(cases)!=len(target_offsets):raise ValueError('One explicit target selection per case is required.')
         samples=[];positions=[];labels=[];self.counts=[];self.offsets=[]
         for b,(case,offsets) in enumerate(zip(cases,target_offsets)):
@@ -41,6 +42,49 @@ class PackedAnswerTargets:
             if not bool(torch.isin(self.labels,ids).all()):
                 raise ValueError('Each target must belong to the declared outcome alphabet.')
             self.outcome_token_ids=ids
+
+        self.credit_groups=None
+        self.credit_seed_weights=None
+        if target_span_credits is not None:
+            if len(target_span_credits)!=self.batch:
+                raise ValueError('One credit-span partition per target case is required.')
+            groups=[];credits=[];group_samples=[]
+            for b,(offsets,spans) in enumerate(zip(self.offsets,target_span_credits)):
+                owners={}
+                for span_offsets,credit in spans:
+                    span_offsets=list(span_offsets);credit=float(credit)
+                    if not math.isfinite(credit) or not span_offsets:
+                        raise ValueError('Credit spans must be nonempty with finite credit.')
+                    group=len(credits);credits.append(credit);group_samples.append(b)
+                    for offset in span_offsets:
+                        if offset not in offsets or offset in owners:
+                            raise ValueError('Credit spans must partition the selected target offsets.')
+                        owners[offset]=group
+                if set(owners)!=set(offsets):
+                    raise ValueError('Credit spans must cover every selected target offset.')
+                groups.extend(owners[offset] for offset in offsets)
+            self.credit_groups=torch.tensor(groups,dtype=torch.long)
+            self.credit_budgets=torch.tensor(credits,dtype=torch.float64)
+            self.credit_group_samples=group_samples
+
+    def prepare_credit_seed(self,logp0,logp1):
+        """Frozen affine span readout; no epsilon or attribution correction."""
+        if self.credit_groups is None:return
+        delta=logp1.detach().double().cpu()-logp0.detach().double().cpu()
+        denominator=torch.zeros_like(self.credit_budgets).index_add_(0,self.credit_groups,delta)
+        active=self.credit_budgets!=0
+        if not bool(torch.isfinite(denominator).all()) or bool((active & (denominator==0)).any()):
+            raise FloatingPointError('Nonzero target credit has a zero/nonfinite EOS score difference.')
+        slopes=torch.zeros_like(denominator)
+        slopes[active]=self.credit_budgets[active]/denominator[active]
+        self.credit_seed_weights=slopes[self.credit_groups].to(device=self.labels.device,dtype=torch.float32)
+        if not bool(torch.isfinite(self.credit_seed_weights).all()):
+            raise FloatingPointError('Target-credit finite seed is not representable.')
+        self.credit_span_deltas=denominator.tolist()
+
+    def weight_target_values(self,values):
+        if self.credit_seed_weights is None:return values
+        return values*self.credit_seed_weights.to(device=values.device,dtype=values.dtype)
 
     def pack_hidden(self,paired_hidden):
         assert paired_hidden.ndim==3 and paired_hidden.shape[:2]==(2*self.batch,self.length)
@@ -71,11 +115,12 @@ class PackedAnswerTargets:
         return selected
 
 
-def _answer_seed_rule(z0,z1,target,weight):
+def _answer_seed_rule(z0,z1,target,weight,multipliers=None):
     # Reuse the established logarithmic-mean logsoftmax finite seed. Both
     # nonlinear evaluation and reduction are FP32; vendor GEMM uses BF16.
     z0=z0.float();z1=z1.float()
     seed,checks=seed_with_checks(z0,z1,target)
+    if multipliers is not None:seed=seed*multipliers[:,None]
     hidden=_linear_transpose(seed,weight)
     logp0=z0.log_softmax(-1).gather(-1,target[:,None]).squeeze(-1)
     logp1=z1.log_softmax(-1).gather(-1,target[:,None]).squeeze(-1)
@@ -147,7 +192,7 @@ class FiniteAnswerOps:
             with torch.autocast(device_type=z0.device.type,enabled=False):
                 result=self.categorical_seed(z0,z1,target,weight)
         else:
-            result=self.seed(z0,z1,target,weight)
+            result=self.seed(z0,z1,target,weight,multipliers=selection.credit_seed_weights)
         hidden,valid,*diagnostics=result
         if not bool(valid):raise ValueError('Finite answer seed invalid.')
         return selection.scatter_hidden(hidden),{'packed_hidden':hidden,'logp0':diagnostics[0],

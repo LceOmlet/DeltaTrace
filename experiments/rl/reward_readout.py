@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import math
+import os
 import string
 import time
 from typing import Any
@@ -387,6 +388,7 @@ class DirectActionTargetReadout:
             raise ValueError('The native EOS token and a positive DT minibatch are required')
         self.runner, self.tokenizer = runner, tokenizer
         self.task, self.max_length = task, max_length
+        self.weighted_target_credit = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
         self.minibatch_size = minibatch_size
         self.packed_answer_targets = packed_answer_targets
         # A joint target can contain predictors before a later source span.
@@ -445,6 +447,7 @@ class DirectActionTargetReadout:
                     policy=policy, target=target, prior=prior,
                     valid_policy=valid_policy, valid_target=valid_target,
                     target_offsets=target_offsets, reward=value,
+                    span_credits=row.get('dt_target_span_credits'),
                     ratios=torch.zeros(width, dtype=torch.float32),
                     case={'target_ids': selected[prompt_length:], 'prompt_length': prompt_length})
 
@@ -511,6 +514,8 @@ class DirectActionTargetReadout:
                 self.runner, reference, factual, [item['case'] for item in batch],
                 [item['target_offsets'] for item in batch],
                 packed_answer_targets=self.packed_answer_targets,
+                **({'target_span_credits':[item['span_credits'] for item in batch]}
+                   if self.weighted_target_credit else {}),
             )
             report['finite_trace_calls'] += 1
             for b, item in enumerate(batch):
@@ -545,6 +550,7 @@ class DirectActionTargetReadout:
                 torch.tensor([[item['reward']]], dtype=torch.float32),
                 torch.ones((1, 1, width), dtype=torch.bool), item['policy'][None, :],
                 self_target_mask=item['target'][None, None, :],
+                linear_attribution=self.weighted_target_credit,
             )
             result = dict(dt_token_advantages=credit.advantages[0],
                           dt_q_estimates=credit.q_estimates[0], dt_v_estimates=credit.v_estimates[0])
@@ -556,6 +562,10 @@ class DirectActionTargetReadout:
         for stats in groups.values():
             if not stats['tokens']:
                 stats['max'] = stats['min'] = None
+        if self.weighted_target_credit:
+            report.update(target_semantics='reward_settlement_action_spans',
+                          credit_transform='linear_finite_allocation',
+                          output_seed='c_k / native_span_EOS_logp_difference')
         report['raw_advantage_groups'] = groups
         report['seconds'] = time.perf_counter() - started
         self.last_report = report

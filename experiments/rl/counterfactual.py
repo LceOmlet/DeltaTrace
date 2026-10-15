@@ -30,6 +30,7 @@ def reward_event_token_credit(
     *,
     discounts: torch.Tensor | None = None,
     self_target_mask: torch.Tensor | None = None,
+    linear_attribution: bool = False,
 ) -> DTTokenCredit:
     """Compose sampled terminal/process rewards into individual token advantages.
 
@@ -45,6 +46,11 @@ def reward_event_token_credit(
     probability is zero, so that event contributes Q_hat=r, V_hat=0, A_hat=r.
     This replaces its DT term; it is never added to a second attribution of
     the same event. No log(0) or numerical infinite ratio is evaluated.
+
+    With linear_attribution=True, the input entries are the approved v4
+    normalized finite allocations. They are multiplied by each supplied
+    event coefficient directly: A=r*d, V=Q-A. They are not exponentiated or
+    interpreted as log probability ratios. The default ratio path is unchanged.
 
     Q_hat_i = sum_k discount_ki * r_k
     V_hat_i = sum_k discount_ki * r_k * exp(-d_ki)
@@ -100,8 +106,13 @@ def reward_event_token_credit(
         weighted_reward = weighted_reward * torch.where(active, discounts.to(dtype), 0.0)
 
     # Stable near d=0: sampled importance correction, not R*(p_action-p_policy).
-    event_advantages = weighted_reward * (-torch.expm1(-d))
-    event_baselines = weighted_reward * torch.exp(-d)
+    if linear_attribution:
+        # v4 receives a normalized finite allocation, not a log probability ratio.
+        event_advantages = weighted_reward * d
+        event_baselines = weighted_reward - event_advantages
+    else:
+        event_advantages = weighted_reward * (-torch.expm1(-d))
+        event_baselines = weighted_reward * torch.exp(-d)
     if self_target_mask is not None:
         event_advantages = torch.where(self_target_mask, weighted_reward, event_advantages)
         event_baselines = torch.where(self_target_mask, 0.0, event_baselines)

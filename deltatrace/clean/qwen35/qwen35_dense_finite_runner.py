@@ -296,13 +296,14 @@ class Qwen35DenseFiniteRunner:
             root_logp=timed('actual_root_FP32_logprob_diagnostic',lambda:selected_target_log_probs(
                 z,selection,outcome_logits=outcome_logits))
         root_lp0=root_logp[0::2].detach().cpu();root_lp1=root_logp[1::2].detach().cpu();del root_logp
+        selection.prepare_credit_seed(root_lp0,root_lp1)
         with torch.no_grad():mnorm,seed=timed('finite_seed',lambda:self.answer(z,model.lm_head,selection,
             original_packed_hidden=packed_head,outcome_logits=outcome_logits))
         del packed_head,outcome_logits
         if observer is not None:observer.boundary('norm',mnorm.detach(),root['final_norm_output'])
         lp0=seed['logp0'].detach().cpu();lp1=seed['logp1'].detach().cpu()
-        effect_G=float((root_lp1.double()-root_lp0.double()).sum())
-        compiled_seed_G=float((lp1.double()-lp0.double()).sum())
+        effect_G=float(selection.weight_target_values(root_lp1.double()-root_lp0.double()).sum())
+        compiled_seed_G=float(selection.weight_target_values(lp1.double()-lp0.double()).sum())
         x=root['final_norm_input'].to('cuda',non_blocking=self.pin_root_host)
         with torch.no_grad():m=timed('finite_final_norm',lambda:self.boundaries.norm_residual(x[0::2],x[1::2],norm.weight,mnorm,torch.zeros_like(mnorm),norm.eps))
         if observer is not None:observer.boundary('32',m.detach(),root['final_norm_input'])
@@ -433,6 +434,11 @@ class Qwen35DenseFiniteRunner:
               'calls':calls,'layers':ledger,'target_logp0':root_lp0.tolist(),'target_logp1':root_lp1.tolist(),
               'compiled_seed_logprob_effect':compiled_seed_G,
               'compiled_seed_logprob_effect_minus_root':compiled_seed_G-effect_G}
+        if selection.credit_seed_weights is not None:
+            info.update(target_seed_weights=selection.credit_seed_weights.detach().cpu().tolist(),
+                        target_span_deltas=selection.credit_span_deltas,
+                        target_span_credits=selection.credit_budgets.tolist(),
+                        target_span_samples=selection.credit_group_samples)
         if self.defer_diagnostics:
             flags=torch.stack(validity).cpu().tolist()
             if not all(flags):raise ValueError('Nonfinite DT coefficients; deferred check failed before return.')

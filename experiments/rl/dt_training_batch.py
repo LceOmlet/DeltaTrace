@@ -156,6 +156,14 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
         position_ids=compute_position_id_with_mask(attention),
         policy_mask=policy, target_mask=target, dt_direct_reward=rewards),
         non_tensors=dict(traj_uid=np.array([str(identities[index]) for index in first], dtype=object)))
+    import os
+    weighted = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
+    if weighted:
+        spans = np.empty(len(selected), dtype=object)
+        for i,item in enumerate(selected):
+            spans[i] = [(span['target_offsets'],span['credit_fraction'])
+                        for span in item['reward_target_spans'] if span['target_offsets']]
+        requests.non_tensor_batch['dt_target_span_credits'] = spans
     requests.meta_info.update(eos_token_id=int(eos_token_id), pad_token_id=int(pad_token_id),
                               dt_target_semantics='native_joint_action_target')
     result = {key: torch.zeros_like(responses, dtype=torch.float32) for key in CREDIT_KEYS}
@@ -170,7 +178,7 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
     analytic = reward_event_token_credit(
         torch.zeros((len(first), 1, width), dtype=torch.float32), rewards[:, None],
         torch.ones((len(first), 1, width), dtype=torch.bool), policy,
-        self_target_mask=target[:, None, :])
+        self_target_mask=target[:, None, :], linear_attribution=weighted)
     result.update(dt_token_advantages=analytic.advantages.float(),
                   dt_q_estimates=analytic.q_estimates.float(),
                   dt_v_estimates=analytic.v_estimates.float())

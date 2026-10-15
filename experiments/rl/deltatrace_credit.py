@@ -26,6 +26,7 @@ def trace_token_attribution(
     *,
     packed_answer_targets: Any,
     outcome_token_ids: list[int] | None = None,
+    target_span_credits: Any = None,
     prefix_cache_provider: Any = None,
     # Numerical audit envelope, NOT a training gate or a 2% relative-error
     # claim when abs(root_effect) < 1. Never renormalize the attribution.
@@ -50,6 +51,7 @@ def trace_token_attribution(
     # followed by all factual rows. Targets and event identities stay separate.
     pair = torch.stack((reference_input_ids, selected_input_ids), dim=1).flatten(0, 1)
     options = {} if outcome_token_ids is None else {"outcome_token_ids": outcome_token_ids}
+    if target_span_credits is not None:options['target_span_credits']=target_span_credits
     selection = packed_answer_targets(
         cases, offsets, pair.shape[1], selected_input_ids.device, **options
     )
@@ -116,6 +118,8 @@ def trace_token_attribution(
         delta = torch.as_tensor(detail['target_logp1'], device=selected_input_ids.device,
                                 dtype=torch.float64) - torch.as_tensor(
             detail['target_logp0'], device=selected_input_ids.device, dtype=torch.float64)
+        if 'target_seed_weights' in detail:
+            delta=delta*torch.as_tensor(detail['target_seed_weights'],device=delta.device,dtype=delta.dtype)
         roots = selection.sample_sums(delta)
         detail['per_sample'] = []
         for index, root in enumerate(roots.tolist()):

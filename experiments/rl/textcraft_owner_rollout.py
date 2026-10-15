@@ -173,14 +173,22 @@ class TextCraftOwner:
         if self.config.algorithm.adv_estimator != 'deltatrace':
             return output
         from executed_target_spans import encoded_payload_mask, full_trajectory_artifact
+        weighted = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
         direct_artifacts = []
-        for h, turns in zip(handlers, records):
+        for trajectory_index, (h, turns) in enumerate(zip(handlers, records)):
             full_ids, full_policy = h.dt_full_input_ids, h.dt_full_policy_mask
             target_mask = [False] * len(full_ids)
             parser_metadata = []
             suffix_ids = self.tokenizer.encode(h.format_config['qwen']['assistat_suffix_msg'],
                                                add_special_tokens=False)
-            for turn in turns:
+            # AgentGym emits one terminal score and its actual task_rounds.
+            # Zero scores are settlements too; no text or nonzero-reward heuristic.
+            settled_turn = int(output.batch['task_rounds'][trajectory_index]) - 1
+            if weighted and settled_turn != len(turns)-1:
+                raise ValueError('Native reward clock differs from captured action identities')
+            for turn_index, turn in enumerate(turns):
+                if weighted and turn_index != settled_turn:
+                    continue
                 metadata = turn.get('executed_payload_metadata')
                 if metadata is None:
                     continue  # The original owner rejected/failed this execution.
@@ -199,6 +207,13 @@ class TextCraftOwner:
             artifact['retained_response_positions'] += [-1] * (
                 output.batch['responses'].shape[1] - len(h.response_ids))
             artifact['payload_metadata'] = parser_metadata
+            if weighted:
+                artifact['reward_target_spans'] = [dict(
+                    event_index=0, action_turn_index=settled_turn,
+                    reward=float(scores[trajectory_index]), credit_fraction=1.,
+                    target_offsets=[i for i,selected in enumerate(artifact['target_mask']) if selected],
+                    reward_owner='AgentGym terminal scores/task_rounds')]
+
             direct_artifacts.append(artifact)
         direct_array = np.empty(len(direct_artifacts), dtype=object)
         direct_array[:] = direct_artifacts
