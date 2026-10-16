@@ -1,0 +1,707 @@
+{
+  "status": "completed_native_colocated_capacity",
+  "started": 1792164930.4380653,
+  "pid": 111521,
+  "birth": 1792164912.63,
+  "physical_gpus": [
+    6,
+    7
+  ],
+  "source_commit": "d4b39d2a911ce94da44c77d6ead6fa122f7693f2",
+  "context": 32768,
+  "batch": 8,
+  "microbatch_per_rank": 4,
+  "formal_training_mutations": 0,
+  "formal_iterations": 0,
+  "rollout_calls": 0,
+  "DT_calls": 0,
+  "checkpoint_create_calls": 0,
+  "FA_deterministic": false,
+  "fixture": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-native-efficiency-20261016-v2/same-session-native-data-32768.pt",
+  "checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-native-efficiency-20261016-v2/performance-exec2/numerical-warm-state-original-VERL",
+  "scope": "Exact32768 B4/rank capacity through the pinned TaskRunner initialization.\n\nReplace only the test driver's fit callback; all workers, model placement,\nlogprobs, values, GAE, checkpoint restore and updates remain native VERL.\nNo environment rollout, validation, formal iteration or checkpoint creation.\n",
+  "stages": [
+    {
+      "stage": "old_log_prob",
+      "seconds": 38.473791127093136,
+      "native_metrics": {}
+    },
+    {
+      "stage": "values",
+      "seconds": 20.074596004909836,
+      "native_metrics": {}
+    },
+    {
+      "stage": "adv",
+      "seconds": 1.423151156050153,
+      "native_metrics": {}
+    },
+    {
+      "stage": "update_critic",
+      "seconds": 176.77890152600594,
+      "native_metrics": {
+        "critic/vf_loss": [
+          20.510181427001953,
+          20.688581466674805
+        ],
+        "critic/vf_clipfrac": [
+          0.0,
+          0.5973082780838013
+        ],
+        "critic/vpred_mean": [
+          3.5782341957092285,
+          -2.062562942504883
+        ],
+        "critic/grad_norm": [
+          430.09100341796875,
+          137.3955535888672
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      }
+    },
+    {
+      "stage": "update_actor",
+      "seconds": 131.19709853106178,
+      "native_metrics": {
+        "actor/pg_loss": [
+          5.6514032564791705e-08,
+          -0.0036419054958969355
+        ],
+        "actor/pg_clipfrac": [
+          0.0,
+          0.0
+        ],
+        "actor/ppo_kl": [
+          0.0,
+          0.0018966887146234512
+        ],
+        "actor/pg_clipfrac_lower": [
+          0.0,
+          0.0
+        ],
+        "actor/grad_norm": [
+          0.2766017019748688,
+          0.2735070586204529
+        ],
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 85.33515548706055,
+        "perf/max_memory_reserved_gb": 103.544921875,
+        "perf/cpu_memory_used_gb": 843.8290328979492,
+        "actor/lr": 1e-06
+      }
+    }
+  ],
+  "effective_configuration": {
+    "data": {
+      "tokenizer": null,
+      "use_shm": false,
+      "train_files": "loop-training",
+      "val_files": "loop-evaluation",
+      "prompt_key": "prompt",
+      "reward_fn_key": "data_source",
+      "max_prompt_length": 32768,
+      "max_response_length": 1500,
+      "train_batch_size": 4,
+      "val_batch_size": 57,
+      "return_raw_input_ids": false,
+      "return_raw_chat": true,
+      "return_full_prompt": false,
+      "shuffle": true,
+      "filter_overlong_prompts": false,
+      "filter_overlong_prompts_workers": 1,
+      "truncation": "error",
+      "image_key": "images",
+      "video_key": "videos",
+      "trust_remote_code": false,
+      "apply_chat_template_kwargs": {},
+      "custom_cls": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-sql-native-speed-20261016-v3/AppWorld/entry/loop_iteration_dataset.py",
+        "name": "LoopIterationDataset"
+      },
+      "loop_train_groups": 4,
+      "loop_eval_groups": 57,
+      "dataloader_num_workers": 0
+    },
+    "actor_rollout_ref": {
+      "hybrid_engine": true,
+      "model": {
+        "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "use_shm": false,
+        "external_lib": null,
+        "override_config": {},
+        "enable_gradient_checkpointing": true,
+        "enable_activation_offload": true,
+        "use_remove_padding": false,
+        "lora_rank": 8,
+        "lora_alpha": 16,
+        "target_modules": "all-linear",
+        "use_liger": false,
+        "use_fused_kernels": true,
+        "trust_remote_code": true,
+        "fused_kernel_options": {
+          "impl_backend": "torch"
+        }
+      },
+      "actor": {
+        "strategy": "fsdp2",
+        "ppo_mini_batch_size": 32,
+        "ppo_micro_batch_size": null,
+        "ppo_micro_batch_size_per_gpu": 4,
+        "use_dynamic_bsz": false,
+        "ppo_max_token_len_per_gpu": 32768,
+        "grad_clip": 1.0,
+        "clip_ratio": 0.2,
+        "clip_ratio_low": 0.2,
+        "clip_ratio_high": 0.2,
+        "clip_ratio_c": 3.0,
+        "loss_agg_mode": "token-mean",
+        "entropy_coeff": 0.001,
+        "use_invalid_action_penalty": false,
+        "invalid_action_penalty_coef": 0.1,
+        "use_kl_loss": false,
+        "use_torch_compile": true,
+        "kl_loss_coef": 0.001,
+        "kl_loss_type": "low_var_kl",
+        "ppo_epochs": 2,
+        "shuffle": false,
+        "ulysses_sequence_parallel_size": 1,
+        "policy_loss": {
+          "loss_mode": "vanilla"
+        },
+        "checkpoint": {
+          "contents": [
+            "model",
+            "optimizer",
+            "extra"
+          ]
+        },
+        "optim": {
+          "lr": 1e-06,
+          "lr_warmup_steps": -1,
+          "lr_warmup_steps_ratio": 0.0,
+          "min_lr_ratio": 0.0,
+          "num_cycles": 0.5,
+          "warmup_style": "constant",
+          "total_training_steps": -1,
+          "weight_decay": 0.01
+        },
+        "fsdp_config": {
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "param_offload": true,
+          "optimizer_offload": true,
+          "offload_policy": true,
+          "reshard_after_forward": true,
+          "fsdp_size": -1,
+          "model_dtype": "bfloat16"
+        }
+      },
+      "ref": {
+        "strategy": "fsdp",
+        "fsdp_config": {
+          "param_offload": false,
+          "reshard_after_forward": true,
+          "wrap_policy": {
+            "min_num_params": 0
+          }
+        },
+        "use_torch_compile": true,
+        "log_prob_micro_batch_size": null,
+        "log_prob_micro_batch_size_per_gpu": null,
+        "log_prob_use_dynamic_bsz": false,
+        "log_prob_max_token_len_per_gpu": 32768,
+        "ulysses_sequence_parallel_size": 1
+      },
+      "rollout": {
+        "name": "vllm",
+        "mode": "sync",
+        "chat_scheduler": "verl.workers.rollout.async_server.ChatCompletionScheduler",
+        "temperature": 1.0,
+        "top_k": -1,
+        "top_p": 1,
+        "use_fire_sampling": false,
+        "prompt_length": 31268,
+        "response_length": 1500,
+        "dtype": "bfloat16",
+        "gpu_memory_utilization": 0.75,
+        "ignore_eos": false,
+        "enforce_eager": false,
+        "free_cache_engine": false,
+        "load_format": "safetensors",
+        "layered_summon": false,
+        "tensor_model_parallel_size": 1,
+        "max_num_batched_tokens": 32768,
+        "max_model_len": 32768,
+        "max_num_seqs": 32,
+        "log_prob_micro_batch_size": null,
+        "log_prob_micro_batch_size_per_gpu": 4,
+        "log_prob_use_dynamic_bsz": false,
+        "log_prob_max_token_len_per_gpu": 32768,
+        "disable_log_stats": true,
+        "enable_chunked_prefill": true,
+        "do_sample": true,
+        "n": 1,
+        "engine_kwargs": {
+          "vllm": {
+            "swap_space": null,
+            "limit_mm_per_prompt": {
+              "image": 0,
+              "video": 0
+            }
+          },
+          "sglang": {
+            "attention_backend": null
+          }
+        },
+        "val_kwargs": {
+          "top_k": -1,
+          "top_p": 1.0,
+          "temperature": 0.0,
+          "n": 1,
+          "do_sample": false
+        },
+        "multi_turn": {
+          "enable": true,
+          "max_turns": null,
+          "tool_config_path": null,
+          "format": "chatml"
+        }
+      }
+    },
+    "critic": {
+      "rollout_n": 1,
+      "strategy": "fsdp2",
+      "optim": {
+        "lr": 1e-05,
+        "lr_warmup_steps_ratio": 0.0,
+        "min_lr_ratio": null,
+        "warmup_style": "constant",
+        "total_training_steps": -1,
+        "weight_decay": 0.01
+      },
+      "model": {
+        "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "use_shm": false,
+        "tokenizer_path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "override_config": {},
+        "external_lib": null,
+        "enable_gradient_checkpointing": true,
+        "enable_activation_offload": true,
+        "use_remove_padding": false,
+        "trust_remote_code": true,
+        "fsdp_config": {
+          "param_offload": true,
+          "optimizer_offload": true,
+          "offload_policy": true,
+          "reshard_after_forward": true,
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "fsdp_size": -1
+        },
+        "lora_rank": 0,
+        "lora_alpha": 16,
+        "target_modules": "all-linear",
+        "activation_offload_native_max_seq_len": 8192
+      },
+      "ppo_mini_batch_size": 32,
+      "ppo_micro_batch_size": null,
+      "ppo_micro_batch_size_per_gpu": 4,
+      "forward_micro_batch_size": null,
+      "forward_micro_batch_size_per_gpu": 4,
+      "use_dynamic_bsz": false,
+      "ppo_max_token_len_per_gpu": 32768,
+      "forward_max_token_len_per_gpu": 32768,
+      "ulysses_sequence_parallel_size": 1,
+      "ppo_epochs": 2,
+      "shuffle": false,
+      "grad_clip": 1.0,
+      "cliprange_value": 0.5,
+      "loss_agg_mode": "token-mean",
+      "checkpoint": {
+        "contents": [
+          "model",
+          "optimizer",
+          "extra"
+        ]
+      }
+    },
+    "reward_model": {
+      "enable": false,
+      "strategy": "fsdp",
+      "model": {
+        "input_tokenizer": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "path": "~/models/FsfairX-LLaMA3-RM-v0.1",
+        "use_shm": false,
+        "external_lib": null,
+        "use_remove_padding": false,
+        "use_fused_kernels": true,
+        "trust_remote_code": false,
+        "fsdp_config": {
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "param_offload": false,
+          "reshard_after_forward": true,
+          "fsdp_size": -1
+        }
+      },
+      "micro_batch_size": null,
+      "micro_batch_size_per_gpu": null,
+      "max_length": null,
+      "ulysses_sequence_parallel_size": 1,
+      "use_dynamic_bsz": false,
+      "forward_max_token_len_per_gpu": 32768,
+      "reward_manager": "episode",
+      "launch_reward_fn_async": false,
+      "sandbox_fusion": {
+        "url": null,
+        "max_concurrent": 64
+      }
+    },
+    "custom_reward_function": {
+      "path": null,
+      "name": "compute_score"
+    },
+    "algorithm": {
+      "gamma": 1.0,
+      "lam": 1.0,
+      "adv_estimator": "gae",
+      "norm_adv_by_std_in_grpo": true,
+      "use_kl_in_reward": false,
+      "kl_penalty": "kl",
+      "kl_ctrl": {
+        "type": "fixed",
+        "kl_coef": 0.001,
+        "horizon": 10000,
+        "target_kl": 0.1
+      },
+      "use_pf_ppo": false,
+      "pf_ppo": {
+        "reweight_method": "pow",
+        "weight_pow": 2.0
+      },
+      "gigpo": {
+        "step_advantage_w": 1.0,
+        "mode": "mean_norm",
+        "enable_similarity": false,
+        "similarity_thresh": 0.95
+      },
+      "filter_groups": {
+        "enable": false,
+        "max_num_gen_batches": 10
+      }
+    },
+    "trainer": {
+      "balance_batch": true,
+      "total_epochs": 200,
+      "total_training_steps": 2,
+      "project_name": "deltatrace_official_environments",
+      "experiment_name": "PPO-32k-colocated-capacity-20261016-v1",
+      "logger": [
+        "console"
+      ],
+      "log_val_generations": 0,
+      "rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-PPO-32k-speed-20261016-v3/appworld/rollouts",
+      "validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-native-PPO-32k-speed-20261016-v3/appworld/validation",
+      "nnodes": 1,
+      "n_gpus_per_node": 2,
+      "save_freq": -1,
+      "resume_mode": "disable",
+      "resume_from_path": null,
+      "val_before_train": false,
+      "val_only": false,
+      "test_freq": -1,
+      "critic_warmup": 0,
+      "default_hdfs_dir": null,
+      "del_local_ckpt_after_load": false,
+      "default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-colocated-capacity-20261016-v1/execution3/unused-checkpoints",
+      "max_actor_ckpt_to_keep": 2,
+      "max_critic_ckpt_to_keep": null,
+      "ray_wait_register_center_timeout": 300,
+      "device": "cuda"
+    },
+    "ray_init": {
+      "num_cpus": 16,
+      "runtime_env": {
+        "worker_process_setup_hook": "metax_fsdp_event_wait.worker_setup",
+        "env_vars": {
+          "VERL_RELEASE_UNUSED_HOST_CACHE": "1",
+          "DT_FSDP_EVENT_WAIT_RECEIPTS": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-colocated-capacity-20261016-v1/execution3/worker-runtime",
+          "DT_CREDIT_MODE": "reward_target_exponential_v5"
+        }
+      }
+    },
+    "env": {
+      "env_name": "AppWorld",
+      "seed": 0,
+      "max_steps": 40,
+      "history_length": 2,
+      "resources_per_worker": {
+        "num_cpus": 0.1,
+        "num_gpus": 0
+      },
+      "rollout": {
+        "n": 6
+      },
+      "alfworld": {
+        "eval_dataset": "eval_in_distribution"
+      },
+      "search": {
+        "log_requests": false,
+        "search_url": "http://127.0.0.1:8000/retrieve",
+        "topk": 3,
+        "timeout": 60
+      },
+      "sokoban": {
+        "dim_room": [
+          6,
+          6
+        ],
+        "num_boxes": 1,
+        "search_depth": 30,
+        "mode": "tiny_rgb_array"
+      },
+      "webshop": {
+        "use_small": true,
+        "human_goals": false
+      },
+      "factory": {
+        "_target_": "loop_environment_entry.make_loop_environments"
+      },
+      "loop": {
+        "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-action-target-20261007-v3/appworld/loop-owner"
+      }
+    }
+  },
+  "original_TaskRunner": {
+    "path": "/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py",
+    "SHA256": "0c65ada558eff709049dd29894bd5079f5d07da8e219cbc461b61f07f6c4b27b",
+    "test_seam": "Temporary fit callback only; original TaskRunner initialization invoked unchanged"
+  },
+  "workers_initial": [
+    {
+      "pid": 117056,
+      "birth": 1792164944.33,
+      "physical_CVD": "6",
+      "FA_deterministic": "0",
+      "roles": {
+        "actor_rollout": {
+          "kind": "actor_rollout",
+          "microbatch": 4,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "max_model_len": 32768,
+          "has_vllm": true
+        },
+        "critic": {
+          "kind": "critic",
+          "microbatch": 4,
+          "activation_offload": true,
+          "native_bound": 8192
+        }
+      },
+      "modules": {
+        "verl.workers.fsdp_workers": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/fsdp_workers.py",
+          "SHA256": "5bb0211a5cf5bd355bb763da93d26e3902f1297c96273eddf5e3a6640d455dd3"
+        },
+        "verl.workers.actor.dp_actor": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl.workers.critic.dp_critic": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/critic/dp_critic.py",
+          "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.activation_offload": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/activation_offload.py",
+          "SHA256": "242f7919ef00bcf4dced4d4c856946d2e761dbf24297d434356194f03943cfcb"
+        }
+      }
+    },
+    {
+      "pid": 119243,
+      "birth": 1792164963.49,
+      "physical_CVD": "7",
+      "FA_deterministic": "0",
+      "roles": {
+        "actor_rollout": {
+          "kind": "actor_rollout",
+          "microbatch": 4,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "max_model_len": 32768,
+          "has_vllm": true
+        },
+        "critic": {
+          "kind": "critic",
+          "microbatch": 4,
+          "activation_offload": true,
+          "native_bound": 8192
+        }
+      },
+      "modules": {
+        "verl.workers.fsdp_workers": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/fsdp_workers.py",
+          "SHA256": "5bb0211a5cf5bd355bb763da93d26e3902f1297c96273eddf5e3a6640d455dd3"
+        },
+        "verl.workers.actor.dp_actor": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl.workers.critic.dp_critic": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/critic/dp_critic.py",
+          "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.activation_offload": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/activation_offload.py",
+          "SHA256": "242f7919ef00bcf4dced4d4c856946d2e761dbf24297d434356194f03943cfcb"
+        }
+      }
+    }
+  ],
+  "input": {
+    "shape": [
+      8,
+      32768
+    ],
+    "response_shape": [
+      8,
+      32767
+    ],
+    "SHA256": "30f57b4435e80ba2eb436812f92e2ca453ad4c2eac5670f38c4c6633973494d0",
+    "global_token_num": [
+      32768,
+      32768,
+      32768,
+      32768,
+      32768,
+      32768,
+      32768,
+      32768
+    ],
+    "policy_tokens": [
+      270,
+      270,
+      270,
+      270,
+      270,
+      270,
+      270,
+      270
+    ],
+    "response_axis": "32767 positions; same original policy mask, added history masked out",
+    "natural_task_quality_claimed": false
+  },
+  "checkpoint_loaded_from": "/dev/shm/verl-cache/c8323a76830bb307ce86c03970c3e0e5/numerical-warm-state-original-VERL",
+  "workers_final": [
+    {
+      "pid": 117056,
+      "birth": 1792164944.33,
+      "physical_CVD": "6",
+      "FA_deterministic": "0",
+      "roles": {
+        "actor_rollout": {
+          "kind": "actor_rollout",
+          "microbatch": 4,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "max_model_len": 32768,
+          "has_vllm": true
+        },
+        "critic": {
+          "kind": "critic",
+          "microbatch": 4,
+          "activation_offload": true,
+          "native_bound": 8192
+        }
+      },
+      "modules": {
+        "verl.workers.fsdp_workers": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/fsdp_workers.py",
+          "SHA256": "5bb0211a5cf5bd355bb763da93d26e3902f1297c96273eddf5e3a6640d455dd3"
+        },
+        "verl.workers.actor.dp_actor": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl.workers.critic.dp_critic": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/critic/dp_critic.py",
+          "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.activation_offload": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/activation_offload.py",
+          "SHA256": "242f7919ef00bcf4dced4d4c856946d2e761dbf24297d434356194f03943cfcb"
+        },
+        "verl.utils.experimental.torch_functional": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/experimental/torch_functional.py",
+          "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+        }
+      }
+    },
+    {
+      "pid": 119243,
+      "birth": 1792164963.49,
+      "physical_CVD": "7",
+      "FA_deterministic": "0",
+      "roles": {
+        "actor_rollout": {
+          "kind": "actor_rollout",
+          "microbatch": 4,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "max_model_len": 32768,
+          "has_vllm": true
+        },
+        "critic": {
+          "kind": "critic",
+          "microbatch": 4,
+          "activation_offload": true,
+          "native_bound": 8192
+        }
+      },
+      "modules": {
+        "verl.workers.fsdp_workers": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/fsdp_workers.py",
+          "SHA256": "5bb0211a5cf5bd355bb763da93d26e3902f1297c96273eddf5e3a6640d455dd3"
+        },
+        "verl.workers.actor.dp_actor": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl.workers.critic.dp_critic": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/critic/dp_critic.py",
+          "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.activation_offload": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/activation_offload.py",
+          "SHA256": "242f7919ef00bcf4dced4d4c856946d2e761dbf24297d434356194f03943cfcb"
+        },
+        "verl.utils.experimental.torch_functional": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/experimental/torch_functional.py",
+          "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+        }
+      }
+    }
+  ],
+  "finished": 1792165515.762263
+}
