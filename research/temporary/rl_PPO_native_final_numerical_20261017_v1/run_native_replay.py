@@ -27,6 +27,7 @@ for native_node in ast.walk(tree):
 tree.body[0].value.value = 'Final original CriticWorker update and post-values: same restored native checkpoint and input, no update observers, pinned VERL atol0/rtol0 criterion.'
 """
 rename = next(n for n in tree.body if isinstance(n, ast.Assign) and ast.unparse(n.targets[0]) == 'rename_preflight')
-assert isinstance(rename.value, ast.Call) and isinstance(rename.value.args[0], ast.Constant)
-rename.value.args[0].value += final_native_calls
+assert isinstance(rename.value, ast.Attribute) and rename.value.attr == 'body'
+assert isinstance(rename.value.value, ast.Call) and isinstance(rename.value.value.args[0], ast.Constant)
+rename.value.value.args[0].value += final_native_calls
 exec(compile(ast.fix_missing_locations(tree), str(source), 'exec'), globals())
