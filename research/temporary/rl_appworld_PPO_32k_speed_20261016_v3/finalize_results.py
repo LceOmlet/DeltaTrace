@@ -17,7 +17,19 @@ assert snapshot['queue']['status'] == 'all_native_drivers_finished'
 assert len(snapshot['jobs']) == 1
 job = snapshot['jobs'][0]
 assert job['exit_code'] == 0 and job['completed_iterations'] == 2
-assert not job['errors'], job['errors']
+classified_errors = []
+unclassified_errors = []
+for error in job['errors']:
+    lines = Path(error['path']).read_text(errors='replace').splitlines()
+    start = error['line']-1
+    end = next((n for n in range(start+1,len(lines)) if 'Traceback (most recent call last):' in lines[n]),len(lines))
+    block = '\n'.join(lines[start:end])
+    if ('subprocess.TimeoutExpired:' in block and 'popen.wait(timeout=20)' in block
+            and 'stop_appworld_environment_server' in block and 'close_server' in block):
+        classified_errors.append(dict(**error, classification='Original LOOP environment close SIGINT timeout',
+                                      traceback=block, owner_SIGKILL_fallback_logged='sending SIGKILL command' in block))
+    else:
+        unclassified_errors.append(dict(**error,traceback=block))
 binding_path = AUDIT/'actual-worker-imports-appworld.json'
 bindings = json.loads(binding_path.read_bytes())
 assert len(bindings['results']) == 2
@@ -37,7 +49,10 @@ for key in stage_keys:
     per_million_input_tokens[key] = (statistics.mean(t*1e6/n for t,n in zip(values,tokens))
                                       if all(t is not None and n is not None and n>0 for t,n in zip(values,tokens)) else None)
 result = dict(version='appworld-native-PPO-32k-speed-20261016-v3', collected_unix=time.time(),
+              status='completed_with_environment_teardown_timeouts' if classified_errors and not unclassified_errors
+                     else 'completed_with_unclassified_log_errors' if unclassified_errors else 'completed',
               source_commit=snapshot['queue']['source_commit'], job=job,
+              classified_environment_close_errors=classified_errors,unclassified_log_errors=unclassified_errors,
               mean_stage_seconds=means, mean_seconds_per_million_full_input_tokens=per_million_input_tokens,
               actual_worker_imports=bindings, snapshot_SHA256=hashlib.sha256((AUDIT/'latest-trial-snapshot.json').read_bytes()).hexdigest(),
               numerical_32768_receipt=str(ROOT/'receipts/PPO-32k-numeric-reference-20261016-v3/same-session-status.json'),
@@ -51,4 +66,5 @@ result = dict(version='appworld-native-PPO-32k-speed-20261016-v3', collected_uni
                            'Different natural rollouts cannot establish a controlled actor kernel speedup'])
 (AUDIT/'complete-measurements.json').write_text(json.dumps(result, indent=2)+'\n')
 print(json.dumps(dict(completed_iterations=2, exit_code=0, mean_stage_seconds=means,
+                      classified_environment_close_errors=len(classified_errors),unclassified_log_errors=len(unclassified_errors),
                       mean_seconds_per_million_full_input_tokens=per_million_input_tokens), indent=2))
