@@ -12,6 +12,7 @@ ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT = ROOT / 'receipts/appworld-formal-training-20261017-v1'
 method = sys.argv[1]
 assert method in ('dt', 'ppo')
+phase = 'after-first-DT-v1' if '--after-DT' in sys.argv else 'formal-v1'
 manifest = json.loads((ROOT / 'formal-training.json').read_bytes())
 job, = [j for j in manifest['jobs'] if j.get('task') == 'AppWorld' and j.get('method') == method]
 source = json.loads(Path(job['source_receipt']).read_bytes())
@@ -20,7 +21,10 @@ if '--client' not in sys.argv:
     env.update(source['effective_environment'])
     env['CUDA_VISIBLE_DEVICES'] = ''
     env.pop('MACA_VISIBLE_DEVICES', None)
-    raise SystemExit(subprocess.call([env['VENV_PYTHON'], '-X', 'utf8', __file__, method, '--client'], env=env))
+    command = [env['VENV_PYTHON'], '-X', 'utf8', __file__, method, '--client']
+    if '--after-DT' in sys.argv:
+        command.append('--after-DT')
+    raise SystemExit(subprocess.call(command, env=env))
 
 import psutil
 import ray
@@ -45,7 +49,7 @@ assert driver.create_time() == job['birth']
 gcs = next(p for p in driver.children(recursive=True) if p.name() == 'gcs_server')
 port = next(a.split('=', 1)[1] for a in gcs.cmdline() if a.startswith('--gcs_server_port='))
 host = next(a.split('=', 1)[1] for a in gcs.cmdline() if a.startswith('--node-ip-address='))
-request = AUDIT / ('worker-imports-request-' + method + '.json')
+request = AUDIT / ('worker-imports-request-' + method + '-' + phase + '.json')
 request.write_text(json.dumps(dict(pid=os.getpid(), birth=psutil.Process().create_time(),
                                   job_pid=job['pid'], job_birth=job['birth'],
                                   status='read_only_rpc_pending', collected=time.time()), indent=2) + '\n')
@@ -57,8 +61,9 @@ try:
     results = ray.get([ray.get_actor(x['name'], namespace=x['namespace']).execute_with_func_generator.remote(func=inspect_worker)
                        for x in named])
     assert all(m.get('matches_prepared_source') is not False for r in results for m in r['modules'].values())
-    receipt = Path(job['output']).parent / 'runtime-overrides' / 'actual-worker-imports-formal-v1.json'
+    receipt = Path(job['output']).parent / 'runtime-overrides' / ('actual-worker-imports-' + phase + '.json')
     receipt.parent.mkdir(exist_ok=True)
+    assert not receipt.exists(), 'Retain the previous actual import observation'
     record = dict(status='completed_read_only_worker_binding_check', task='AppWorld', method=method,
                   version=job['version'], local_patch_commit=source['local_patch_commit'],
                   collected_unix=time.time(), job=dict(pid=job['pid'], birth=job['birth']),

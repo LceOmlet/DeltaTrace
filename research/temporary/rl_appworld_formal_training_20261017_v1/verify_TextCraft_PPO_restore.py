@@ -28,7 +28,9 @@ driver = psutil.Process(job['pid'])
 assert driver.create_time() == job['birth']
 children = driver.children(recursive=True)
 workers = [p for p in children if p.name().startswith('ray::WorkerDict')]
-if len(workers) != 2 or any('actor_rollout_generate_sequences' not in p.name() for p in workers):
+ready_phases=('actor_rollout_generate_sequences','actor_rollout_compute_log_prob',
+              'ref_compute_ref_log_prob','critic_compute_values')
+if len(workers) != 2 or any(not any(phase in p.name() for phase in ready_phases) for p in workers):
     print(json.dumps(dict(status='pending_original_native_resume_initialization',pid=job['pid'],birth=job['birth'],
                           phases=[p.name() for p in workers],model_calls=0,optimizer_updates=0)))
     raise SystemExit(0)
@@ -47,12 +49,17 @@ try:
                        for a in named])
 finally:
     ray.shutdown()
+(AUDIT/'TextCraft-PPO-native-OOM-recovery-state-readback-raw.json').write_text(json.dumps(
+    dict(collected=time.time(),job=dict(pid=job['pid'],birth=job['birth']),workers=results,
+         model_calls=0,optimizer_updates=0),indent=2)+'\n')
 expected = json.loads((AUDIT/'TextCraft-PPO-native-OOM-recovery-input.json').read_bytes())
 saved = {(r['role'],r['rank']):r for r in expected['saved_role_states']}
 comparisons = []
 for worker in results:
     assert worker['core']['SHA256'] == 'fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299'
     for role in worker['roles']:
+        if 'actor' not in role and 'critic' not in role:
+            continue
         kind = 'actor' if 'actor' in role else 'critic'
         original = saved[(kind,role['rank'])]
         comparisons.append(dict(role=kind,rank=role['rank'],

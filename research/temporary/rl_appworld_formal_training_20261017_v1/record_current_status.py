@@ -34,8 +34,8 @@ result = read(result_path)
 for method, key in [('dt', 'DTPO'), ('ppo', 'PPO')]:
     job, = [j for j in manifest['jobs'] if j.get('method') == method]
     observed, = [j for j in snapshot['jobs'] if j['method'] == method]
-    source_dir = Path('research/temporary/' + ('rl_appworld_dtpo_formal_20261017_v2' if method == 'dt'
-                                           else 'rl_appworld_PPO_formal_20261017_v1') + '/receipts')
+    source_dir = Path('research/temporary/' + ('rl_appworld_dtpo_formal_20261017_v' if method == 'dt'
+                                           else 'rl_appworld_PPO_formal_20261017_v') + job['version'].rsplit('-v',1)[1] + '/receipts')
     source = read(source_dir / 'source.json')
     current = dict(version=job['version'], pid=job['pid'], birth=job['birth'],
                    physical_gpus=job['devices'], run=str(Path(job['output']).parent).replace('\\', '/'),
@@ -43,7 +43,10 @@ for method, key in [('dt', 'DTPO'), ('ppo', 'PPO')]:
                    method_source_commit=source['method_source_commit'], upstream_commits=source['upstream_commits'],
                    source_bindings=source['source_bindings'], source_receipt=job['source_receipt'],
                    checkpoints=job['checkpoints'], budget=job['budget'],
-                   status='native_first_iteration_in_progress_no_completed_iteration' if observed['completed_iterations'] == 0
+                   status='native_formal_job_exited' if not observed['alive'] else
+                          'native_initialization_in_progress_no_completed_iteration' if observed['completed_iterations']==0
+                          and (not observed['workers'] or any('init_model' in w['phase'] or 'load_checkpoint' in w['phase'] for w in observed['workers'])) else
+                          'native_first_iteration_in_progress_no_completed_iteration' if observed['completed_iterations'] == 0
                           else 'native_formal_training_in_progress',
                    alive=observed['alive'], workers=observed['workers'],
                    current_worker_phases=[w['phase'] for w in observed['workers']],
@@ -54,6 +57,8 @@ for method, key in [('dt', 'DTPO'), ('ppo', 'PPO')]:
                    training_methods_or_numeric_hyperparameters_changed=False)
     bindings = source_dir / 'actual-worker-imports-formal-v1.json'
     current['actual_worker_bindings'] = read(bindings) if bindings.exists() else dict(status='read_only_rpc_pending')
+    after_DT = source_dir / 'actual-worker-imports-after-first-DT-v1.json'
+    if after_DT.exists():current['actual_worker_bindings_after_DT']=read(after_DT)
     current['actual_environment_owner_bindings'] = [read(p) for p in sorted(source_dir.glob('loop-owner-*.json'))]
     if method == 'dt':
         current['previous_failed_run'] = source.get('previous_failed_run')
@@ -66,8 +71,32 @@ for method, key in [('dt', 'DTPO'), ('ppo', 'PPO')]:
                                     warm_update_output_max_abs=0, compared_values=65528,
                                     exact_32k_B4_colocated_capacity_passed=True,
                                     universal_first_use_or_future_trajectory_bitwise_identity_claimed=False)
+    if result.get(key,{}).get('version') not in (None,current['version']):
+        previous=result[key]
+        exit_name='AppWorld-DTPO-v2-restart-readiness-exit.json' if key=='DTPO' else 'AppWorld-PPO-v1-restart-readiness-exit.json'
+        if (here/'receipts'/exit_name).exists():
+            exit_record=read(here/'receipts'/exit_name)
+            previous.update(status=exit_record['status'],alive=False,completed_iterations=exit_record['completed_iterations'],
+                            latest_checkpointed_iteration=None,exit_receipt=str(here/'receipts'/exit_name))
+        result.setdefault(key+'_history',[]).append(previous)
     result[key] = current
-result.update(updated_at=now, status='DTPO_and_native_PPO_formal_first_iteration_in_progress', goal_status='active',
+recovery_path=here/'receipts/TextCraft-PPO-native-global-OOM-recovery-v1-job.json'
+if recovery_path.exists():
+    recovery=read(recovery_path)
+    restored_path=here/'receipts/native-PPO-restore-global-OOM-20261017-v1.json'
+    restored=read(restored_path) if restored_path.exists() else None
+    recovery_status=restored['status'] if restored else recovery['status']
+    result['protected_TextCraft_jobs'][1]=dict(pid=recovery['pid'],birth=recovery['birth'],physical_gpus=[4,5],
+        status=recovery_status,execution_version=recovery['execution_version'],
+        execution_patch_commit=recovery['execution_patch_commit'],resumed_completed_iteration=100,
+        prior_kernel_OOM=dict(pid=3946004,birth=1792041120.19,completed_log_iteration=103,complete_checkpoint_iteration=100),
+        unsaved_iterations_to_rerun=[101,102,103],receipt=str(recovery_path),
+        actual_native_restore_receipt=str(restored_path) if restored else None)
+    result['inactive_diagnostic_checkpoint_storage_relocation']=read(here/'receipts/inactive-diagnostic-checkpoint-storage-relocation.json')
+    result['AppWorld_PPO_restart_boundary_owner_candidate']=read('research/temporary/rl_appworld_environment_restart_boundary_20261017_v3/receipts/owner-patch.json')
+    result['AppWorld_PPO_restart_boundary_CPU_verification']=read('research/temporary/rl_appworld_environment_restart_boundary_20261017_v3/receipts/CPU-recovery-verification.json')
+result.update(updated_at=now, status='native_AppWorld_job_exit_recovery_in_progress' if not all(result[k]['alive'] for k in ('DTPO','PPO'))
+                                    else 'DTPO_and_native_PPO_formal_training_in_progress', goal_status='active',
               goal_completion='Both original 200-iteration budgets and final native shared complete checkpoints',
               host_MemAvailable_GiB=snapshot['host_MemAvailable_GiB'])
 write(result_path, result)
@@ -108,6 +137,12 @@ runtime['latest_PPO_native_final_numerical_20261017_v1'] = dict(
     source_commit=raw_numeric['source_commit'], production_FA_deterministic=False,
     warm_output_max_abs=0, total_values=65528, context=8192, response_length=8191, microbatch_per_rank=4,
     first_use_native_comparisons_retained=raw_numeric['comparisons'], universal_bitwise_guarantee=False)
+if recovery_path.exists():
+    runtime['latest_TextCraft_PPO_global_OOM_recovery_20261017_v1']=dict(updated_at=now,
+        status=recovery_status,pid=recovery['pid'],birth=recovery['birth'],physical_gpus=[4,5],
+        checkpoint=recovery['resume_from_path'],execution_patch_commit=recovery['execution_patch_commit'],
+        native_resume_receipt=str(recovery_path),prior_completed_log_iteration=103,native_checkpoint_iteration=100,
+        unsaved_iterations_to_rerun=[101,102,103],storage_relocation_receipt=str(here/'receipts/inactive-diagnostic-checkpoint-storage-relocation.json'))
 write(runtime_path, runtime)
 
 record_path = Path('experiments/rl/RUNTIME_RECORD.md')
