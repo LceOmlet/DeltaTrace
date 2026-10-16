@@ -1,3 +1,12 @@
+**2026-10-16 用户进一步授权停止物理ID6/7上的作业，继续SQL/AppWorld效率研究。**
+原GPU2/3已被maxk项目占用，未启动的v1试跑回执保留；本次停止已核对身份的
+GPU6/7 Qwen3-32B推理服务后，将相同已通过CPU检查的两任务试跑配置迁到6/7。
+新执行版本为appworld-sql-native-speed-20261016-v2，只改设备、独立输出和版本标识；
+原v5 DT/优势/PPO、单轨迹限制、32k/B4及两轮预算保持。先SQL后AppWorld，
+复用原生生成、环境、DT及更新和原日志解析；按实际轨迹/token及阶段区分耗时。
+DTPO与PPO的actor更新、PPO额外critic更新分开比较，不用总轮数或不同token量
+冒称策略更新内核加速。当前TextCraft DTPO/PPO、小时绘图及GPU2/3其他项目保持。
+
 **2026-10-16 用户授权 AppWorld、SQL 训练速度试跑，明确第3/4张为物理GPU2/3，保留现有PPO。**
 仅为这两个任务做独立、有限的原生训练速度试跑；当前TextCraft DTPO/PPO、
 小时绘图和已停止GRPO身份保持。沿用v5官方GRPO乘子、逐target原EOS DT及
