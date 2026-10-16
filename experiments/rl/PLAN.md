@@ -1,3 +1,12 @@
+**2026-10-16 用户补充授权物理ID2/3可用于调试和训练。**
+最新核对两卡空闲，允许SQL专项调试/有限原生效率试跑与6/7 AppWorld并行；
+0/1 TextCraft DTPO v5及4/5原PPO保持。此授权不改变信用方法、奖励、采样/更新
+超参或正式训练身份；先查原生日志/接口阻断实际DT负载的直接原因，再决定试跑。
+AppWorld补充原生PPO两轮效率试跑：复用同一LOOP环境/4组x6及32k/B4，
+由原固定VERL的GAE/critic执行，不实现另一套PPO。critic采用已运行原TextCraft
+PPO的实际兼容配置，其他critic选项保留官方默认；原AppWorld actor配置保持。
+只比较记录的阶段成本和有效负载，不把不同样本、两轮或小批量称质量对照。
+
 **2026-10-16 SQL/AppWorld v2实际启动失败后的最小接口修复，执行版本v3。**
 SQL原生生成完成后，DirectActionTargetReadout任务注册只允许TextCraft/AppWorld而
 拒绝SkyRL-SQL；仅在原owner任务注册中接纳已有SQL原始artifact，Q/V/A、EOS、
