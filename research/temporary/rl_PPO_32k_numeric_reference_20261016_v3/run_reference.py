@@ -20,7 +20,7 @@ assert code.count(old)==1
 code=code.replace(old,"AUDIT=ROOT/'receipts'/'"+VERIFY+"'")
 old="    env['CUDA_VISIBLE_DEVICES']='2,3';env.pop('MACA_VISIBLE_DEVICES',None)"
 assert code.count(old)==1
-code=code.replace(old,"    env['FLASH_ATTENTION_DETERMINISTIC']='1'\n"+old)
+code=code.replace(old,"    env['FLASH_ATTENTION_DETERMINISTIC']='1'\n    env['DT_FSDP_EVENT_WAIT_RECEIPTS']=str(AUDIT/'worker-runtime')\n"+old)
 start=code.index('original_data=torch.load(')
 end=code.index('status=dict(',start)
 replacement="""data=torch.load(ROOT/'receipts/PPO-32k-native-efficiency-20261016-v2/same-session-native-data-32768.pt',weights_only=False,map_location='cpu')
