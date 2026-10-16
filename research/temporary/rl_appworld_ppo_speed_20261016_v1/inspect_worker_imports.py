@@ -37,7 +37,8 @@ def inspect_worker(worker):
     names = ['dt_training_batch', 'reward_readout', 'counterfactual', 'deltatrace_rollout',
              'owner_trajectory_batch', 'sql_owner_rollout', 'loop_owner_rollout',
              'verl.workers.fsdp_workers', 'verl.workers.actor.dp_actor', 'verl.trainer.ppo.core_algos',
-             'verl.utils.experimental.torch_functional', 'verl.models.transformers.qwen3_vl']
+             'verl.utils.experimental.torch_functional', 'verl.models.transformers.qwen3_vl',
+             'verl.workers.critic.dp_critic']
     names += [n for n in sys.modules if n.rsplit('.', 1)[-1] in
               ('qwen35_gdn_finite', 'qwen35_answer_finite', 'qwen35_retained_capture', 'qwen35_dense_finite_runner')]
     for name in dict.fromkeys(names):
@@ -50,6 +51,16 @@ def inspect_worker(worker):
                                  matches_prepared_source=None if expected is None else digest == expected)
         else:
             modules[name] = dict(imported=False)
+    roles = {name:type(item).__module__ + '.' + type(item).__name__ for name,item in worker.worker_dict.items()}
+    # Original colocated role registration, rather than an invented _is_critic flag.
+    critic = worker.worker_dict.get('critic')
+    critic_info = dict(roles=roles, initialized=False)
+    if critic is not None:
+        native_critic = getattr(critic, 'critic', None)
+        critic_info.update(initialized=native_critic is not None,
+            type=type(native_critic).__module__ + '.' + type(native_critic).__name__,
+            epochs=critic.config.ppo_epochs, minibatch=critic.config.ppo_mini_batch_size,
+            microbatch=critic.config.ppo_micro_batch_size_per_gpu, model_path=critic.config.model.path)
     return dict(pid=os.getpid(), birth=psutil.Process().create_time(), rank=actor.rank,
                 DT_CREDIT_MODE=os.environ.get('DT_CREDIT_MODE'), DT_ROOT=os.environ.get('DT_ROOT'),
                 VERL_ROOT=os.environ.get('VERL_ROOT'), VENV_PYTHON=os.environ.get('VENV_PYTHON'),
@@ -57,7 +68,7 @@ def inspect_worker(worker):
                 microbatch_per_gpu=actor.config.actor.ppo_micro_batch_size_per_gpu,
                 worker_minibatch=actor.config.actor.ppo_mini_batch_size,
                 enforce_eager=actor.config.rollout.enforce_eager,
-                free_cache_engine=actor.config.rollout.free_cache_engine, modules=modules,
+                free_cache_engine=actor.config.rollout.free_cache_engine, modules=modules, native_critic=critic_info,
                 model_calls=0, DT_calls=0, optimizer_updates=0, method_changes=0)
 
 driver = psutil.Process(job['pid'])
@@ -78,6 +89,7 @@ try:
                   script_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                   job=dict(pid=job['pid'], birth=job['birth']), results=results,
                   scope='Read-only native VERL worker RPC; absent lazy modules explicitly remain unverified')
+    record['metadata_attempt1'] = 'Read-only client incorrectly assumed a native _is_critic flag; assertion failed without model/DT/optimizer calls. Corrected to original worker_dict critic role.'
     receipt.write_text(json.dumps(record, indent=2) + '\n')
     print(json.dumps(dict(receipt=str(receipt), results=results)))
 finally:

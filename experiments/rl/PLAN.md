@@ -9,6 +9,12 @@ PPO的实际兼容配置，其他critic选项保留官方默认；原AppWorld ac
 SQL两轮全为原生格式-1、g=0，不能得到DT时间；仅补一轮原样配置的
 原生逐turn文本/观察/ID被动记录以定位格式失败。记录不改原生成、奖励、
 终止、token/mask或更新返回，不通过造非零奖励/乘子来强行启动DT。
+原生逐turn记录确认：SQL40条中18条未输出solution，22条有solution但观察后
+未重开think，被原utils.py的23/41行拒绝；不是tokenizer剥去think。独立
+sql-native-multiturn-speed-20261016-v1只测试SkyRL已有use_conversation_multi_turn
+模式是否改善此直接格式边界，保留原SQL采样/奖励和v5 DT/PPO。原seam仅
+给原多轮state更新super调用补齐同样的turn记录，先与原生多轮完整轨迹/最后
+结算target作CPU接口核对，再跑原两轮预算；候选不修改默认入口或正式manifest。
 
 **2026-10-16 SQL/AppWorld v2实际启动失败后的最小接口修复，执行版本v3。**
 SQL原生生成完成后，DirectActionTargetReadout任务注册只允许TextCraft/AppWorld而
