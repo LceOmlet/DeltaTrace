@@ -6,6 +6,9 @@ AppWorld补充原生PPO两轮效率试跑：复用同一LOOP环境/4组x6及32k/
 由原固定VERL的GAE/critic执行，不实现另一套PPO。critic采用已运行原TextCraft
 PPO的实际兼容配置，其他critic选项保留官方默认；原AppWorld actor配置保持。
 只比较记录的阶段成本和有效负载，不把不同样本、两轮或小批量称质量对照。
+SQL两轮全为原生格式-1、g=0，不能得到DT时间；仅补一轮原样配置的
+原生逐turn文本/观察/ID被动记录以定位格式失败。记录不改原生成、奖励、
+终止、token/mask或更新返回，不通过造非零奖励/乘子来强行启动DT。
 
 **2026-10-16 SQL/AppWorld v2实际启动失败后的最小接口修复，执行版本v3。**
 SQL原生生成完成后，DirectActionTargetReadout任务注册只允许TextCraft/AppWorld而
