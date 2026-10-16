@@ -74,7 +74,7 @@ replacements = {
     r"r'\|\s*[23]\s+\d+\s+'": r"r'\|\s*[45]\s+\d+\s+'",
     'GPU2/3 still occupied': 'GPU4/5 still occupied',
     '[(1419849,1791977138.31),(3174448,1791793629.73)]':
-        '[(878971,1792091830.03),(1395665,1792177213.42),(1577251,1792178946.21)]',
+        '[(878971,1792091830.03),(1395665,1792177213.42)]',
     "env['CUDA_VISIBLE_DEVICES']='2,3'": "env['CUDA_VISIBLE_DEVICES']='4,5'",
     "    prepared.write_text(json.dumps(report,indent=2)+'\\n')":
         "    report['effective_environment']=dict(report['effective_environment'],CUDA_VISIBLE_DEVICES='4,5')\n    report['physical_gpus']=[4,5]\n    report['execution_version']='textcraft-PPO-global-OOM-recovery-20261017-v1'\n    prepared.write_text(json.dumps(report,indent=2)+'\\n')",
