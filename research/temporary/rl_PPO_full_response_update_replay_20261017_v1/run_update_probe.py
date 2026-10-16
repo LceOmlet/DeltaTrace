@@ -108,7 +108,8 @@ try:
         write(AUDIT/'status.json',status)
     status['comparisons']={label:dict(max_abs=float((outputs['native_reference']-v).abs().max()),
                                       different=int(torch.count_nonzero(outputs['native_reference']-v))) for label,v in outputs.items()}
-    status['official_output_criterion_passed']=all(v['max_abs']==0 for v in status['comparisons'].values())
+    status['instrumented_post_values_exact']=all(v['max_abs']==0 for v in status['comparisons'].values())
+    status['acceptance_limit']='Diagnostic gradient/state reads can synchronize GPU work; this is localization, not an unobserved production equivalence or speed claim.'
     status.update(status='completed_instrumented_native_update_measurements',finished=time.time());write(AUDIT/'status.json',status)
 except BaseException as exc:
     status.update(status='failed',error=repr(exc),finished=time.time());write(AUDIT/'status.json',status);raise
