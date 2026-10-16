@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-17T06:03:02.217684+08:00",
+  "updated_at": "2026-10-17T06:15:50.917068+08:00",
   "status": "DTPO_and_native_PPO_formal_training_in_progress",
   "goal_status": "active",
   "scope": "Only AppWorld DTPO and native PPO formal training, directly relevant acceptance and shared native save2 checkpoints through original budget completion",
@@ -148,7 +148,7 @@
     ],
     "completed_iterations": 0,
     "latest_checkpointed_iteration": null,
-    "collected": 1792188180.3788877,
+    "collected": 1792188949.624858,
     "snapshot": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\latest-native-snapshot.json",
     "environment_owner_patch": {
       "status": "verified_native_readiness_owner_fix",
@@ -563,7 +563,7 @@
     ],
     "completed_iterations": 0,
     "latest_checkpointed_iteration": null,
-    "collected": 1792188180.3788877,
+    "collected": 1792188949.624858,
     "snapshot": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\latest-native-snapshot.json",
     "environment_owner_patch": {
       "status": "verified_native_owner_recovery_behavior_candidate",
@@ -877,7 +877,7 @@
         4,
         5
       ],
-      "status": "verified_original_native_PPO_checkpoint_restore",
+      "status": "original_TextCraft_PPO_exited_second_kernel_global_OOM_native_checkpoint_preserved",
       "execution_version": "textcraft-PPO-global-OOM-recovery-20261017-v1",
       "execution_patch_commit": "2e0aeb0a9592c49079c87c82199c00a7f1008f86",
       "resumed_completed_iteration": 100,
@@ -893,7 +893,10 @@
         103
       ],
       "receipt": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\TextCraft-PPO-native-global-OOM-recovery-v1-job.json",
-      "actual_native_restore_receipt": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\native-PPO-restore-global-OOM-20261017-v1.json"
+      "current_canonical_source": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\TextCraft-PPO-current-native-job.json",
+      "actual_native_restore_receipt": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\native-PPO-restore-global-OOM-20261017-v1.json",
+      "active": false,
+      "kernel_exit_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/appworld-formal-training-20261017-v1/TextCraft-PPO-global-OOM-third-exit.json"
     }
   ],
   "SQL_work": false,
@@ -1635,7 +1638,7 @@
     }
   ],
   "goal_completion": "Both original 200-iteration budgets and final native shared complete checkpoints",
-  "host_MemAvailable_GiB": 89.45134353637695,
+  "host_MemAvailable_GiB": 354.0114059448242,
   "inactive_diagnostic_checkpoint_storage_relocation": {
     "status": "passed_preserved_diagnostic_checkpoint_storage_relocation",
     "started": 1792180843.482801,
@@ -3711,5 +3714,73 @@
       }
     ],
     "finished": 1792187624.294927
+  },
+  "AppWorld_native_sampler_checkpoint_state_gap": {
+    "collected": 1792189470.0947049,
+    "status": "actual_AppWorld_sampler_state_not_in_native_VERL_checkpoint",
+    "actual_sampler_config": {
+      "_target_": "phi_agents.rl.appworld_scenario_runner.AppWorldScenarioSampler",
+      "dataset_name": "train_difficulty_1_and_train_difficulty_2",
+      "seed": null,
+      "task_id": null
+    },
+    "actual_sampler_state_fields": [
+      "rng.bit_generator.state",
+      "task_ids",
+      "all_task_ids",
+      "dataset_name"
+    ],
+    "parallel_owner_state": [
+      "queued scenarios",
+      "requested/in-progress counts",
+      "underlying per-thread sampler"
+    ],
+    "native_VERL_data_pt": "train_dataloader.state_dict() only",
+    "bridge_current_commands": [
+      "collect",
+      "stop"
+    ],
+    "original_sampler_checkpoint_API_present": false,
+    "significance": "Existing native model/optimizer/scheduler/training RNG/data.pt and rollout manager RNG do not export the independent actual LOOP sampler RNG and remaining task order; cannot yet claim lossless AppWorld process restart",
+    "model_calls": 0,
+    "optimizer_updates": 0,
+    "training_signals": 0,
+    "source_bindings": {
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-environment-restart-boundary-20261017-v3/loop-owner/phi_agents/rl/appworld_scenario_runner.py": "df8481f10f3bda5737160d159763189867ce73ea623a4b464cf899f2d9469eac",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-environment-restart-boundary-20261017-v3/loop-owner/phi_agents/rl/parallel_scenario_sampler.py": "40a97712e31afcd556e0402ff61e8854653a2bf90242acd5619b61e6b694da97",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-PPO-formal-20261017-v2/entry/loop_owner_worker.py": "15aa487af56c42646ad8e617420c889f4a00ce64be91ed7a463fc07a0266fdb6",
+      "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/trainer/ppo/ray_trainer.py": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943"
+    }
+  },
+  "TextCraft_PPO_second_global_OOM": {
+    "status": "original_TextCraft_PPO_exited_second_kernel_global_OOM_native_checkpoint_preserved",
+    "collected": 1792188673.9926875,
+    "kernel_class": "global_oom",
+    "kernel_time": "2026-10-17 06:05:47+08:00",
+    "driver_pid": 1922183,
+    "driver_birth": 1792182307.99,
+    "killed_worker_pid": 1928971,
+    "killed_worker_birth": 1792182364.01,
+    "current_execution_completed_metric_steps": [
+      101,
+      102
+    ],
+    "latest_complete_checkpoint_iteration": 100,
+    "checkpoint": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/textcraft-ppo/checkpoints/global_step_100",
+    "original_stdout": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/driver.resume100-global-OOM-v1.stdout.log",
+    "original_stderr": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-ppo-control-fixed-verl-fresh-20261014-v2/driver.resume100-global-OOM-v1.stderr.log",
+    "kernel_raw_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/appworld-formal-training-20261017-v1/host-global-OOM-third-20261017.txt",
+    "recovery_not_submitted": true,
+    "AppWorld_training_signals": 0,
+    "method_or_hyperparameter_changes": 0
+  },
+  "TextCraft_PPO_next_recovery": {
+    "status": "prepared_only_not_submitted_execution_order_pending",
+    "execution_version": "textcraft-PPO-global-OOM-recovery-20261017-v2",
+    "native_checkpoint": 100,
+    "preparation_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/appworld-formal-training-20261017-v1/TextCraft-PPO-native-global-OOM-recovery-v2-prepared.json",
+    "method_changes": false,
+    "model_calls": 0,
+    "optimizer_updates": 0
   }
 }
