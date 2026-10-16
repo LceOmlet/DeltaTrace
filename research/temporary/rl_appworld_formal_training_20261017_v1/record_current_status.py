@@ -22,6 +22,14 @@ def read(path):
     return json.loads(Path(path).read_bytes())
 
 
+def exit_for(version):
+    for path in sorted((here / 'receipts').glob('AppWorld*-exit.json')):
+        record = read(path)
+        if record.get('job', {}).get('version') == version:
+            return path, record
+    return None, None
+
+
 def write(path, value):
     path = Path(path)
     temporary = path.with_name(path.name + '.tmp-' + uuid.uuid4().hex)
@@ -60,6 +68,10 @@ for method, key in [('dt', 'DTPO'), ('ppo', 'PPO')]:
     after_DT = source_dir / 'actual-worker-imports-after-first-DT-v1.json'
     if after_DT.exists():current['actual_worker_bindings_after_DT']=read(after_DT)
     current['actual_environment_owner_bindings'] = [read(p) for p in sorted(source_dir.glob('loop-owner-*.json'))]
+    if not observed['alive']:
+        exit_path, exit_record = exit_for(current['version'])
+        if exit_record is not None:
+            current.update(status=exit_record['status'], exit_receipt=str(exit_path))
     if method == 'dt':
         current['previous_failed_run'] = source.get('previous_failed_run')
         current['log_warning_classification'] = dict(count=2,
@@ -73,11 +85,10 @@ for method, key in [('dt', 'DTPO'), ('ppo', 'PPO')]:
                                     universal_first_use_or_future_trajectory_bitwise_identity_claimed=False)
     if result.get(key,{}).get('version') not in (None,current['version']):
         previous=result[key]
-        exit_name='AppWorld-DTPO-v2-restart-readiness-exit.json' if key=='DTPO' else 'AppWorld-PPO-v1-restart-readiness-exit.json'
-        if (here/'receipts'/exit_name).exists():
-            exit_record=read(here/'receipts'/exit_name)
+        exit_path, exit_record = exit_for(previous['version'])
+        if exit_record is not None:
             previous.update(status=exit_record['status'],alive=False,completed_iterations=exit_record['completed_iterations'],
-                            latest_checkpointed_iteration=None,exit_receipt=str(here/'receipts'/exit_name))
+                            latest_checkpointed_iteration=None,exit_receipt=str(exit_path))
         result.setdefault(key+'_history',[]).append(previous)
     result[key] = current
 recovery_path=here/'receipts/TextCraft-PPO-native-global-OOM-recovery-v1-job.json'
@@ -147,18 +158,16 @@ write(runtime_path, runtime)
 
 record_path = Path('experiments/rl/RUNTIME_RECORD.md')
 record = record_path.read_text(encoding='utf-8')
-event = f'''## {now} AppWorld两项正式训练已提交并实际采样；PPO对应暖态输出、32k容量和效率验收完成，goal仍active
+dt, ppo = result['DTPO'], result['PPO']
+event = f"""## {now} AppWorld原生日志状态；两项200轮及最终共享完整检查点目标仍active
 
-DTPO正式执行v1因原AppWorld initialize的100秒ReadTimeout被包装为AppWorldInitializeTaskError、未被原5次重试捕获而退出，完成0轮/0正式optimizer/0检查点，无survivor。只在新固定LOOP owner原except中加入该初始化异常及原requests.Timeout，保持原5次预算、timeout、环境奖励、取消策略与训练方法；8项CPU恢复/原默认行为检查通过。新owner appworld_evals SHA c1a71a8f7860dd0cb192293229429c4024405e1b0f6070d34bc183b1edd05676；DTPO v2两路环境进程已实际回读，原失败回执保留。
+DTPO执行版本{dt['version']}，driver{dt['pid']}/{dt['birth']}，完成{dt['completed_iterations']}/200，状态{dt['status']}，最新原生完整检查点{dt['latest_checkpointed_iteration']}；实际退出回执{dt.get('exit_receipt')}。信用方法仍为已接受v5，不拼接旧执行日志。
 
-DTPO v2提交b519a2bb138dea7519857e3477ecd865adf1232d、driver1395665/出生1792177213.42、physical6/7，复用v5方法4545c558及原固定VERL20bd331b；native PPO v1提交b4ef1664c4fcfbac7a54d665d294753b0522a498、driver1577251/出生1792178946.21、physical2/3，实际双rank回读worker5bb0211a/critic0de81db3/activation242f7919及原actor/core、B4/LoRA8/16、默认图和生产FA0一致。PPO两路环境进程也实际加载同一c1a71a8f owner。两项当前均在原生成及环境交互，完成0/200，无正式检查点；不将初始化或存活称已完成更新。
+PPO执行版本{ppo['version']}，driver{ppo['pid']}/{ppo['birth']}，完成{ppo['completed_iterations']}/200，状态{ppo['status']}，原worker phase={ppo['current_worker_phases']}，最新原生完整检查点{ppo['latest_checkpointed_iteration']}。既有对应VERL暖态数值/32k B4共置容量和效率验收保持，不声称未来bitwise轨迹一致。
 
-PPO采用同源状态/输入、当前进程已有原生更新后的native_repeat与native_async原生更新输出对比，65528个value逐值相同，按固定VERL卸载测试对应的atol0/rtol0检查通过，更新期间无梯度/optimizer观测hook。首次native更新与两路后续对照仍保留最大差2.328125，不宣称已查明首次使用差异或所有未来轨迹bitwise相同；正式接受范围见receipts/PPO-native-final-numerical-20261017-v1/formal-acceptance.json。既有完整共置B8/每rank B4、input32768/response32767的oldlogprob/value/GAE/critic/actor容量通过；生产FA0短输入3对中位比0.993725、32k对官方CPU保存参考比0.964055，有限样本不当作正式整轮加速；GPU-only 32k参考原OOM保持。
+原作者40组×6请求/原取消/200轮/B4/32768/global32/PPO epochs2/eval5/save2/keep2保持；每2迭代原生完整checkpoint直写用户共享独立run目录。当前状态来自{snapshot['collected']}原read_job_logs/parse_logs快照与实际PID出生。TextCraft现有DTPO及从完整100恢复的PPO保持；goal未完成，不恢复SQL、GRPO或旧梯度研究。
 
-两项保持原作者40任务组×6条轨迹请求、原LOOP取消、200轮、minibatch32/epochs2/eval5/keep2；原VERL save_freq=2直接写共享/mnt/si0021787ci2/default/lzq/deltatrace_backups/appworld-20261017/<各独立版本>/checkpoints，PPO actor和critic均由原owner保存。原生完整标记尚未产生。TextCraft0/1与4/5身份保持，未重跑GRPO或SQL。只读观测复用原read_job_logs/parse_logs，不建训练parser/logger。goal必须持续至两项200轮及最终共享完整checkpoint核验，当前仍active。详情results_appworld_formal_training_20261017_v1.json与results_PPO_32k_efficiency_20261016_v4.json。
-
-'''
-if 'AppWorld两项正式训练已提交并实际采样；PPO对应暖态输出' not in record[:500]:
-    record_path.write_text(event + record, encoding='utf-8')
-print(json.dumps(dict(updated_at=now, DTPO=[result['DTPO']['pid'],result['DTPO']['completed_iterations']],
-                      PPO=[result['PPO']['pid'],result['PPO']['completed_iterations']], goal_status='active')))
+"""
+record_path.write_text(event + record, encoding='utf-8')
+print(json.dumps(dict(updated_at=now, DTPO=[dt['pid'],dt['completed_iterations'],dt['status']],
+                      PPO=[ppo['pid'],ppo['completed_iterations'],ppo['status']], goal_status='active')))
