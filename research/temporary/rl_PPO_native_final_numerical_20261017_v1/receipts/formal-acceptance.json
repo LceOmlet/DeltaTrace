@@ -1,0 +1,150 @@
+{
+  "status": "accepted_for_formal_AppWorld_PPO",
+  "collected": 1792178780.4675329,
+  "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner",
+  "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "memory_patch_commit": "1bb6520308d2ca0eea19b010922c9cfba3d8d130",
+  "numerical": {
+    "receipt": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-native-final-numerical-20261017-v1/warm-native-output-comparison.json",
+      "SHA256": "f34d17f9d7f940b123c2e7781e591099622d7d7927a152eddb0956c605465f6e"
+    },
+    "result": {
+      "collected": 1792178511.94288,
+      "source_commit": "68840177b3e9271c45bd5c6d9a498e1a1c80fc1f",
+      "reference": "native_repeat, after two native optimizer steps in this same process",
+      "candidate": "native_async, same full state and input, already initialized runtime",
+      "owner_test": "Pinned VERL activation-offload test initializes with an update before reference/reload comparison",
+      "shape": [
+        8,
+        8191
+      ],
+      "dtype": "torch.bfloat16",
+      "max_abs": 0.0,
+      "different": 0,
+      "total": 65528,
+      "criterion": {
+        "atol": 0,
+        "rtol": 0,
+        "quantity": "Native critic post-update values"
+      },
+      "first_call_comparisons_preserved": {
+        "native_reference": {
+          "max_abs": 0.0,
+          "different": 0
+        },
+        "native_repeat": {
+          "max_abs": 2.328125,
+          "different": 57768
+        },
+        "native_async": {
+          "max_abs": 2.328125,
+          "different": 57768
+        }
+      },
+      "during_update_gradient_or_optimizer_hooks": false,
+      "model_calls": 0,
+      "optimizer_updates": 0,
+      "checkpoint_create_calls": 0,
+      "script_SHA256": "25fc39307f32fc6652776956996f2e084c36c900538c8dc3648a40c9561517f5",
+      "status": "passed_warm_native_owner_output_criterion"
+    },
+    "official_test": "https://raw.githubusercontent.com/langfengQ/verl-agent/20bd331bdbc9026a5668e11362178e10ab7400c8/tests/utils/gpu_tests/test_activation_offload.py",
+    "comparison_scope": "Same restored state/input after prior native current-process updates, as in owner warm-update sequence; no update read hooks",
+    "first_use_native_difference_retained": {
+      "native_reference": {
+        "max_abs": 0.0,
+        "different": 0
+      },
+      "native_repeat": {
+        "max_abs": 2.328125,
+        "different": 57768
+      },
+      "native_async": {
+        "max_abs": 2.328125,
+        "different": 57768
+      }
+    },
+    "first_use_difference_cause_claimed": false,
+    "universal_first_call_or_future_trajectory_bitwise_identity_claimed": false
+  },
+  "capacity": {
+    "receipt": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-colocated-capacity-20261016-v1/execution3/complete-verification.json",
+      "SHA256": "5b740c96179a0ee8a5e000ee275e9367c2d5d0f3eb573fea6bee3dde50346050"
+    },
+    "context": 32768,
+    "response_axis": 32767,
+    "batch": 8,
+    "microbatch_per_rank": 4,
+    "scope": "Native colocated actor/vLLM/critic; original oldlogprob/value/GAE/critic/actor updates, capacity fixture only"
+  },
+  "performance": {
+    "short_receipt": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-native-efficiency-20261016-v4/performance-exec3/status.json",
+      "SHA256": "19dba3bf7db05f442ef737901f23379bedd090aa99c9c184cceb36f9e106e477"
+    },
+    "long_receipt": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-native-efficiency-20261016-v2/performance-exec2/status.json",
+      "SHA256": "7542fdcf7c56a41c56a98cd25068cedc5990195d0ba743b325f02a2326f46b08"
+    },
+    "short_comparison": {
+      "context": 8192,
+      "reference_seconds": [
+        35.0837158090435,
+        34.839325255015865,
+        35.07919514097739
+      ],
+      "adaptive_seconds": [
+        34.99393151793629,
+        34.8088110180106,
+        34.859066324075684
+      ],
+      "median_ratio": 0.9937248042317662
+    },
+    "long_comparison": {
+      "context": 32768,
+      "reference": "CPU_reference",
+      "reference_seconds": [
+        135.984352673986
+      ],
+      "async_seconds": [
+        131.09635930194054
+      ],
+      "median_ratio": 0.9640547366227928
+    },
+    "scope": "Same source and original fast FA0 mode. 32k GPU-only baseline OOM, so long reference is official CPU saving; limited measured pairs, not full formal iteration speed"
+  },
+  "actual_imported_sources": {
+    "verl.workers.fsdp_workers": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/fsdp_workers.py",
+      "SHA256": "5bb0211a5cf5bd355bb763da93d26e3902f1297c96273eddf5e3a6640d455dd3"
+    },
+    "verl.workers.critic.dp_critic": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/critic/dp_critic.py",
+      "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+    },
+    "verl.trainer.ppo.core_algos": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/trainer/ppo/core_algos.py",
+      "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+    },
+    "verl.utils.activation_offload": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/activation_offload.py",
+      "SHA256": "242f7919ef00bcf4dced4d4c856946d2e761dbf24297d434356194f03943cfcb"
+    },
+    "verl.workers.actor.dp_actor": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/actor/dp_actor.py",
+      "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+    },
+    "verl.utils.experimental.torch_functional": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/experimental/torch_functional.py",
+      "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+    }
+  },
+  "source_changed_since_final_numerical_and_full_capacity": false,
+  "older_long_performance_reused_for_existing_v4_verified_unchanged_long_branch": true,
+  "production_FA_deterministic": false,
+  "new_model_calls": 0,
+  "checkpoint_create_calls": 0,
+  "formal_training_started": false
+}

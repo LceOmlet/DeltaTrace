@@ -63,7 +63,8 @@ result = dict(status='accepted_for_formal_AppWorld_PPO', collected=time.time(), 
     performance=dict(short_receipt=source(short_path),long_receipt=source(long_path),
                      short_comparison=short['comparison'],long_comparison=long_comparison,
                      scope='Same source and original fast FA0 mode. 32k GPU-only baseline OOM, so long reference is official CPU saving; limited measured pairs, not full formal iteration speed'),
-    actual_imported_sources=bindings, source_changed_since_measurements=False,
+    actual_imported_sources=bindings, source_changed_since_final_numerical_and_full_capacity=False,
+    older_long_performance_reused_for_existing_v4_verified_unchanged_long_branch=True,
     production_FA_deterministic=False, new_model_calls=0, checkpoint_create_calls=0,
     formal_training_started=False)
 (AUDIT / 'formal-acceptance.json').write_text(json.dumps(result, indent=2) + '\n')
