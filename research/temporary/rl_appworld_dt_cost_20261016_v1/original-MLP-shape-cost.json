@@ -1,0 +1,443 @@
+{
+  "started_unix": 1792142888.6822734,
+  "scope": "Shape-only cost comparison using the original finite MLP and stored weights.\n\nNo model, PPO, DT propagation or replacement MLP is implemented. Explicit\ncomponent fixtures compare identical leading rows of the original operator\nat partial/full2048-token chunk shapes. Differences are measured, not accepted\nagainst an invented tolerance. Nothing is deployed by this probe.\n",
+  "original_owner_path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_decoder_finite.py",
+  "original_owner_SHA256": "44153c172bde57ccf15f26998c5b4c1a986621b11751ead71023a3a8e8404486",
+  "weight_bindings": [
+    {
+      "key": "mtp.layers.0.mlp.down_proj.weight",
+      "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/model.safetensors-00002-of-00004.safetensors",
+      "shape": [
+        4096,
+        12288
+      ],
+      "dtype": "torch.bfloat16"
+    },
+    {
+      "key": "mtp.layers.0.mlp.up_proj.weight",
+      "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/model.safetensors-00002-of-00004.safetensors",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16"
+    },
+    {
+      "key": "mtp.layers.0.mlp.gate_proj.weight",
+      "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B/model.safetensors-00002-of-00004.safetensors",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16"
+    }
+  ],
+  "adapter_operand": "Explicit zero-delta component fixture, not reconstructed training adapter state",
+  "checks": [
+    {
+      "tokens_per_trajectory": 762,
+      "flattened_GEMM_rows": 3048,
+      "first_call": {
+        "wall_seconds": 0.010775977978482842,
+        "stream_seconds": 0.010704895973205567
+      },
+      "full2048_needed_rows_bitwise_equal": true,
+      "maximum_absolute_difference": 0.0,
+      "relative_L2_against_full2048": 0.0,
+      "costs": [
+        {
+          "repeat": 0,
+          "shape": "partial",
+          "wall_seconds": 0.008584945928305387,
+          "stream_seconds": 0.008494336128234864
+        },
+        {
+          "repeat": 0,
+          "shape": "full2048",
+          "wall_seconds": 0.020956794964149594,
+          "stream_seconds": 0.020910848617553712
+        },
+        {
+          "repeat": 1,
+          "shape": "full2048",
+          "wall_seconds": 0.02092275896575302,
+          "stream_seconds": 0.020853248596191407
+        },
+        {
+          "repeat": 1,
+          "shape": "partial",
+          "wall_seconds": 0.008424362051300704,
+          "stream_seconds": 0.008346624374389648
+        },
+        {
+          "repeat": 2,
+          "shape": "partial",
+          "wall_seconds": 0.00838670996017754,
+          "stream_seconds": 0.008308480262756348
+        },
+        {
+          "repeat": 2,
+          "shape": "full2048",
+          "wall_seconds": 0.020880269003100693,
+          "stream_seconds": 0.02079974365234375
+        },
+        {
+          "repeat": 3,
+          "shape": "full2048",
+          "wall_seconds": 0.020875121001154184,
+          "stream_seconds": 0.020802560806274413
+        },
+        {
+          "repeat": 3,
+          "shape": "partial",
+          "wall_seconds": 0.008350812015123665,
+          "stream_seconds": 0.008313088417053223
+        }
+      ],
+      "median_seconds": {
+        "partial": 0.008405536005739123,
+        "full2048": 0.020901513984426856
+      },
+      "partial_to_full_cost_ratio": 0.40214962475932875
+    },
+    {
+      "tokens_per_trajectory": 1024,
+      "flattened_GEMM_rows": 4096,
+      "first_call": {
+        "wall_seconds": 0.010939012048766017,
+        "stream_seconds": 0.010825471878051758
+      },
+      "full2048_needed_rows_bitwise_equal": false,
+      "maximum_absolute_difference": 5.960464477539062e-07,
+      "relative_L2_against_full2048": 9.757711723068496e-07,
+      "costs": [
+        {
+          "repeat": 0,
+          "shape": "partial",
+          "wall_seconds": 0.010732957045547664,
+          "stream_seconds": 0.010653183937072755
+        },
+        {
+          "repeat": 0,
+          "shape": "full2048",
+          "wall_seconds": 0.020983646041713655,
+          "stream_seconds": 0.020917247772216797
+        },
+        {
+          "repeat": 1,
+          "shape": "full2048",
+          "wall_seconds": 0.021010834956541657,
+          "stream_seconds": 0.020907007217407226
+        },
+        {
+          "repeat": 1,
+          "shape": "partial",
+          "wall_seconds": 0.01085374690592289,
+          "stream_seconds": 0.010728960037231445
+        },
+        {
+          "repeat": 2,
+          "shape": "partial",
+          "wall_seconds": 0.010707812034524977,
+          "stream_seconds": 0.010606335639953614
+        },
+        {
+          "repeat": 2,
+          "shape": "full2048",
+          "wall_seconds": 0.02087397500872612,
+          "stream_seconds": 0.02079974365234375
+        },
+        {
+          "repeat": 3,
+          "shape": "full2048",
+          "wall_seconds": 0.020879032090306282,
+          "stream_seconds": 0.020813312530517578
+        },
+        {
+          "repeat": 3,
+          "shape": "partial",
+          "wall_seconds": 0.01066652697045356,
+          "stream_seconds": 0.010607104301452636
+        }
+      ],
+      "median_seconds": {
+        "partial": 0.01072038454003632,
+        "full2048": 0.02093133906600997
+      },
+      "partial_to_full_cost_ratio": 0.5121690736664317
+    },
+    {
+      "tokens_per_trajectory": 1344,
+      "flattened_GEMM_rows": 5376,
+      "first_call": {
+        "wall_seconds": 0.020464422996155918,
+        "stream_seconds": 0.02037606430053711
+      },
+      "full2048_needed_rows_bitwise_equal": false,
+      "maximum_absolute_difference": 4.470348358154297e-07,
+      "relative_L2_against_full2048": 1.4176896456774557e-06,
+      "costs": [
+        {
+          "repeat": 0,
+          "shape": "partial",
+          "wall_seconds": 0.017065737047232687,
+          "stream_seconds": 0.016983039855957033
+        },
+        {
+          "repeat": 0,
+          "shape": "full2048",
+          "wall_seconds": 0.021039474988356233,
+          "stream_seconds": 0.020954368591308593
+        },
+        {
+          "repeat": 1,
+          "shape": "full2048",
+          "wall_seconds": 0.020928496960550547,
+          "stream_seconds": 0.02084684753417969
+        },
+        {
+          "repeat": 1,
+          "shape": "partial",
+          "wall_seconds": 0.018042566953226924,
+          "stream_seconds": 0.01794790458679199
+        },
+        {
+          "repeat": 2,
+          "shape": "partial",
+          "wall_seconds": 0.017027196008712053,
+          "stream_seconds": 0.016918272018432618
+        },
+        {
+          "repeat": 2,
+          "shape": "full2048",
+          "wall_seconds": 0.021027790033258498,
+          "stream_seconds": 0.020902656555175782
+        },
+        {
+          "repeat": 3,
+          "shape": "full2048",
+          "wall_seconds": 0.020909951999783516,
+          "stream_seconds": 0.020840959548950197
+        },
+        {
+          "repeat": 3,
+          "shape": "partial",
+          "wall_seconds": 0.01707632897887379,
+          "stream_seconds": 0.01697279930114746
+        }
+      ],
+      "median_seconds": {
+        "partial": 0.01707103301305324,
+        "full2048": 0.020978143496904522
+      },
+      "partial_to_full_cost_ratio": 0.8137532768603758
+    },
+    {
+      "tokens_per_trajectory": 1873,
+      "flattened_GEMM_rows": 7492,
+      "first_call": {
+        "wall_seconds": 0.021103725070133805,
+        "stream_seconds": 0.021000959396362304
+      },
+      "full2048_needed_rows_bitwise_equal": true,
+      "maximum_absolute_difference": 0.0,
+      "relative_L2_against_full2048": 0.0,
+      "costs": [
+        {
+          "repeat": 0,
+          "shape": "partial",
+          "wall_seconds": 0.020318583003245294,
+          "stream_seconds": 0.020246271133422852
+        },
+        {
+          "repeat": 0,
+          "shape": "full2048",
+          "wall_seconds": 0.02095741603989154,
+          "stream_seconds": 0.020858112335205077
+        },
+        {
+          "repeat": 1,
+          "shape": "full2048",
+          "wall_seconds": 0.02090750599745661,
+          "stream_seconds": 0.020845823287963867
+        },
+        {
+          "repeat": 1,
+          "shape": "partial",
+          "wall_seconds": 0.020242205006070435,
+          "stream_seconds": 0.02015667152404785
+        },
+        {
+          "repeat": 2,
+          "shape": "partial",
+          "wall_seconds": 0.02023875992745161,
+          "stream_seconds": 0.020137216567993162
+        },
+        {
+          "repeat": 2,
+          "shape": "full2048",
+          "wall_seconds": 0.020976445055566728,
+          "stream_seconds": 0.020854015350341797
+        },
+        {
+          "repeat": 3,
+          "shape": "full2048",
+          "wall_seconds": 0.020910150022245944,
+          "stream_seconds": 0.020817663192749022
+        },
+        {
+          "repeat": 3,
+          "shape": "partial",
+          "wall_seconds": 0.02035855397116393,
+          "stream_seconds": 0.020231679916381837
+        }
+      ],
+      "median_seconds": {
+        "partial": 0.020280394004657865,
+        "full2048": 0.020933783031068742
+      },
+      "partial_to_full_cost_ratio": 0.9687878189316688
+    },
+    {
+      "tokens_per_trajectory": 1914,
+      "flattened_GEMM_rows": 7656,
+      "first_call": {
+        "wall_seconds": 0.021057036938145757,
+        "stream_seconds": 0.020975360870361327
+      },
+      "full2048_needed_rows_bitwise_equal": true,
+      "maximum_absolute_difference": 0.0,
+      "relative_L2_against_full2048": 0.0,
+      "costs": [
+        {
+          "repeat": 0,
+          "shape": "partial",
+          "wall_seconds": 0.020413986989296973,
+          "stream_seconds": 0.02030182456970215
+        },
+        {
+          "repeat": 0,
+          "shape": "full2048",
+          "wall_seconds": 0.020913506974466145,
+          "stream_seconds": 0.020821247100830078
+        },
+        {
+          "repeat": 1,
+          "shape": "full2048",
+          "wall_seconds": 0.02092526399064809,
+          "stream_seconds": 0.02082099151611328
+        },
+        {
+          "repeat": 1,
+          "shape": "partial",
+          "wall_seconds": 0.020334953092969954,
+          "stream_seconds": 0.020221952438354493
+        },
+        {
+          "repeat": 2,
+          "shape": "partial",
+          "wall_seconds": 0.020429579890333116,
+          "stream_seconds": 0.020293119430541993
+        },
+        {
+          "repeat": 2,
+          "shape": "full2048",
+          "wall_seconds": 0.020896264002658427,
+          "stream_seconds": 0.020817407608032225
+        },
+        {
+          "repeat": 3,
+          "shape": "full2048",
+          "wall_seconds": 0.02103451604489237,
+          "stream_seconds": 0.020892671585083008
+        },
+        {
+          "repeat": 3,
+          "shape": "partial",
+          "wall_seconds": 0.02037520194426179,
+          "stream_seconds": 0.020284160614013672
+        }
+      ],
+      "median_seconds": {
+        "partial": 0.02039459446677938,
+        "full2048": 0.020919385482557118
+      },
+      "partial_to_full_cost_ratio": 0.9749136504886668
+    },
+    {
+      "tokens_per_trajectory": 2048,
+      "flattened_GEMM_rows": 8192,
+      "first_call": {
+        "wall_seconds": 0.02097875194158405,
+        "stream_seconds": 0.020857343673706053
+      },
+      "full2048_needed_rows_bitwise_equal": true,
+      "maximum_absolute_difference": 0.0,
+      "relative_L2_against_full2048": 0.0,
+      "costs": [
+        {
+          "repeat": 0,
+          "shape": "partial",
+          "wall_seconds": 0.020931620965711772,
+          "stream_seconds": 0.020862464904785157
+        },
+        {
+          "repeat": 0,
+          "shape": "full2048",
+          "wall_seconds": 0.020922345924191177,
+          "stream_seconds": 0.020820735931396484
+        },
+        {
+          "repeat": 1,
+          "shape": "full2048",
+          "wall_seconds": 0.02087696106173098,
+          "stream_seconds": 0.020811519622802734
+        },
+        {
+          "repeat": 1,
+          "shape": "partial",
+          "wall_seconds": 0.020876754890196025,
+          "stream_seconds": 0.02080691146850586
+        },
+        {
+          "repeat": 2,
+          "shape": "partial",
+          "wall_seconds": 0.02092182997148484,
+          "stream_seconds": 0.02082611274719238
+        },
+        {
+          "repeat": 2,
+          "shape": "full2048",
+          "wall_seconds": 0.020880580064840615,
+          "stream_seconds": 0.02080281639099121
+        },
+        {
+          "repeat": 3,
+          "shape": "full2048",
+          "wall_seconds": 0.0208744159899652,
+          "stream_seconds": 0.02080460739135742
+        },
+        {
+          "repeat": 3,
+          "shape": "partial",
+          "wall_seconds": 0.02088175294920802,
+          "stream_seconds": 0.02080102348327637
+        }
+      ],
+      "median_seconds": {
+        "partial": 0.02090179146034643,
+        "full2048": 0.020878770563285798
+      },
+      "partial_to_full_cost_ratio": 1.0011025983062964
+    }
+  ],
+  "model_calls": 0,
+  "optimizer_calls": 0,
+  "deployed": false,
+  "full2048_first_call": {
+    "wall_seconds": 3.881032797973603,
+    "stream_seconds": 3.88091943359375
+  },
+  "phase": "completed",
+  "completed_unix": 1792142893.6731284
+}

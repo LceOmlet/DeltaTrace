@@ -1,0 +1,9 @@
+# AppWorld native DT cost, 2026-10-16
+
+The dominant measured cost is finite decoder propagation (226.56 / 372.80 s), followed by layer replay (77.87 s). Nested GDN mixer accounts for 106.09 s, MLP 68.08 s, FA mixer 40.96 s; nested values must not be added to the outer decoder total. CUDA event intervals include host launch/compile waits and are not kernel-only times. Inclusive compilation is 15.66 s, all in the first attribute batch.
+
+The historical discontinuity is concretely linked to the original dispatch owner: 17 useful requests are padded to 24, versus 16 to 16. Each rank executes three B4 batches versus two. Dispatched context grows 178,939 to 323,941 tokens, and native DT wall grows 188.53 to 363.72 s. The extra rank0 middle batch alone is 97.86 s. Length/other batch changes and prefix preparation account for the rest arithmetically; their causal split is not established. Neither longest length (~17k both times) nor a 32k boundary explains this dispatch step.
+
+A further live MLP timing increase is not yet fully explained. Gate-copy alternatives, original partial/full chunk sizes, and original full layout fixtures failed to reproduce its excess. No alternative copy or padding optimization is accepted or deployed on that evidence. Original component fixtures are not actual rollout-input numerical validation and have no invented acceptance tolerance.
+
+The bounded native job finished exit0, native update unchanged. Passive original timing wrappers were restored. Optional identical-input warm DT repeat did not run (late-install guard). Formal manifests and protected training were untouched. Source commits: 1f341fd6 and 6a35e6f0; baseline 4545c558; VERL 20bd331b. Full bindings/PID births and raw original timings are in cost-findings.json and latest-status.json. Remote receipt: /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/appworld-dt-cost-breakdown-20261016-v1.
