@@ -85,13 +85,35 @@ for role in (('actor', 'critic') if method == 'ppo' else ('actor',)):
 data_path = checkpoint / 'data.pt'
 data = torch.load(data_path, map_location='cpu', weights_only=False)
 assert data
+assert source.get('sampler_checkpoint_artifact') == 'loop_sampler.pt', 'Actual LOOP sampler state was not included by this execution'
+sampler_path = checkpoint / source['sampler_checkpoint_artifact']
+assert sampler_path.is_file() and sampler_path.stat().st_size > 0
+import site
+site.addsitedir(os.environ['LOOP_EXTRAS'])
+from phi_agents.rl.appworld_scenario_runner import AppWorldScenarioSampler
+sampler_states = torch.load(sampler_path, map_location='cpu', weights_only=False)
+assert len(sampler_states) == 2
+sampler_metadata = []
+for rank, state in enumerate(sampler_states):
+    assert len(state['samplers']) == 1  # Actual run_owner constructs one native sampler thread per rank.
+    saved = state['samplers'][0]
+    validation_owner = AppWorldScenarioSampler(saved['dataset_name'])
+    validation_owner.load_state_dict(saved)
+    assert validation_owner.state_dict() == saved
+    sampler_metadata.append(dict(rank=rank, dataset_name=saved['dataset_name'],
+        native_NumPy_RNG_and_remaining_order_roundtrip_exact=True,
+        remaining_tasks=len(saved['task_ids']), prefetched_scenarios=len(state['scenarios']),
+        pending_scenario_requests=state['n_scenarios_requested']))
 assert not torch.cuda.is_initialized()
 result = dict(status='passed_native_shared_checkpoint_state_metadata', collected=time.time(),
               method=method, version=job['version'], step=step, checkpoint=str(checkpoint), marker=str(marker),
               current_marker_after_read=marker.read_text().strip(), roles=roles,
               data_state_keys=list(data), data_SHA256=hashlib.sha256(data_path.read_bytes()).hexdigest(),
+              actual_LOOP_sampler_state=sampler_metadata, sampler_state_path=str(sampler_path),
+              sampler_state_SHA256=hashlib.sha256(sampler_path.read_bytes()).hexdigest(),
+              standalone_CPU_sampler_validation_restores=len(sampler_metadata),
               native_RNG_required_keys=sorted(required_rng), owner_path=str(owner), owner_SHA256=owner_sha,
               model_calls=0, optimizer_updates=0, checkpoint_create_calls=0, checkpoint_restore_calls=0,
-              scope='Completed native marker and readable saved model/optimizer/scheduler/RNG/data; no training restore or trajectory equivalence claim')
+              scope='Completed native marker and readable saved model/optimizer/scheduler/training and rollout RNG/data plus actual LOOP sampler RNG/order/prefetch state. CPU validation instances only; no training restore or trajectory equivalence claim')
 receipt.write_text(json.dumps(result,indent=2)+'\n')
 print(json.dumps(dict(status=result['status'],receipt=str(receipt),step=step,roles=roles)))

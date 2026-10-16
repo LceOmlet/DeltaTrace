@@ -68,6 +68,23 @@ for method, key in [('dt', 'DTPO'), ('ppo', 'PPO')]:
     after_DT = source_dir / 'actual-worker-imports-after-first-DT-v1.json'
     if after_DT.exists():current['actual_worker_bindings_after_DT']=read(after_DT)
     current['actual_environment_owner_bindings'] = [read(p) for p in sorted(source_dir.glob('loop-owner-*.json'))]
+    if source.get('sampler_checkpoint_artifact'):
+        current['sampler_checkpoint'] = dict(
+            artifact=source['sampler_checkpoint_artifact'],
+            extension_version=source['sampler_checkpoint_extension']['version'],
+            previous_execution_without_sampler_state=source.get('previous_execution_gap_run'),
+            gap_receipt=source.get('checkpoint_gap_receipt'),
+            configured_for_native_save_before_completion_marker=True,
+            actual_completed_checkpoint_verification=None)
+        step = observed['latest_checkpointed_iteration']
+        completed_receipt = here / 'receipts' / f'{job["version"]}-checkpoint-{step}-verified.json'
+        if step is not None and completed_receipt.exists():
+            verified = read(completed_receipt)
+            assert verified['version'] == job['version'] and verified['step'] == step
+            current['sampler_checkpoint']['actual_completed_checkpoint_verification'] = str(completed_receipt)
+            current['sampler_checkpoint']['verification_status'] = verified['status']
+        else:
+            current['sampler_checkpoint']['verification_status'] = 'pending_actual_native_completed_checkpoint_verification'
     if not observed['alive']:
         exit_path, exit_record = exit_for(current['version'])
         if exit_record is not None:
@@ -151,6 +168,16 @@ runtime['latest_PPO_native_final_numerical_20261017_v1'] = dict(
     source_commit=raw_numeric['source_commit'], production_FA_deterministic=False,
     warm_output_max_abs=0, total_values=65528, context=8192, response_length=8191, microbatch_per_rank=4,
     first_use_native_comparisons_retained=raw_numeric['comparisons'], universal_bitwise_guarantee=False)
+deployment_path = Path('research/temporary/rl_appworld_native_sampler_checkpoint_20261017_v5/receipts/formal-deployment.json')
+if deployment_path.exists():
+    deployment = read(deployment_path)
+    result['actual_sampler_checkpoint_extension_deployment'] = dict(
+        receipt=str(deployment_path), status=deployment['status'],
+        source_commit=deployment['source_commit'],
+        actual_native_checkpoint_verification={k:result[k].get('sampler_checkpoint') for k in ('DTPO','PPO')})
+    runtime['latest_AppWorld_native_sampler_checkpoint_20261017_v5'] = dict(
+        updated_at=now, **result['actual_sampler_checkpoint_extension_deployment'])
+    write(result_path, result)
 if recovery_path.exists():
     runtime[f'latest_TextCraft_PPO_global_OOM_recovery_20261017_v{execution_suffix}']=dict(updated_at=now,
         status=recovery_status,pid=recovery['pid'],birth=recovery['birth'],physical_gpus=[4,5],
