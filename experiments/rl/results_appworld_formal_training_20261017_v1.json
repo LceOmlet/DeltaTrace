@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-17T05:57:06.696411+08:00",
+  "updated_at": "2026-10-17T06:03:02.217684+08:00",
   "status": "DTPO_and_native_PPO_formal_training_in_progress",
   "goal_status": "active",
   "scope": "Only AppWorld DTPO and native PPO formal training, directly relevant acceptance and shared native save2 checkpoints through original budget completion",
@@ -128,27 +128,27 @@
       "actor_checkpoints_to_keep": 2,
       "evaluation_interval": 5
     },
-    "status": "native_initialization_in_progress_no_completed_iteration",
+    "status": "native_first_iteration_in_progress_no_completed_iteration",
     "alive": true,
     "workers": [
       {
         "pid": 2483311,
         "birth": 1792187635.22,
-        "phase": "ray::WorkerDict.actor_rollout_init_model"
+        "phase": "ray::WorkerDict.actor_rollout_generate_sequences"
       },
       {
         "pid": 2485807,
         "birth": 1792187655.49,
-        "phase": "ray::WorkerDict.actor_rollout_init_model"
+        "phase": "ray::WorkerDict.actor_rollout_generate_sequences"
       }
     ],
     "current_worker_phases": [
-      "ray::WorkerDict.actor_rollout_init_model",
-      "ray::WorkerDict.actor_rollout_init_model"
+      "ray::WorkerDict.actor_rollout_generate_sequences",
+      "ray::WorkerDict.actor_rollout_generate_sequences"
     ],
     "completed_iterations": 0,
     "latest_checkpointed_iteration": null,
-    "collected": 1792187775.1179304,
+    "collected": 1792188180.3788877,
     "snapshot": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\latest-native-snapshot.json",
     "environment_owner_patch": {
       "status": "verified_native_readiness_owner_fix",
@@ -189,9 +189,230 @@
     },
     "training_methods_or_numeric_hyperparameters_changed": false,
     "actual_worker_bindings": {
-      "status": "read_only_rpc_pending"
+      "status": "completed_read_only_worker_binding_check",
+      "task": "AppWorld",
+      "method": "dt",
+      "version": "appworld-dtpo-reward-target-exponential-formal-20261017-v4",
+      "local_patch_commit": "d1b3bc9bb3abbc46112260b70c6825fc2337b1c4",
+      "collected_unix": 1792188056.4455752,
+      "job": {
+        "pid": 2477154,
+        "birth": 1792187585.22
+      },
+      "metadata_owner_wrapper": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/appworld-native-PPO-32k-speed-20261016-v3/source/inspect_worker_imports.py",
+      "metadata_owner_wrapper_SHA256": "d8efc370d5a3acf9454c5406f28f26ca63979a8103f4a15d6da813104c244d6f",
+      "composition_script_SHA256": "4fb7c77faa6788c6fe87c18630b2972f533a1f6de33a3cb9a8f7943a00c4277e",
+      "results": [
+        {
+          "pid": 2485807,
+          "birth": 1792187655.49,
+          "rank": 1,
+          "critic_memory": [],
+          "FA_deterministic": null,
+          "DT_CREDIT_MODE": "reward_target_exponential_v5",
+          "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace",
+          "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner",
+          "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+          "lora_rank": 8,
+          "lora_alpha": 16,
+          "microbatch_per_gpu": 4,
+          "worker_minibatch": 16,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "modules": {
+            "dt_training_batch": {
+              "imported": false
+            },
+            "reward_readout": {
+              "imported": false
+            },
+            "counterfactual": {
+              "imported": false
+            },
+            "deltatrace_rollout": {
+              "imported": false
+            },
+            "owner_trajectory_batch": {
+              "imported": false
+            },
+            "sql_owner_rollout": {
+              "imported": false
+            },
+            "loop_owner_rollout": {
+              "imported": false
+            },
+            "verl.workers.fsdp_workers": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/fsdp_workers.py",
+              "SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+              "expected": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+              "matches_prepared_source": true
+            },
+            "verl.workers.actor.dp_actor": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/actor/dp_actor.py",
+              "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+              "expected": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+              "matches_prepared_source": true
+            },
+            "verl.trainer.ppo.core_algos": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/core_algos.py",
+              "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+              "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+              "matches_prepared_source": true
+            },
+            "verl.utils.experimental.torch_functional": {
+              "imported": false
+            },
+            "verl.models.transformers.qwen3_vl": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/models/transformers/qwen3_vl.py",
+              "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+              "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+              "matches_prepared_source": true
+            },
+            "verl.workers.critic.dp_critic": {
+              "imported": false
+            },
+            "verl.utils.activation_offload": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/utils/activation_offload.py",
+              "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+              "expected": null,
+              "matches_prepared_source": null
+            }
+          },
+          "model_calls": 0,
+          "DT_calls": 0,
+          "optimizer_updates": 0,
+          "method_changes": 0
+        },
+        {
+          "pid": 2483311,
+          "birth": 1792187635.22,
+          "rank": 0,
+          "critic_memory": [],
+          "FA_deterministic": null,
+          "DT_CREDIT_MODE": "reward_target_exponential_v5",
+          "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace",
+          "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner",
+          "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+          "lora_rank": 8,
+          "lora_alpha": 16,
+          "microbatch_per_gpu": 4,
+          "worker_minibatch": 16,
+          "enforce_eager": false,
+          "free_cache_engine": false,
+          "modules": {
+            "dt_training_batch": {
+              "imported": false
+            },
+            "reward_readout": {
+              "imported": false
+            },
+            "counterfactual": {
+              "imported": false
+            },
+            "deltatrace_rollout": {
+              "imported": false
+            },
+            "owner_trajectory_batch": {
+              "imported": false
+            },
+            "sql_owner_rollout": {
+              "imported": false
+            },
+            "loop_owner_rollout": {
+              "imported": false
+            },
+            "verl.workers.fsdp_workers": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/fsdp_workers.py",
+              "SHA256": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+              "expected": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+              "matches_prepared_source": true
+            },
+            "verl.workers.actor.dp_actor": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/actor/dp_actor.py",
+              "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+              "expected": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+              "matches_prepared_source": true
+            },
+            "verl.trainer.ppo.core_algos": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/core_algos.py",
+              "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+              "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+              "matches_prepared_source": true
+            },
+            "verl.utils.experimental.torch_functional": {
+              "imported": false
+            },
+            "verl.models.transformers.qwen3_vl": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/models/transformers/qwen3_vl.py",
+              "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+              "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+              "matches_prepared_source": true
+            },
+            "verl.workers.critic.dp_critic": {
+              "imported": false
+            },
+            "verl.utils.activation_offload": {
+              "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/utils/activation_offload.py",
+              "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+              "expected": null,
+              "matches_prepared_source": null
+            }
+          },
+          "model_calls": 0,
+          "DT_calls": 0,
+          "optimizer_updates": 0,
+          "method_changes": 0
+        }
+      ],
+      "model_calls": 0,
+      "DT_calls": 0,
+      "optimizer_updates": 0,
+      "scope": "Unchanged original metadata RPC; absent lazy modules remain unverified"
     },
-    "actual_environment_owner_bindings": [],
+    "actual_environment_owner_bindings": [
+      {
+        "pid": 2510543,
+        "birth": 1792187904.44,
+        "rank": 0,
+        "collected": 1792187945.9311671,
+        "modules": {
+          "phi_agents.evals.appworld_evals": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-environment-readiness-20261017-v4/loop-owner/phi_agents/evals/appworld_evals.py",
+            "SHA256": "1c929901512e654360fc55fd925869b736ba643a3234169684ccddb0d281b40b"
+          },
+          "phi_agents.appworld.interface": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-environment-readiness-20261017-v4/loop-owner/phi_agents/appworld/interface.py",
+            "SHA256": "43ebedfb8b850d01422b8f66464f989214d8c64931ab1074da2d8bb554da1bcb"
+          },
+          "phi_agents.rl.appworld_scenario_runner": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-environment-readiness-20261017-v4/loop-owner/phi_agents/rl/appworld_scenario_runner.py",
+            "SHA256": "df8481f10f3bda5737160d159763189867ce73ea623a4b464cf899f2d9469eac"
+          }
+        },
+        "scope": "Passive actual environment owner imports; no model or task calls"
+      },
+      {
+        "pid": 2510544,
+        "birth": 1792187904.45,
+        "rank": 1,
+        "collected": 1792187945.7797914,
+        "modules": {
+          "phi_agents.evals.appworld_evals": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-environment-readiness-20261017-v4/loop-owner/phi_agents/evals/appworld_evals.py",
+            "SHA256": "1c929901512e654360fc55fd925869b736ba643a3234169684ccddb0d281b40b"
+          },
+          "phi_agents.appworld.interface": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-environment-readiness-20261017-v4/loop-owner/phi_agents/appworld/interface.py",
+            "SHA256": "43ebedfb8b850d01422b8f66464f989214d8c64931ab1074da2d8bb554da1bcb"
+          },
+          "phi_agents.rl.appworld_scenario_runner": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-environment-readiness-20261017-v4/loop-owner/phi_agents/rl/appworld_scenario_runner.py",
+            "SHA256": "df8481f10f3bda5737160d159763189867ce73ea623a4b464cf899f2d9469eac"
+          }
+        },
+        "scope": "Passive actual environment owner imports; no model or task calls"
+      }
+    ],
     "previous_failed_run": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/appworld-dtpo-reward-target-exponential-formal-20261017-v3"
   },
   "PPO": {
@@ -342,7 +563,7 @@
     ],
     "completed_iterations": 0,
     "latest_checkpointed_iteration": null,
-    "collected": 1792187775.1179304,
+    "collected": 1792188180.3788877,
     "snapshot": "D:\\Users\\Administrator\\Documents\\ChatGPT\\DeltaTrace\\research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\latest-native-snapshot.json",
     "environment_owner_patch": {
       "status": "verified_native_owner_recovery_behavior_candidate",
@@ -1414,7 +1635,7 @@
     }
   ],
   "goal_completion": "Both original 200-iteration budgets and final native shared complete checkpoints",
-  "host_MemAvailable_GiB": 207.12639617919922,
+  "host_MemAvailable_GiB": 89.45134353637695,
   "inactive_diagnostic_checkpoint_storage_relocation": {
     "status": "passed_preserved_diagnostic_checkpoint_storage_relocation",
     "started": 1792180843.482801,
