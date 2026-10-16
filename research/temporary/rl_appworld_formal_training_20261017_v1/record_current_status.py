@@ -73,10 +73,7 @@ for method, key in [('dt', 'DTPO'), ('ppo', 'PPO')]:
         if exit_record is not None:
             current.update(status=exit_record['status'], exit_receipt=str(exit_path))
     if method == 'dt':
-        current['previous_failed_run'] = source.get('previous_failed_run')
-        current['log_warning_classification'] = dict(count=2,
-            type='Inductor compiled graph cache FileNotFoundError during concurrent graph capture',
-            subsequent_graph_capture_completed=True, fatal=False, cache_changes=0)
+        current['previous_failed_run'] = source.get('previous_failed_current_run', source.get('previous_failed_run'))
     else:
         current['acceptance'] = dict(receipt=root + '/receipts/PPO-native-final-numerical-20261017-v1/formal-acceptance.json',
                                     local_receipt=str(acceptance_dir / 'formal-acceptance.json'), status=acceptance['status'],
