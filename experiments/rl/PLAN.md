@@ -1,3 +1,11 @@
+**2026-10-16 SQL/AppWorld v2实际启动失败后的最小接口修复，执行版本v3。**
+SQL原生生成完成后，DirectActionTargetReadout任务注册只允许TextCraft/AppWorld而
+拒绝SkyRL-SQL；仅在原owner任务注册中接纳已有SQL原始artifact，Q/V/A、EOS、
+指数和mask均不变。AppWorld沿用的async选项触发固定VERL另建HTTP server，
+其旧vLLM协议导入失败；使用现有原生sync rollout接口承接LOOP actor RPC，
+LOOP自身并行采样/取消策略不变。v3保持v2全部训练/采样数值配置及两轮预算，
+只修这两个已复现接口问题，独立candidate/run；v2的0完整迭代失败记录保留。
+
 **2026-10-16 用户进一步授权停止物理ID6/7上的作业，继续SQL/AppWorld效率研究。**
 原GPU2/3已被maxk项目占用，未启动的v1试跑回执保留；本次停止已核对身份的
 GPU6/7 Qwen3-32B推理服务后，将相同已通过CPU检查的两任务试跑配置迁到6/7。

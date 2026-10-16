@@ -382,8 +382,8 @@ class DirectActionTargetReadout:
     def __init__(self, runner: Any, tokenizer: Any, *, task: str,
                  packed_answer_targets: Any, max_length: int = 32768,
                  minibatch_size: int = 4, prefix_lease_factory: Any = None):
-        if task not in ('TextCraft', 'AppWorld'):
-            raise ValueError('Direct action targets are enabled only for TextCraft and AppWorld')
+        if task not in ('TextCraft', 'AppWorld', 'SkyRL-SQL'):
+            raise ValueError('Direct action targets require TextCraft, AppWorld or SkyRL-SQL native artifacts')
         if tokenizer.eos_token_id is None or minibatch_size < 1:
             raise ValueError('The native EOS token and a positive DT minibatch are required')
         self.runner, self.tokenizer = runner, tokenizer
