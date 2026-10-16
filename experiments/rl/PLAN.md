@@ -1,3 +1,21 @@
+**2026-10-16 用户授权 AppWorld、SQL 训练速度试跑，明确第3/4张为物理GPU2/3，保留现有PPO。**
+仅为这两个任务做独立、有限的原生训练速度试跑；当前TextCraft DTPO/PPO、
+小时绘图和已停止GRPO身份保持。沿用v5官方GRPO乘子、逐target原EOS DT及
+指数后Q/V/A组合、官方masked_var仅方差缩放和原官方PPO；不恢复旧梯度goal。
+AppWorld复用LOOP的原任务/环境/采样/取消流程，target只取终局结算对应的
+原已执行代码片段；此前代码转为source。SQL原SQLEnv中间步骤奖励固定0，
+仅done时结算；target取原SkyRL generator记录的该终局Action的原生成token
+片段，包含格式失败-1、执行失败0及成功1的结算，之前查询为source。
+观察原文保留但policy系数为0；无重分词或另一套任务parser/reward实现。
+测速复用已验收DT数值/内存、原生vLLM图和冻结head更新路径；每卡B4、
+LoRA8/16、32k与原任务单轨迹限制保持。先用两个完整原生迭代，SQL每批8组×5，
+AppWorld每批4组×6（仍用原取消策略）；这是明确标记的小批量速度试跑，
+不是原正式SQL1280轨迹或AppWorld240轨迹的整轮吞吐结论。原任务PPO epochs/
+minibatch由原入口保留；仅试跑预算、组数、输出路径与关闭评估/保存改变，
+不造诊断checkpoint。分开报告初始化/生成环境交互、old/ref前向、DT及更新，
+按实际有效token/轨迹/RPC数量归一；不相加两rank并行耗时或嵌套设备窗口。
+版本、原来源/SHA、有效配置、PID出生、实际导入及测试/测速事实写入运行记录。
+
 **2026-10-16 用户批准实现、提交推送并从基础权重训练 DTPO v5。**
 本次采用刚讨论完成的同一官方GRPO组相对信用目标：固定VERL原GRPO计算g，
 原逐事件EOS有限传播保留未缩放的d_ik，先计算u_ik=-expm1(-d_ik)，
