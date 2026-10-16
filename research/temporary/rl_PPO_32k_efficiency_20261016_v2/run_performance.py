@@ -14,7 +14,7 @@ import sys
 import time
 
 ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
-AUDIT=ROOT/'receipts/PPO-32k-native-efficiency-20261016-v2/performance'
+AUDIT=Path(os.environ.get('PPO_32K_PERFORMANCE_AUDIT',str(ROOT/'receipts/PPO-32k-native-efficiency-20261016-v2/performance')))
 CANDIDATE=ROOT/'candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner'
 if '--native' not in sys.argv:
     import re
