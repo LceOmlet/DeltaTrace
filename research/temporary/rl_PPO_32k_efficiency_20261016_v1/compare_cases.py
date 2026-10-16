@@ -9,7 +9,7 @@ import torch
 ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT=ROOT/'receipts/PPO-32k-native-efficiency-20261016-v1'
 reference_name,candidate_name=sys.argv[1:]
-assert (reference_name,candidate_name) in [('baseline-fit','candidate-fit'),('reference-32k','candidate-32k')]
+assert (reference_name,candidate_name) in [('baseline-fit','candidate-fit'),('baseline-fit','baseline-repeat-fit'),('reference-32k','candidate-32k')]
 ref=AUDIT/reference_name;candidate=AUDIT/candidate_name
 read=lambda p:json.loads(p.read_bytes())
 record=dict(reference=reference_name,candidate=candidate_name,collected_unix=time.time(),
@@ -31,7 +31,8 @@ for rank in (0,1):
             compare(f'rank{rank}.step{i+1}.{name}',x[name],y[name])
     compare(f'rank{rank}.native_metrics',a['native_metrics'],b['native_metrics'])
     compare(f'rank{rank}.final_native_state',a['final'],b['final'])
-    compare(f'rank{rank}.after_timing_state',read(ref/f'final-rank{rank}.json'),read(candidate/f'final-rank{rank}.json'))
+    if candidate_name!='baseline-repeat-fit':
+        compare(f'rank{rank}.after_timing_state',read(ref/f'final-rank{rank}.json'),read(candidate/f'final-rank{rank}.json'))
 
 left=torch.load(ref/'native-values.pt',map_location='cpu',weights_only=False).batch['values']
 right=torch.load(candidate/'native-values.pt',map_location='cpu',weights_only=False).batch['values']

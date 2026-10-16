@@ -28,7 +28,7 @@ def source(path):
 
 def arguments():
     p=argparse.ArgumentParser()
-    p.add_argument('--case',required=True,choices=['baseline-fit','candidate-fit','candidate-32k','reference-32k'])
+    p.add_argument('--case',required=True,choices=['baseline-fit','baseline-repeat-fit','candidate-fit','candidate-32k','reference-32k'])
     p.add_argument('--native',action='store_true')
     p.add_argument('--prepare-only',action='store_true')
     return p.parse_args()
@@ -195,7 +195,7 @@ try:
     state['status']='native_numerical_update';write(CASE/'status.json',state)
     result=group.numerical_update(data)
     state['metrics']=result.meta_info['metrics']
-    if length<32768:
+    if length<32768 and args.case!='baseline-repeat-fit':
         # Numerical hashing is disabled for these warmed native timings.
         timings=[]
         for i in range(3):

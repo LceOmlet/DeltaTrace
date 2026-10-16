@@ -10,7 +10,7 @@ import psutil
 ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT=ROOT/'receipts/PPO-32k-native-efficiency-20261016-v1'
 case,commit=sys.argv[1:]
-assert case in ('baseline-fit','candidate-fit','reference-32k','candidate-32k')
+assert case in ('baseline-fit','baseline-repeat-fit','candidate-fit','reference-32k','candidate-32k')
 assert len(commit)==40 and all(c in '0123456789abcdef' for c in commit)
 dest=AUDIT/case;dest.mkdir(exist_ok=True)
 assert not (dest/'launched.json').exists(),'Preserve an already submitted case'
