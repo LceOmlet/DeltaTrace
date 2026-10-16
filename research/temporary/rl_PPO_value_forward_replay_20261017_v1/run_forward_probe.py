@@ -61,7 +61,8 @@ class ForwardProbe(CriticWorker):
     def state_digest(self):
         value=state(self)
         value['buffers']={k:fingerprint(v) for k,v in self.critic_module.named_buffers()}
-        return dict(rank=self.rank,SHA256=hashlib.sha256(json.dumps(value,sort_keys=True).encode()).hexdigest())
+        return dict(rank=self.rank,SHA256=hashlib.sha256(json.dumps(value,sort_keys=True).encode()).hexdigest(),
+                    components={k:hashlib.sha256(json.dumps(v,sort_keys=True).encode()).hexdigest() for k,v in value.items()})
 
     @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
     def observed_values(self,data):
