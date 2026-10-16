@@ -1,7 +1,7 @@
 """Retry the unchanged full-response numerical replay after capacity ends.
 
-The failed parallel execution was killed by kernel global OOM on allowed
-NUMA node0. Change only scheduling, audit path and the Ray session directory.
+The failed parallel execution was killed by kernel global host OOM below the
+cgroup limit. Change only scheduling, audit path and Ray session directory.
 """
 import hashlib
 import json
