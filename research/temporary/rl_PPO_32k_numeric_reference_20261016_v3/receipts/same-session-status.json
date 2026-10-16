@@ -1,0 +1,216 @@
+{
+  "status": "completed_native_capacity_and_replay",
+  "pid": 2732860,
+  "birth": 1792149872.53,
+  "source_commit": "fd91b133d7064975272b52ff448b9377c2c79a8e",
+  "physical_gpus": [
+    2,
+    3
+  ],
+  "exact_context": 32768,
+  "batch": 8,
+  "microbatch_per_rank": 4,
+  "started": 1792149897.6512558,
+  "scope": "Native same-session checkpoint replay at exact B4/rank x32768.\n\nUse the pinned VERL checkpoint/PPO/GAE and original HF checkpoint callable.\nThe saved states are diagnostic artifacts, never formal progress/checkpoints.\n",
+  "formal_mutations": 0,
+  "rollout_calls": 0,
+  "DT_calls": 0,
+  "original_input_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-native-efficiency-20261016-v2/same-session-native-data-32768.pt",
+  "test_only_FA_deterministic": true,
+  "production_flags_unchanged": true,
+  "original_critic_config": {
+    "rollout_n": 1,
+    "strategy": "fsdp2",
+    "optim": {
+      "lr": 1e-05,
+      "lr_warmup_steps_ratio": 0.0,
+      "min_lr_ratio": null,
+      "warmup_style": "constant",
+      "total_training_steps": 2,
+      "weight_decay": 0.01
+    },
+    "model": {
+      "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+      "use_shm": false,
+      "tokenizer_path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+      "override_config": {},
+      "external_lib": null,
+      "enable_gradient_checkpointing": true,
+      "enable_activation_offload": false,
+      "use_remove_padding": false,
+      "trust_remote_code": true,
+      "fsdp_config": {
+        "param_offload": true,
+        "optimizer_offload": true,
+        "offload_policy": true,
+        "reshard_after_forward": true,
+        "wrap_policy": {
+          "min_num_params": 0
+        },
+        "fsdp_size": -1
+      },
+      "lora_rank": 0,
+      "lora_alpha": 16,
+      "target_modules": "all-linear"
+    },
+    "ppo_mini_batch_size": 32,
+    "ppo_micro_batch_size": null,
+    "ppo_micro_batch_size_per_gpu": 4,
+    "forward_micro_batch_size": null,
+    "forward_micro_batch_size_per_gpu": 4,
+    "use_dynamic_bsz": false,
+    "ppo_max_token_len_per_gpu": 32768,
+    "forward_max_token_len_per_gpu": 32768,
+    "ulysses_sequence_parallel_size": 1,
+    "ppo_epochs": 2,
+    "shuffle": false,
+    "grad_clip": 1.0,
+    "cliprange_value": 0.5,
+    "loss_agg_mode": "token-mean",
+    "checkpoint": {
+      "contents": [
+        "model",
+        "optimizer",
+        "extra"
+      ]
+    }
+  },
+  "numerical_criterion": "Pinned VERL offload replay: after-update native outputs atol=0, rtol=0; original self-replay, RNG and gradient errors separately reported. No widened threshold.",
+  "workers": [
+    {
+      "rank": 0,
+      "pid": 2737549,
+      "birth": 1792149905.23,
+      "physical_CVD": "2",
+      "classifier_dropout": 0.0,
+      "sources": {
+        "verl.workers.fsdp_workers": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/workers/fsdp_workers.py",
+          "SHA256": "76f3efbf53e25bd9919ae79de061cd6a47401d8e93df3d5c64bf397e09aa94dd"
+        },
+        "verl.workers.critic.dp_critic": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/workers/critic/dp_critic.py",
+          "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.activation_offload": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/utils/activation_offload.py",
+          "SHA256": "f62bd44a203f8ee27480792769281f4259d299beb74db4a215031bd6b6d5b423"
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "pid": 2739463,
+      "birth": 1792149924.51,
+      "physical_CVD": "3",
+      "classifier_dropout": 0.0,
+      "sources": {
+        "verl.workers.fsdp_workers": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/workers/fsdp_workers.py",
+          "SHA256": "76f3efbf53e25bd9919ae79de061cd6a47401d8e93df3d5c64bf397e09aa94dd"
+        },
+        "verl.workers.critic.dp_critic": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/workers/critic/dp_critic.py",
+          "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.activation_offload": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/utils/activation_offload.py",
+          "SHA256": "f62bd44a203f8ee27480792769281f4259d299beb74db4a215031bd6b6d5b423"
+        }
+      }
+    }
+  ],
+  "completed_stages": [
+    {
+      "label": "native_reference",
+      "seconds_including_diagnostics": 315.0854351960588,
+      "metrics": {
+        "critic/vf_loss": [
+          15.155014991760254,
+          113.22866821289062
+        ],
+        "critic/vf_clipfrac": [
+          0.0,
+          0.018518518656492233
+        ],
+        "critic/vpred_mean": [
+          -2.607407331466675,
+          10.311111450195312
+        ],
+        "critic/grad_norm": [
+          414.3534240722656,
+          2318.334228515625
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "native_state_and_RNG_restore_exact": true
+    },
+    {
+      "label": "native_repeat",
+      "seconds_including_diagnostics": 296.4982925900258,
+      "metrics": {
+        "critic/vf_loss": [
+          15.155014991760254,
+          113.22866821289062
+        ],
+        "critic/vf_clipfrac": [
+          0.0,
+          0.018518518656492233
+        ],
+        "critic/vpred_mean": [
+          -2.607407331466675,
+          10.311111450195312
+        ],
+        "critic/grad_norm": [
+          414.3534240722656,
+          2318.334228515625
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "native_state_and_RNG_restore_exact": true
+    },
+    {
+      "label": "native_async",
+      "seconds_including_diagnostics": 300.3819657060085,
+      "metrics": {
+        "critic/vf_loss": [
+          15.155014991760254,
+          113.22866821289062
+        ],
+        "critic/vf_clipfrac": [
+          0.0,
+          0.018518518656492233
+        ],
+        "critic/vpred_mean": [
+          -2.607407331466675,
+          10.311111450195312
+        ],
+        "critic/grad_norm": [
+          414.3534240722656,
+          2318.334228515625
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "native_state_and_RNG_restore_exact": true
+    }
+  ],
+  "native_repeat_post_values_exact": true,
+  "native_repeat_post_values_max_abs": 0.0,
+  "native_async_post_values_exact": true,
+  "native_async_post_values_max_abs": 0.0,
+  "numerical_accepted": true,
+  "efficiency_accepted": false,
+  "performance_note": "No performance claim from replay times that include CPU gradient capture. Matched performance work requires numerical acceptance.",
+  "finished": 1792150996.5987823
+}

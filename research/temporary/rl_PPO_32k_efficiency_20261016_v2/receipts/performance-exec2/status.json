@@ -1,0 +1,370 @@
+{
+  "status": "completed",
+  "started": 1792151140.1142101,
+  "pid": 2863066,
+  "birth": 1792151117.44,
+  "source_commit": "7fc1c72b16edb4de3f3d281ae3e08a6437dce15d",
+  "physical_gpus": [
+    6,
+    7
+  ],
+  "FA_deterministic": false,
+  "formal_mutations": 0,
+  "rollout_calls": 0,
+  "DT_calls": 0,
+  "scope": "Native fast-mode PPO cost, matched full state, and exact offload byte transport.\n\nUses only the original critic update/optimizer/checkpoint and native offloader.\nDiagnostic observers are absent from every timed call. No formal training.\n",
+  "critic_config": {
+    "rollout_n": 1,
+    "strategy": "fsdp2",
+    "optim": {
+      "lr": 1e-05,
+      "lr_warmup_steps_ratio": 0.0,
+      "min_lr_ratio": null,
+      "warmup_style": "constant",
+      "total_training_steps": 2,
+      "weight_decay": 0.01
+    },
+    "model": {
+      "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+      "use_shm": false,
+      "tokenizer_path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+      "override_config": {},
+      "external_lib": null,
+      "enable_gradient_checkpointing": true,
+      "enable_activation_offload": false,
+      "use_remove_padding": false,
+      "trust_remote_code": true,
+      "fsdp_config": {
+        "param_offload": true,
+        "optimizer_offload": true,
+        "offload_policy": true,
+        "reshard_after_forward": true,
+        "wrap_policy": {
+          "min_num_params": 0
+        },
+        "fsdp_size": -1
+      },
+      "lora_rank": 0,
+      "lora_alpha": 16,
+      "target_modules": "all-linear"
+    },
+    "ppo_mini_batch_size": 32,
+    "ppo_micro_batch_size": null,
+    "ppo_micro_batch_size_per_gpu": 4,
+    "forward_micro_batch_size": null,
+    "forward_micro_batch_size_per_gpu": 4,
+    "use_dynamic_bsz": false,
+    "ppo_max_token_len_per_gpu": 32768,
+    "forward_max_token_len_per_gpu": 32768,
+    "ulysses_sequence_parallel_size": 1,
+    "ppo_epochs": 2,
+    "shuffle": false,
+    "grad_clip": 1.0,
+    "cliprange_value": 0.5,
+    "loss_agg_mode": "token-mean",
+    "checkpoint": {
+      "contents": [
+        "model",
+        "optimizer",
+        "extra"
+      ]
+    }
+  },
+  "limitations": [
+    "B8 native capacity input; original global32/epochs2 preserved, not formal full-iteration throughput",
+    "8192 has an original no-activation-offload baseline; original32768 no-offload already OOM, so32k uses official CPU saving reference",
+    "Fast default native backward can vary numerically; no diagnostic hashing/observers in measured calls"
+  ],
+  "workers": [
+    {
+      "rank": 0,
+      "pid": 2866934,
+      "birth": 1792151147.99,
+      "physical_CVD": "6",
+      "FA_deterministic": "0",
+      "sources": {
+        "verl.workers.fsdp_workers": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/workers/fsdp_workers.py",
+          "SHA256": "76f3efbf53e25bd9919ae79de061cd6a47401d8e93df3d5c64bf397e09aa94dd"
+        },
+        "verl.workers.critic.dp_critic": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/workers/critic/dp_critic.py",
+          "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.activation_offload": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/utils/activation_offload.py",
+          "SHA256": "f62bd44a203f8ee27480792769281f4259d299beb74db4a215031bd6b6d5b423"
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "pid": 2869048,
+      "birth": 1792151168.95,
+      "physical_CVD": "7",
+      "FA_deterministic": "0",
+      "sources": {
+        "verl.workers.fsdp_workers": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/workers/fsdp_workers.py",
+          "SHA256": "76f3efbf53e25bd9919ae79de061cd6a47401d8e93df3d5c64bf397e09aa94dd"
+        },
+        "verl.workers.critic.dp_critic": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/workers/critic/dp_critic.py",
+          "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+        },
+        "verl.trainer.ppo.core_algos": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl.utils.activation_offload": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner/verl/utils/activation_offload.py",
+          "SHA256": "f62bd44a203f8ee27480792769281f4259d299beb74db4a215031bd6b6d5b423"
+        }
+      }
+    }
+  ],
+  "exact_transport": "passed",
+  "measurements": [
+    {
+      "context": 8192,
+      "mode": "plain",
+      "seconds": 35.155429890030064,
+      "native_metrics": {
+        "critic/vf_loss": [
+          28.87397575378418,
+          14.074262619018555
+        ],
+        "critic/vf_clipfrac": [
+          0.2370370328426361,
+          0.6666666865348816
+        ],
+        "critic/vpred_mean": [
+          4.800000190734863,
+          -0.8925926089286804
+        ],
+        "critic/grad_norm": [
+          419.6767578125,
+          66.0049819946289
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "initial_full_state_RNG_exact": true
+    },
+    {
+      "context": 8192,
+      "mode": "async",
+      "seconds": 35.53394941997249,
+      "native_metrics": {
+        "critic/vf_loss": [
+          28.87397575378418,
+          14.084078788757324
+        ],
+        "critic/vf_clipfrac": [
+          0.2370370328426361,
+          0.6740740537643433
+        ],
+        "critic/vpred_mean": [
+          4.800000190734863,
+          -0.8925926089286804
+        ],
+        "critic/grad_norm": [
+          419.40576171875,
+          65.30330657958984
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "initial_full_state_RNG_exact": true
+    },
+    {
+      "context": 8192,
+      "mode": "async",
+      "seconds": 35.47234632296022,
+      "native_metrics": {
+        "critic/vf_loss": [
+          28.87397575378418,
+          14.078459739685059
+        ],
+        "critic/vf_clipfrac": [
+          0.2370370328426361,
+          0.6777777671813965
+        ],
+        "critic/vpred_mean": [
+          4.800000190734863,
+          -0.8962963223457336
+        ],
+        "critic/grad_norm": [
+          419.7115173339844,
+          64.60865020751953
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "initial_full_state_RNG_exact": true
+    },
+    {
+      "context": 8192,
+      "mode": "plain",
+      "seconds": 35.08211968303658,
+      "native_metrics": {
+        "critic/vf_loss": [
+          28.87397575378418,
+          14.086212158203125
+        ],
+        "critic/vf_clipfrac": [
+          0.2370370328426361,
+          0.6703703999519348
+        ],
+        "critic/vpred_mean": [
+          4.800000190734863,
+          -0.8925926089286804
+        ],
+        "critic/grad_norm": [
+          419.7163391113281,
+          67.84561920166016
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "initial_full_state_RNG_exact": true
+    },
+    {
+      "context": 8192,
+      "mode": "plain",
+      "seconds": 35.29742635902949,
+      "native_metrics": {
+        "critic/vf_loss": [
+          28.87397575378418,
+          14.086716651916504
+        ],
+        "critic/vf_clipfrac": [
+          0.2370370328426361,
+          0.6740740537643433
+        ],
+        "critic/vpred_mean": [
+          4.800000190734863,
+          -0.8962963223457336
+        ],
+        "critic/grad_norm": [
+          419.8882751464844,
+          66.5038070678711
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "initial_full_state_RNG_exact": true
+    },
+    {
+      "context": 8192,
+      "mode": "async",
+      "seconds": 35.36455835402012,
+      "native_metrics": {
+        "critic/vf_loss": [
+          28.87397575378418,
+          14.074947357177734
+        ],
+        "critic/vf_clipfrac": [
+          0.2370370328426361,
+          0.6740740537643433
+        ],
+        "critic/vpred_mean": [
+          4.800000190734863,
+          -0.8962963223457336
+        ],
+        "critic/grad_norm": [
+          419.73736572265625,
+          67.98494720458984
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "initial_full_state_RNG_exact": true
+    },
+    {
+      "context": 32768,
+      "mode": "CPU_reference",
+      "seconds": 135.984352673986,
+      "native_metrics": {
+        "critic/vf_loss": [
+          30.86166000366211,
+          14.050175666809082
+        ],
+        "critic/vf_clipfrac": [
+          0.2074074000120163,
+          0.6888889074325562
+        ],
+        "critic/vpred_mean": [
+          5.007407188415527,
+          -0.7481481432914734
+        ],
+        "critic/grad_norm": [
+          468.2358703613281,
+          58.15319061279297
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "initial_full_state_RNG_exact": true
+    },
+    {
+      "context": 32768,
+      "mode": "async",
+      "seconds": 131.09635930194054,
+      "native_metrics": {
+        "critic/vf_loss": [
+          30.86166000366211,
+          14.057701110839844
+        ],
+        "critic/vf_clipfrac": [
+          0.2074074000120163,
+          0.6888889074325562
+        ],
+        "critic/vpred_mean": [
+          5.007407188415527,
+          -0.7629629373550415
+        ],
+        "critic/grad_norm": [
+          467.9082336425781,
+          61.27982711791992
+        ],
+        "perf/mfu/critic": 0.0,
+        "critic/lr": 1e-05
+      },
+      "initial_full_state_RNG_exact": true
+    }
+  ],
+  "comparisons": [
+    {
+      "context": 8192,
+      "reference": "plain",
+      "reference_seconds": [
+        35.155429890030064,
+        35.08211968303658,
+        35.29742635902949
+      ],
+      "async_seconds": [
+        35.53394941997249,
+        35.47234632296022,
+        35.36455835402012
+      ],
+      "median_ratio": 1.009014722161598
+    },
+    {
+      "context": 32768,
+      "reference": "CPU_reference",
+      "reference_seconds": [
+        135.984352673986
+      ],
+      "async_seconds": [
+        131.09635930194054
+      ],
+      "median_ratio": 0.9640547366227928
+    }
+  ],
+  "finished": 1792154477.1475124
+}

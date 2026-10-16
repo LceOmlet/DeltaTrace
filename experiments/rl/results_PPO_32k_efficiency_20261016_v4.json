@@ -1,0 +1,458 @@
+{
+  "version": "PPO-32k-native-efficiency-20261016-v4",
+  "updated": "2026-10-16T21:56:50.900656+08:00",
+  "status": "32k_numeric_capacity_transport_and_short_efficiency_passed_native_AppWorld_trial_submitted",
+  "source_commit": "1bb6520308d2ca0eea19b010922c9cfba3d8d130",
+  "prepared": {
+    "version": "PPO-32k-native-efficiency-20261016-v4",
+    "status": "prepared_only_short_path_unverified",
+    "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner",
+    "base": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner",
+    "changes": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/activation_offload.py",
+        "before": "f62bd44a203f8ee27480792769281f4259d299beb74db4a215031bd6b6d5b423",
+        "after": "242f7919ef00bcf4dced4d4c856946d2e761dbf24297d434356194f03943cfcb",
+        "scope": "Default-zero native checkpoint fast path; existing long-input branch byte-for-byte unchanged"
+      },
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/fsdp_workers.py",
+        "before": "76f3efbf53e25bd9919ae79de061cd6a47401d8e93df3d5c64bf397e09aa94dd",
+        "after": "5bb0211a5cf5bd355bb763da93d26e3902f1297c96273eddf5e3a6640d455dd3",
+        "scope": "Pass optional memory bound to the existing optional Qwen3.5 FSDP2 critic offload"
+      }
+    ],
+    "unchanged_owner_sources": {
+      "verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+      "verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+      "verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+      "verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+      "verl/utils/experimental/torch_functional.py": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+    },
+    "memory_bound": {
+      "sequence": 8192,
+      "batch_per_rank": 4,
+      "model": "Qwen3.5-9B",
+      "evidence": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-native-efficiency-20261016-v2/performance-exec2/status.json",
+      "default": 0,
+      "meaning": "Proven fitting native path; not a numerical tolerance or training hyperparameter"
+    },
+    "reused_32768": {
+      "numerical": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-numeric-reference-20261016-v3/same-session-status.json",
+      "performance": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-native-efficiency-20261016-v2/performance-exec2/status.json",
+      "reason": "32768 exceeds 8192; unchanged original v2 long-input body and owner calls"
+    },
+    "formal_training_mutations": 0,
+    "method_or_training_hyperparameter_changes": []
+  },
+  "original_upstream_commit": "20bd331b",
+  "formal_training_mutations": 0,
+  "old_gradient_goal": "paused",
+  "numerical": {
+    "status": "passed_corresponding_VERL_after_update_output_criterion",
+    "context": 32768,
+    "batch_per_rank": 4,
+    "atol": 0,
+    "rtol": 0,
+    "repeat_post_values_max_abs": 0.0,
+    "candidate_post_values_max_abs": 0.0,
+    "test_only_FA_deterministic": true,
+    "production_FA_deterministic": false,
+    "original_owner_test": "research/temporary/rl_upstream_alignment_20260929/recipe-sources/verl-agent-20bd331/tests/utils/gpu_tests/test_activation_offload.py:123",
+    "not_claimed": "All gradients or optimizer tensors bitwise equal; low-bit differences also observed on original self replay",
+    "receipt": "research/temporary/rl_PPO_32k_numeric_reference_20261016_v3/receipts/same-session-status.json",
+    "gradient_details": "research/temporary/rl_PPO_32k_numeric_reference_20261016_v3/receipts/full-state-comparison.json"
+  },
+  "default_fast_transport": {
+    "status": "passed",
+    "criterion": "All saved tensor bytes, shape, stride, dtype and device exact after native offload/restore; observer removed before timings",
+    "receipt_root": "research/temporary/rl_PPO_32k_efficiency_20261016_v2/receipts/performance-exec2"
+  },
+  "matched_native_update_performance_v2": {
+    "status": "32k_passed_8192_regression_not_accepted",
+    "comparisons": [
+      {
+        "context": 8192,
+        "reference": "plain",
+        "reference_seconds": [
+          35.155429890030064,
+          35.08211968303658,
+          35.29742635902949
+        ],
+        "async_seconds": [
+          35.53394941997249,
+          35.47234632296022,
+          35.36455835402012
+        ],
+        "median_ratio": 1.009014722161598
+      },
+      {
+        "context": 32768,
+        "reference": "CPU_reference",
+        "reference_seconds": [
+          135.984352673986
+        ],
+        "async_seconds": [
+          131.09635930194054
+        ],
+        "median_ratio": 0.9640547366227928
+      }
+    ],
+    "reference_32768": "Official torch.autograd.graph.save_on_cpu(pin_memory=True); original no-offload native32k already OOM",
+    "scope": "B8 exact capacity fixture, native global32/epochs2 kept; not formal whole-iteration throughput; restoration/diagnostic costs excluded"
+  },
+  "short_native_dispatch": {
+    "status": "passed_both_ranks_zero_offload_callbacks",
+    "launch": {
+      "pid": 3365041,
+      "birth": 1792155996.3,
+      "source_commit": "1bb6520308d2ca0eea19b010922c9cfba3d8d130",
+      "source_SHA256": "5e0ef17663b583e502b27b69846458967fe39f2c94a946d7e82d67c8a0f81112",
+      "physical_gpus": [
+        6,
+        7
+      ],
+      "status": "submitted_short_dispatch_unverified"
+    },
+    "scope": "Measured fitting B4/8192 directly reuses native HF; 32768 executes unchanged verified v2 long-input body",
+    "first_execution_superseded": "Only I/O retrieval changed; six timed samples not complete; native short dispatch check passed"
+  },
+  "AppWorld_retry": {
+    "version": "appworld-native-PPO-32k-speed-20261016-v3",
+    "status": "submitted_pending_actual_worker_imports_and_complete_iterations",
+    "physical_gpus": [
+      2,
+      3
+    ],
+    "native_iterations": 2,
+    "source_commit": "7eaab1f90cdb25b528de2918947bcabf36bb3fb1",
+    "config_changes": [
+      "critic.model.enable_activation_offload=True",
+      "critic.model.activation_offload_native_max_seq_len=8192 (memory backend bound only)"
+    ],
+    "method_training_hyperparameter_changes": [],
+    "performance_gate_override": "research/temporary/rl_appworld_PPO_32k_speed_20261016_v3/receipts/performance-gate-runtime-override.json",
+    "queue": {
+      "pid": 3672954,
+      "birth": 1792158941.34,
+      "started_unix": 1792158941.4338565,
+      "source_commit": "db1c9797306e7dde8a0e48e7db4c09d8a4aed8a6",
+      "physical_gpus": [
+        2,
+        3
+      ],
+      "scope": "Two native limited speed trials; not formal training",
+      "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/appworld-native-PPO-32k-speed-20261016-v3/queue.log",
+      "status": "submitted"
+    }
+  },
+  "policy_update_unchanged": {
+    "verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+    "verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+    "verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+    "verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+    "verl/utils/experimental/torch_functional.py": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+  },
+  "short_performance_exec2": {
+    "status": "Ray_socket_path_preflight_failed_0_model_optimizer_calls_native_checkpoint_cache_completed",
+    "launch": {
+      "pid": 3534664,
+      "birth": 1792157619.03,
+      "source_commit": "d6db32b32c6a7263b70658bd8ffd0cf703218fe1",
+      "source_SHA256": "91c1761d539f5fa6a2630c6b4fd502cdb806c95076c09e589f05e29528172365",
+      "physical_gpus": [
+        6,
+        7
+      ],
+      "status": "submitted_same_test_native_checkpoint_cache"
+    },
+    "method_or_PPO_changes": [],
+    "checkpoint_create_calls": 0,
+    "mechanism": "Original copy_to_local(use_shm=True), native load_checkpoint and all timing code unchanged"
+  },
+  "verified_candidate": {
+    "status": "verified_for_bounded_native_PPO_trial_not_current_formal_deployment",
+    "time": 1792158941.199125,
+    "version": "PPO-32k-native-efficiency-20261016-v4",
+    "numeric_32768": "corresponding_VERL_after_update_output_atol0_rtol0_passed",
+    "test_only_FA_deterministic": true,
+    "production_FA_deterministic": false,
+    "fast_transport": "all_saved_input_bytes_and_metadata_exact",
+    "short_native_offload_callbacks": 0,
+    "short_performance": {
+      "context": 8192,
+      "reference_seconds": [
+        35.0837158090435,
+        34.839325255015865,
+        35.07919514097739
+      ],
+      "adaptive_seconds": [
+        34.99393151793629,
+        34.8088110180106,
+        34.859066324075684
+      ],
+      "median_ratio": 0.9937248042317662
+    },
+    "long_performance": {
+      "context": 32768,
+      "reference": "CPU_reference",
+      "reference_seconds": [
+        135.984352673986
+      ],
+      "async_seconds": [
+        131.09635930194054
+      ],
+      "median_ratio": 0.9640547366227928
+    },
+    "long_branch_unchanged_from_verified_v2": true,
+    "formal_training_mutations": 0,
+    "all_gradients_optimizer_bitwise_identity_claimed": false
+  },
+  "short_performance_exec3": {
+    "status": "completed",
+    "started": 1792158318.1344914,
+    "source_commit": "23e7040428d3edb762f7af2ae1991c77d8eb7cc7",
+    "physical_gpus": [
+      6,
+      7
+    ],
+    "pid": 3602373,
+    "birth": 1792158288.48,
+    "checkpoint": "/dev/shm/verl-cache/c8323a76830bb307ce86c03970c3e0e5/numerical-warm-state-original-VERL",
+    "formal_mutations": 0,
+    "model": "Qwen3.5-9B",
+    "batch_per_rank": 4,
+    "FA_deterministic": false,
+    "scope": "Measure the changed short-input dispatch through the unchanged native PPO owner.",
+    "full_digest_once_per_mode": true,
+    "every_call_native_full_restore": true,
+    "checkpoint_create_calls": 0,
+    "long_input_receipts_reused": "Unchanged32768 branch; v2 numeric-reference-v3, exact-transport and performance-exec2",
+    "workers": [
+      {
+        "rank": 0,
+        "pid": 3606912,
+        "birth": 1792158326.17,
+        "physical_CVD": "6",
+        "FA_deterministic": "0",
+        "sources": {
+          "verl.workers.fsdp_workers": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/fsdp_workers.py",
+            "SHA256": "5bb0211a5cf5bd355bb763da93d26e3902f1297c96273eddf5e3a6640d455dd3"
+          },
+          "verl.workers.critic.dp_critic": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/critic/dp_critic.py",
+            "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+          },
+          "verl.trainer.ppo.core_algos": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/trainer/ppo/core_algos.py",
+            "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+          },
+          "verl.utils.activation_offload": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/activation_offload.py",
+            "SHA256": "242f7919ef00bcf4dced4d4c856946d2e761dbf24297d434356194f03943cfcb"
+          }
+        }
+      },
+      {
+        "rank": 1,
+        "pid": 3608876,
+        "birth": 1792158347.36,
+        "physical_CVD": "7",
+        "FA_deterministic": "0",
+        "sources": {
+          "verl.workers.fsdp_workers": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/fsdp_workers.py",
+            "SHA256": "5bb0211a5cf5bd355bb763da93d26e3902f1297c96273eddf5e3a6640d455dd3"
+          },
+          "verl.workers.critic.dp_critic": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/critic/dp_critic.py",
+            "SHA256": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8"
+          },
+          "verl.trainer.ppo.core_algos": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/trainer/ppo/core_algos.py",
+            "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+          },
+          "verl.utils.activation_offload": {
+            "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/activation_offload.py",
+            "SHA256": "242f7919ef00bcf4dced4d4c856946d2e761dbf24297d434356194f03943cfcb"
+          }
+        }
+      }
+    ],
+    "native_short_dispatch": "passed",
+    "measurements": [
+      {
+        "mode": "plain",
+        "seconds": 35.0837158090435,
+        "native_metrics": {
+          "critic/vf_loss": [
+            28.87397575378418,
+            14.084424018859863
+          ],
+          "critic/vf_clipfrac": [
+            0.2370370328426361,
+            0.6740740537643433
+          ],
+          "critic/vpred_mean": [
+            4.800000190734863,
+            -0.8962963223457336
+          ],
+          "critic/grad_norm": [
+            419.54364013671875,
+            65.4653549194336
+          ],
+          "perf/mfu/critic": 0.0,
+          "critic/lr": 1e-05
+        },
+        "restore_probe_exact": true,
+        "fresh_full_digest_verified": true
+      },
+      {
+        "mode": "adaptive",
+        "seconds": 34.99393151793629,
+        "native_metrics": {
+          "critic/vf_loss": [
+            28.87397575378418,
+            14.076801300048828
+          ],
+          "critic/vf_clipfrac": [
+            0.2370370328426361,
+            0.6740740537643433
+          ],
+          "critic/vpred_mean": [
+            4.800000190734863,
+            -0.8888888955116272
+          ],
+          "critic/grad_norm": [
+            419.7264099121094,
+            66.37345886230469
+          ],
+          "perf/mfu/critic": 0.0,
+          "critic/lr": 1e-05
+        },
+        "restore_probe_exact": true,
+        "fresh_full_digest_verified": true
+      },
+      {
+        "mode": "adaptive",
+        "seconds": 34.8088110180106,
+        "native_metrics": {
+          "critic/vf_loss": [
+            28.87397575378418,
+            14.084787368774414
+          ],
+          "critic/vf_clipfrac": [
+            0.2370370328426361,
+            0.6740740537643433
+          ],
+          "critic/vpred_mean": [
+            4.800000190734863,
+            -0.9037036895751953
+          ],
+          "critic/grad_norm": [
+            419.5429382324219,
+            66.41883850097656
+          ],
+          "perf/mfu/critic": 0.0,
+          "critic/lr": 1e-05
+        },
+        "restore_probe_exact": true,
+        "fresh_full_digest_verified": false
+      },
+      {
+        "mode": "plain",
+        "seconds": 34.839325255015865,
+        "native_metrics": {
+          "critic/vf_loss": [
+            28.87397575378418,
+            14.074663162231445
+          ],
+          "critic/vf_clipfrac": [
+            0.2370370328426361,
+            0.6740740537643433
+          ],
+          "critic/vpred_mean": [
+            4.800000190734863,
+            -0.885185182094574
+          ],
+          "critic/grad_norm": [
+            419.80096435546875,
+            66.39086151123047
+          ],
+          "perf/mfu/critic": 0.0,
+          "critic/lr": 1e-05
+        },
+        "restore_probe_exact": true,
+        "fresh_full_digest_verified": false
+      },
+      {
+        "mode": "plain",
+        "seconds": 35.07919514097739,
+        "native_metrics": {
+          "critic/vf_loss": [
+            28.87397575378418,
+            14.09212589263916
+          ],
+          "critic/vf_clipfrac": [
+            0.2370370328426361,
+            0.6740740537643433
+          ],
+          "critic/vpred_mean": [
+            4.800000190734863,
+            -0.8962963223457336
+          ],
+          "critic/grad_norm": [
+            419.6903381347656,
+            67.2680435180664
+          ],
+          "perf/mfu/critic": 0.0,
+          "critic/lr": 1e-05
+        },
+        "restore_probe_exact": true,
+        "fresh_full_digest_verified": false
+      },
+      {
+        "mode": "adaptive",
+        "seconds": 34.859066324075684,
+        "native_metrics": {
+          "critic/vf_loss": [
+            28.87397575378418,
+            14.078536987304688
+          ],
+          "critic/vf_clipfrac": [
+            0.2370370328426361,
+            0.6740740537643433
+          ],
+          "critic/vpred_mean": [
+            4.800000190734863,
+            -0.8962963223457336
+          ],
+          "critic/grad_norm": [
+            419.5567321777344,
+            65.71111297607422
+          ],
+          "perf/mfu/critic": 0.0,
+          "critic/lr": 1e-05
+        },
+        "restore_probe_exact": true,
+        "fresh_full_digest_verified": false
+      }
+    ],
+    "comparison": {
+      "context": 8192,
+      "reference_seconds": [
+        35.0837158090435,
+        34.839325255015865,
+        35.07919514097739
+      ],
+      "adaptive_seconds": [
+        34.99393151793629,
+        34.8088110180106,
+        34.859066324075684
+      ],
+      "median_ratio": 0.9937248042317662
+    },
+    "finished": 1792158880.5468404
+  }
+}

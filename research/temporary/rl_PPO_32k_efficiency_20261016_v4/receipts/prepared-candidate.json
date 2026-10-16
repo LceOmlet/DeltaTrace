@@ -1,0 +1,42 @@
+{
+  "version": "PPO-32k-native-efficiency-20261016-v4",
+  "status": "prepared_only_short_path_unverified",
+  "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner",
+  "base": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v2/verl-owner",
+  "changes": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/utils/activation_offload.py",
+      "before": "f62bd44a203f8ee27480792769281f4259d299beb74db4a215031bd6b6d5b423",
+      "after": "242f7919ef00bcf4dced4d4c856946d2e761dbf24297d434356194f03943cfcb",
+      "scope": "Default-zero native checkpoint fast path; existing long-input branch byte-for-byte unchanged"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner/verl/workers/fsdp_workers.py",
+      "before": "76f3efbf53e25bd9919ae79de061cd6a47401d8e93df3d5c64bf397e09aa94dd",
+      "after": "5bb0211a5cf5bd355bb763da93d26e3902f1297c96273eddf5e3a6640d455dd3",
+      "scope": "Pass optional memory bound to the existing optional Qwen3.5 FSDP2 critic offload"
+    }
+  ],
+  "unchanged_owner_sources": {
+    "verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+    "verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+    "verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+    "verl/utils/checkpoint/fsdp_checkpoint_manager.py": "f65b65383a7265b4d2808441427fb8a2ee891b84fcda4cdf1d961a3d96a47a01",
+    "verl/utils/experimental/torch_functional.py": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+  },
+  "memory_bound": {
+    "sequence": 8192,
+    "batch_per_rank": 4,
+    "model": "Qwen3.5-9B",
+    "evidence": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-native-efficiency-20261016-v2/performance-exec2/status.json",
+    "default": 0,
+    "meaning": "Proven fitting native path; not a numerical tolerance or training hyperparameter"
+  },
+  "reused_32768": {
+    "numerical": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-numeric-reference-20261016-v3/same-session-status.json",
+    "performance": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/PPO-32k-native-efficiency-20261016-v2/performance-exec2/status.json",
+    "reason": "32768 exceeds 8192; unchanged original v2 long-input body and owner calls"
+  },
+  "formal_training_mutations": 0,
+  "method_or_training_hyperparameter_changes": []
+}
