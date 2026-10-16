@@ -1,0 +1,38 @@
+{
+  "version": "PPO-32k-native-efficiency-20261016-v1",
+  "status": "prepared_only_not_deployed",
+  "base": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner",
+  "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v1/verl-owner",
+  "changes": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v1/verl-owner/verl/utils/activation_offload.py",
+      "before": "23d684cdcd2ac86d2a28e3fa1f13dfd4dfcace8e2ee87f652362b97247a067f8",
+      "after": "162ac8a7d3634bdd6ef770ab1ccda2875145e37cf0431cef574d955fd1f51164",
+      "scope": "Expose the existing Torch checkpoint use_reentrant option; native default True, actor path unchanged"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/PPO-32k-native-efficiency-20261016-v1/verl-owner/verl/workers/fsdp_workers.py",
+      "before": "9dfd6ce795384b98faa962269e1eac98ad05ec65e42af2aac434c41db41641d3",
+      "after": "24086279ec4779530962da6e16f4e8aa1bce34775d062304010ca912cdc2c947",
+      "scope": "Only the existing optional critic activation-offload path for Qwen3.5 FSDP2: select active language subtree, keep non-reentrant checkpoint"
+    }
+  ],
+  "unchanged_owner_sources": {
+    "verl/workers/critic/dp_critic.py": "0de81db36a77e180fb0f6722193c61d74c238ffb81201f4305e697c631ecd3a8",
+    "verl/workers/actor/dp_actor.py": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+    "verl/trainer/ppo/core_algos.py": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+    "verl/utils/fsdp_utils.py": "d65281f248e048cf749175506868de087cc33779dec4e62b00ccfc781ab15060",
+    "verl/utils/experimental/torch_functional.py": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2"
+  },
+  "formal_authorities_unchanged": {
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/formal-training.json": "665bb12b0ceecbf80d23bb50fe18dfefc0b525f2b666a42ea8ad96479d97d8b4",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-training.json": "66d5640384dcfd58502d84c8b5c3e6b91cb930191130cc4412fc9b54ceb568fa",
+    "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/active-source.json": "313396f21c29056b1b3f9394246a28e90371c7fa5537e3aea4cbace135e12fcd"
+  },
+  "caller_configuration_change": "critic.model.enable_activation_offload=True only in independent verification candidate",
+  "model_dtype": "Original CPU FP32 masters, BF16 forward, FP32 reduce unchanged",
+  "original_checkpoint_mode": "use_reentrant=False; original critic non-reentrant early-stop preserved",
+  "model_calls": 0,
+  "DT_calls": 0,
+  "optimizer_updates": 0
+}
