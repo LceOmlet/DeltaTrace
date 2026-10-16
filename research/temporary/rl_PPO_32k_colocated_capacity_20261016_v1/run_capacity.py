@@ -14,7 +14,7 @@ import time
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 VERSION = 'PPO-32k-colocated-capacity-20261016-v1'
-AUDIT = ROOT/'receipts'/VERSION/'execution2'
+AUDIT = ROOT/'receipts'/VERSION/'execution3'
 CANDIDATE = ROOT/'candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner'
 PREPARED = ROOT/'candidates/appworld-native-PPO-32k-speed-20261016-v3/prepared.json'
 FIXTURE = ROOT/'receipts/PPO-32k-native-efficiency-20261016-v2/same-session-native-data-32768.pt'
@@ -42,8 +42,9 @@ import ray
 import torch
 from omegaconf import OmegaConf
 from unittest.mock import patch
+from verl import DataProto
 from verl.trainer import main_ppo
-from verl.trainer.ppo.ray_trainer import compute_advantage, AdvantageEstimator
+from verl.trainer.ppo.ray_trainer import compute_advantage, compute_response_mask, AdvantageEstimator
 from verl.utils.fs import copy_to_local
 
 AUDIT.mkdir(parents=True, exist_ok=True)
@@ -94,19 +95,37 @@ def identities():
     assert len(handles) == 2, actors
     return ray.get([v.execute_with_func_generator.remote(func=worker_identity) for v in handles])
 
+def capacity_data():
+    original = torch.load(FIXTURE, weights_only=False, map_location='cpu')
+    # Same IDs and existing policy actions: expose the observed history on the
+    # response axis, as the original LOOP batch does (one prompt token).
+    # Added history keeps zero policy mask and zero newly assigned reward.
+    length = original.batch['input_ids'].shape[1]-1
+    extra = length-original.batch['responses'].shape[1]
+    data = DataProto.from_dict(tensors=dict(
+        input_ids=original.batch['input_ids'], responses=original.batch['input_ids'][:,1:],
+        attention_mask=original.batch['attention_mask'], position_ids=original.batch['position_ids'],
+        token_level_rewards=torch.nn.functional.pad(original.batch['token_level_rewards'],(extra,0)),
+        loss_mask=torch.nn.functional.pad(original.batch['response_mask'],(extra,0))),
+        meta_info=dict(original.meta_info))
+    data.batch['response_mask'] = compute_response_mask(data)
+    data.meta_info['multi_turn'] = True
+    assert torch.equal(data.batch['loss_mask'][:,-original.batch['responses'].shape[1]:], original.batch['response_mask'])
+    assert not bool(data.batch['loss_mask'][:,:extra].any())
+    return data
+
 def capacity_probe(trainer):
     status['workers_initial'] = identities(); write_status()
-    data = torch.load(FIXTURE, weights_only=False, map_location='cpu')
+    data = capacity_data()
     assert tuple(data.batch['input_ids'].shape) == (8,32768)
     assert bool(data.batch['attention_mask'].all())
-    # This first-turn capacity fixture has no tool observation in its response.
-    # Preserve the existing native response mask as the multi-turn policy mask.
-    data.batch['loss_mask'] = data.batch['response_mask'].clone()
-    data.meta_info['multi_turn'] = True
+    assert tuple(data.batch['responses'].shape) == (8,32767)
     status['input'] = dict(shape=list(data.batch['input_ids'].shape),
                            response_shape=list(data.batch['responses'].shape),
                            SHA256=hashlib.sha256(data.batch['input_ids'].contiguous().numpy().tobytes()).hexdigest(),
                            global_token_num=data.batch['attention_mask'].sum(-1).tolist(),
+                           policy_tokens=data.batch['loss_mask'].sum(-1).tolist(),
+                           response_axis='32767 positions; same original policy mask, added history masked out',
                            natural_task_quality_claimed=False)
     status['status'] = 'native_warm_critic_checkpoint_restore'; write_status()
     cached = copy_to_local(str(CHECKPOINT), use_shm=True)
@@ -161,13 +180,14 @@ status['original_TaskRunner'] = dict(path=inspect.getsourcefile(native_run),
                                    SHA256=hashlib.sha256(Path(inspect.getsourcefile(native_run)).read_bytes()).hexdigest(),
                                    test_seam='Temporary fit callback only; original TaskRunner initialization invoked unchanged')
 if '--preflight' in sys.argv:
-    data = torch.load(FIXTURE, weights_only=False, map_location='cpu')
+    data = capacity_data()
     assert tuple(data.batch['input_ids'].shape) == (8,32768)
     assert bool(data.batch['attention_mask'].all())
     assert tuple(data.batch['response_mask'].shape) == tuple(data.batch['responses'].shape)
+    assert tuple(data.batch['responses'].shape) == (8,32767)
     assert not cfg.actor_rollout_ref.actor.use_kl_loss
     receipt = dict(status='CPU_preflight_passed', source_commit=status['source_commit'],
-                   context=32768, batch=8, microbatch_per_rank=4,
+                   context=32768, response_length=32767, batch=8, microbatch_per_rank=4,
                    original_TaskRunner=status['original_TaskRunner'],
                    effective_configuration=OmegaConf.to_container(cfg, resolve=True),
                    model_calls=0, optimizer_updates=0, source_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())

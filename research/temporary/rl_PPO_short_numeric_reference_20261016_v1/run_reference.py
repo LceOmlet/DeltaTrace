@@ -15,7 +15,7 @@ import sys
 import time
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
-AUDIT = ROOT/'receipts/PPO-short-numeric-reference-20261016-v1'
+AUDIT = ROOT/'receipts/PPO-short-numeric-reference-20261016-v1/execution2'
 CANDIDATE = ROOT/'candidates/PPO-32k-native-efficiency-20261016-v4/verl-owner'
 if '--native' not in sys.argv:
     import re
@@ -41,6 +41,8 @@ from verl.single_controller.base.decorator import Dispatch, register
 from verl.single_controller.ray import RayClassWithInitArgs, RayResourcePool, RayWorkerGroup
 from verl.utils.fs import copy_to_local
 from verl.workers.fsdp_workers import CriticWorker
+from verl import DataProto
+from verl.trainer.ppo.ray_trainer import compute_advantage, compute_response_mask, AdvantageEstimator
 
 owner = ROOT/'receipts/PPO-32k-native-efficiency-20261016-v4/source/run_performance.py'
 expected = '5e0ef17663b583e502b27b69846458967fe39f2c94a946d7e82d67c8a0f81112'
@@ -64,16 +66,27 @@ cfg.critic.model.enable_activation_offload = False
 cfg.critic.optim.total_training_steps = 2
 data = torch.load(ROOT/'receipts/PPO-32k-native-efficiency-20261016-v1/baseline-fit/native-input-with-GAE.pt',weights_only=False,map_location='cpu')
 assert tuple(data.batch['input_ids'].shape) == (8,8192)
+original = data
+extra = 8191-original.batch['responses'].shape[1]
+data = DataProto.from_dict(tensors=dict(input_ids=original.batch['input_ids'],
+    responses=original.batch['input_ids'][:,1:], attention_mask=original.batch['attention_mask'],
+    position_ids=original.batch['position_ids'],
+    token_level_rewards=torch.nn.functional.pad(original.batch['token_level_rewards'],(extra,0)),
+    loss_mask=torch.nn.functional.pad(original.batch['response_mask'],(extra,0))),meta_info=dict(original.meta_info))
+data.batch['response_mask'] = compute_response_mask(data)
+data.meta_info['multi_turn'] = True
+assert tuple(data.batch['responses'].shape) == (8,8191)
+assert not bool(data.batch['loss_mask'][:,:extra].any())
 assert cfg.critic.ppo_micro_batch_size_per_gpu == 4
 status = dict(status='initializing',started=time.time(),pid=os.getpid(),birth=psutil.Process().create_time(),
               source_commit=os.environ['PPO_32K_SOURCE_COMMIT'],physical_gpus=[2,3],
-              context=8192,batch=8,microbatch_per_rank=4,test_only_FA_deterministic=True,
+              context=8192,response_length=8191,batch=8,microbatch_per_rank=4,test_only_FA_deterministic=True,
               production_FA_deterministic=False,formal_training_mutations=0,checkpoint_create_calls=0,
               criterion=dict(owner='Pinned VERL tests/utils/gpu_tests/test_activation_offload.py:123',atol=0.0,rtol=0.0),
               reuse_original_test_driver=dict(path=str(owner),SHA256=expected),
               long_32768_unchanged_receipt=str(ROOT/'receipts/PPO-32k-numeric-reference-20261016-v3/same-session-status.json'))
 if '--preflight' in sys.argv:
-    write(AUDIT/'CPU-preflight.json',dict(status='CPU_preflight_passed',context=8192,batch=8,microbatch_per_rank=4,
+    write(AUDIT/'CPU-preflight.json',dict(status='CPU_preflight_passed',context=8192,response_length=8191,batch=8,microbatch_per_rank=4,
                                         model_calls=0,optimizer_updates=0,criterion=status['criterion'],
                                         source_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))
     print('8192 B4/rank native replay CPU preflight passed')
@@ -81,11 +94,14 @@ if '--preflight' in sys.argv:
 write(AUDIT/'status.json',status)
 checkpoint = copy_to_local(str(ROOT/'receipts/PPO-32k-native-efficiency-20261016-v2/performance-exec2/numerical-warm-state-original-VERL'),use_shm=True)
 env = dict(os.environ); env.pop('CUDA_VISIBLE_DEVICES',None)
-ray.init(address='local',num_cpus=8,num_gpus=2,include_dashboard=False,_temp_dir='/tmp/ppo8num',
+ray.init(address='local',num_cpus=8,num_gpus=2,include_dashboard=False,_temp_dir='/tmp/ppo8num2',
          runtime_env=dict(env_vars=env,worker_process_setup_hook='metax_fsdp_event_wait.worker_setup'))
 try:
     group = RayWorkerGroup(RayResourcePool([2],use_gpu=True,max_colocate_count=1),RayClassWithInitArgs(PerformanceCritic,cfg.critic))
     status['workers'] = group.initialize(); group.memory_mode('adaptive')
+    group.memory_mode('plain'); group.load_checkpoint(checkpoint,del_local_after_load=False)
+    data.batch.update(group.compute_values(data).batch)
+    data = compute_advantage(data,AdvantageEstimator.GAE,gamma=cfg.algorithm.gamma,lam=cfg.algorithm.lam)
     outputs = {}; probe = None; digest = None
     for label,mode in [('reference','plain'),('repeat','plain'),('adaptive','adaptive')]:
         status['status'] = label; write(AUDIT/'status.json',status)
