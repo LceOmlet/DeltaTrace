@@ -20,7 +20,7 @@ code = code.replace(anchor, anchor+"\np['options']['+critic.model.activation_off
 code = code.replace('Verified v2 native critic activation offload', 'Verified v2 long-input offload plus v4 native short-input dispatch')
 old = "assert all(item['median_ratio']<=1.0 for item in performance['comparisons']), 'No efficiency regression accepted'"
 new = """assert next(item for item in performance['comparisons'] if item['context']==32768)['median_ratio']<=1.0
-short=read(ROOT/'receipts/PPO-32k-native-efficiency-20261016-v4/performance-exec2/status.json')
+short=read(ROOT/'receipts/PPO-32k-native-efficiency-20261016-v4/performance-exec3/status.json')
 assert short['status']=='completed' and short['native_short_dispatch']=='passed'
 assert short['comparison']['median_ratio']<=1.0, 'No short-input efficiency regression accepted'
 """
