@@ -1,3 +1,13 @@
+## 2026-10-17T19:22:32.516537+08:00 人类改为TextCraft三算法独占八卡各200轮；首组DTPO v6已进入原生生成，未完成首轮
+
+最新人类要求替代旧四组常驻安排。按TextCraft DTPO v6→原PPO→原GRPO各自从同一基础权重独占GPU0–7、200个完整迭代准备并提交原生顺序队列；三个原Hydra配置的data/env/actor_rollout_ref逐项相同，32组x8轨迹、global64、B4、PPO epochs1、每轮4次actor更新、32k/LoRA8/16保持。原官方更新/归约与任务/生成owner不重写；DTPO方法仍是v6，PPO原GAE/critic，GRPO原官方组优势。新save5/keep2完整checkpoint在共享挂载textcraft-8gpu-20261017下各独立run，旧曲线/检查点不拼入。旧TextPPO105、TextDT5和AppPPO2原保存状态保留。此前八卡全被本线程三项训练及排队诊断占用，按新要求只停止已核对出生的这些身份；原stop owner首12秒观察仍有5个GPU进程释放，随后只读复核全部退出，无额外信号。旧容量execution4按人类新安排取消，不冒称通过；停止后MemAvailable967.990GiB、共享空闲9947.173GiB。
+
+实际控制器3173187/1792235540.72，首组driver3173204/1792235541.21，Ray session_2026-10-17_19-12-50_992583_3173204。8个实际worker/rank0–7出生、原worker198f509c/actor3a65e173/corefc2f992b等实际导入已由原只读RPC核对；各rank optimizer条目0、scheduler0、DP8、local minibatch8、microbatch4，v6模式及新DT_ROOT资源6a112224已配置，跨任务全阶段锁None。19:18:48实际8个worker均原生generate_sequences，首组0/200；PPO/GRPO待运行，不能把初始化、首期空图或将来检查点当完成/健康验收。原延迟加载DT模块当时尚未import，实际DT执行与八rank最坏32k容量仍未核验。物理快照MemAvailable657.308GiB、单XTT186.356GiB，OOM4未增。原Torch并发warmup读临时cache路径的FileNotFound warning保留，原流程已继续生成，不清缓存、不重装。
+
+资源大头已按全机PSS而非只看LLM重新清点：旧AppPPO64个环境服务30.944GiB，两个环境owner1.908GiB；同任务两个GPUworker78.100GiB、混合控制器19.603GiB、编译进程9.373GiB。环境约32.85GiB不可忽略，但小于训练worker；控制器不硬归为模型内存，单XTT池360.080GiB与进程PSS不冒称完全不重叠。未发现已退出AppDT旧session的环境残留；这是全/proc当前快照范围，不扩大为所有历史生命周期都无泄漏。
+
+运行源提交e0a0e665，最新8efaa21b已推送。顺序控制器只在原生exit0、1–200原指标齐全及checkpoint200/8rank完整文件存在后切下一组；失败不跳过。当前小时任务textcraft已实际更新为ACTIVE八卡三算法绘图，原频率和目标线程保持；已验证plot_campaign.py b6786f2d复用原collect/read_job_logs/parse_logs和既有六面板renderer。首图F:/DeltaTraceBackups/plots/textcraft-eight-gpu-sequential-20261017-v1/20261017-191346为0轮空窗口，明确PPO/GRPO待运行、缺失不填0。goal仍active，未把旧未完成AppWorld目标或新600轮预算称完成。完整事实/SHA见D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/research/temporary/rl_textcraft_eight_gpu_sequential_20261017_v1/receipts/eight-GPU-native-launch-and-initial-worker-state-v1.json。
+
 ## 2026-10-16T03:27:42.013833+08:00 DTPO v5实际部署：逐target指数信用、原GRPO与高效原生DT/PPO
 
 正式v5版本textcraft-dt-reward-target-exponential-20261016-v5，源提交4545c55807e7d002287717b6a4254f9b083dd5fc，固定VERL上游20bd331b。原官方组内信用g保留；原reward结算动作target含结算0，较早非结算Action移为source。多target显式事件在driver展平、复用原pad/balance/DP/RPC，原d逐事件指数后汇总Q/V/A，不用v4仿射seed/端点差归一化或source u分母。B=0的抵消分量仍保留；one-event多文本片段只算一次信用。原观察/self/future mask、原整批masked_var仅方差缩放和1/16 sum(S_j/N_j) PPO保持。
