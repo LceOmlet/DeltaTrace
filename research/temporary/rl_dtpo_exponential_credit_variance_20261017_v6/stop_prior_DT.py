@@ -33,7 +33,11 @@ assert (j.get('version'),j['pid'],j['birth'])==(@VERSION@,@PID@,@BIRTH@)
 assert psutil.Process(j['pid']).create_time()==j['birth']
 new=read(a/(@KEY@+'-prepared.json'));assert new['status']=='CPU_configuration_and_behavior_verified_not_started'
 assert all(sha(p)==h for p,h in new['source_bindings'].items())
-s=read(j['source_receipt']);assert all(sha(p)==h for p,h in s['source_bindings'].items())
+s=read(j['source_receipt']);s['source_bindings']=s.get('source_bindings',s.get('actual_inherited_sources',{}));assert s['source_bindings']
+assert all(sha(p)==h for p,h in s['source_bindings'].items())
+effective=s.get('effective_environment',s.get('environment'))
+assert effective
+j=dict(j,entry=effective['DT_ENTRY_ROOT'],verl_root=effective['VERL_ROOT'],dt_root=effective['DT_ROOT'])
 entry=Path(j['entry']);verl=Path(j['verl_root']);dt=Path(j['dt_root'])
 partition=lambda root:{str(Path(p).relative_to(root)):h for p,h in s['source_bindings'].items() if Path(p).is_relative_to(root)}
 base.mkdir(parents=True,exist_ok=True);assert not(base/'completed-stop.json').exists()
@@ -67,7 +71,11 @@ alias = '''    effective=source['effective_environment']
                   entry_sha256=partition(Path(old['entry'])),verl_sha256=partition(Path(old['verl_root'])),owner_head_sha256={})
 '''
 assert adapted.count(anchor) == 1
+alias = alias.replace("effective=source['effective_environment']", "effective=source.get('effective_environment',source.get('environment'))\n    source['source_bindings']=source.get('source_bindings',source.get('actual_inherited_sources'))")
 adapted = adapted.replace(anchor, anchor + alias)
+anchor = "active=read(root/'active-training.json');old=next(j for j in active['jobs'] if j['task']==task and j.get('method')=='dt' and j['pid']==" + str(pid) + ')\n'
+assert adapted.count(anchor) == 1
+adapted = adapted.replace(anchor, anchor + "old=dict(old);old.update(entry=prepared['entry'],verl_root=prepared['verl_root'],dt_root=prepared['dt_root'])\n")
 anchor = "other={j['task']:(j['pid'],j['observed_process_created_unix']) for j in active_at_boundary['jobs'] if j['task']!=task}"
 assert adapted.count(anchor) == 1
 adapted = adapted.replace(anchor, "other={str(j['task'])+':'+str(j.get('method')):(j['pid'],j.get('birth',j.get('observed_process_created_unix'))) for j in active_at_boundary['jobs'] if j['pid']!=old['pid'] and psutil.pid_exists(j['pid']) and psutil.Process(j['pid']).status()!=psutil.STATUS_ZOMBIE}")
