@@ -101,7 +101,8 @@ def compute_training_credit(data, worker_group, *, eos_token_id, pad_token_id, s
     return DataProto.from_dict(tensors={key: value[inverse] for key, value in result.items()})
 
 
-def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_id):
+def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_id,
+                                 _unit_credit=False):
     """One joint actual-action target per original native trajectory.
 
     Owners supply exact full-history IDs/masks and their retained training
@@ -134,10 +135,30 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
         return DataProto.from_dict(tensors=destination)
 
     import os
-    if os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_v5' and any(
+    variance_before_multiplier = os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_variance_v6'
+    if os.environ.get('DT_CREDIT_MODE') in (
+            'reward_target_exponential_v5', 'reward_target_exponential_variance_v6') and any(
             'dt_reward_target_events' in item for item in selected):
         return _compute_multi_target_credit(data, selected, first, inverse, rewards,
-            worker_group, eos_token_id=eos_token_id, pad_token_id=pad_token_id)
+            worker_group, eos_token_id=eos_token_id, pad_token_id=pad_token_id,
+            variance_before_multiplier=variance_before_multiplier)
+
+    if variance_before_multiplier and not _unit_credit:
+        # Use the same native Q/V primitive and transport with coefficient 1.
+        # A zero GRPO multiplier must not turn its unknown u into a known zero
+        # in the shared, pre-multiplier variance population.
+        unit_data = data.select(batch_keys=list(data.batch.keys()),
+                                non_tensor_batch_keys=list(data.non_tensor_batch))
+        unit_data.batch['dt_grpo_multipliers'] = torch.ones_like(data.batch['dt_grpo_multipliers'])
+        unit = compute_direct_target_credit(unit_data, worker_group,
+            eos_token_id=eos_token_id, pad_token_id=pad_token_id, _unit_credit=True)
+        from verl.utils.torch_functional import masked_var
+        policy = _v6_retained_policy_mask(data)
+        scale = torch.rsqrt(masked_var(unit.batch['dt_token_advantages'], policy) + 1e-8)
+        coefficient = data.batch['dt_grpo_multipliers'].to(unit.batch['dt_token_advantages'])[:, None]
+        return DataProto.from_dict(tensors={
+            key: torch.where(policy, unit.batch[key] * scale * coefficient, 0.0)
+            for key in CREDIT_KEYS})
 
     prompt_width = max(len(item['prompt_ids']) for item in selected)
     prompts, prompt_masks = zip(*(postprocess_data(
@@ -237,14 +258,28 @@ def _restore_direct_target_credit(data, selected, inverse, result, destination=N
     return DataProto.from_dict(tensors=destination)
 
 
+def _v6_retained_policy_mask(data):
+    """Read the native training mask, or map exact owner positions for event packing."""
+    if 'response_mask' in data.batch:
+        return data.batch['response_mask'].bool().cpu()
+    if 'loss_mask' in data.batch:
+        return data.batch['loss_mask'][:, -data.batch['responses'].shape[-1]:].bool().cpu()
+    policy = torch.zeros_like(data.batch['responses'], dtype=torch.bool, device='cpu')
+    for row, item in enumerate(data.non_tensor_batch['dt_direct_target_artifact']):
+        positions = torch.as_tensor(item['retained_response_positions'], dtype=torch.long)
+        kept = positions >= 0
+        policy[row, kept] = torch.as_tensor(item['policy_mask'], dtype=torch.bool)[positions[kept]]
+    return policy
+
+
 def _compute_multi_target_credit(data, selected, first, inverse, rewards, worker_group,
-                                 *, eos_token_id, pad_token_id):
+                                 *, eos_token_id, pad_token_id, variance_before_multiplier=False):
     """Pack explicit credited target events before the original collective DP.
 
     dt_reward_target_events contains unique event_id, original target_offsets,
     detached signed credit b_k, and an explicit future_policy_mask. The caller
     owns these credits and reward identities. No group statistics, b/B, d,
-    or u normalization is reconstructed here. Multiple payload pieces of one
+    or source-sum normalization is reconstructed here. Multiple payload pieces of one
     event belong in that event's single target_offsets union.
 
     Flatten BEFORE dispatch so all FSDP ranks receive the same B4 call count.
@@ -307,11 +342,32 @@ def _compute_multi_target_credit(data, selected, first, inverse, rewards, worker
         item['retained_response_positions'] += [-1] * (width-len(item['response_ids']))
     objects = np.empty(len(flattened), dtype=object);objects[:] = flattened
     event_data = DataProto.from_dict(tensors=dict(responses=responses,
-        dt_grpo_multipliers=torch.tensor(coefficients, dtype=torch.float64)),
+        dt_grpo_multipliers=(torch.ones(len(coefficients), dtype=torch.float64)
+                            if variance_before_multiplier else torch.tensor(coefficients, dtype=torch.float64))),
         non_tensors=dict(traj_uid=np.array(identities,dtype=object),dt_direct_target_artifact=objects))
     # Same owner dedup/pad/balance/RPC/scatter implementation as the K=1 path.
     per_event = compute_direct_target_credit(event_data, worker_group,
-        eos_token_id=eos_token_id, pad_token_id=pad_token_id)
+        eos_token_id=eos_token_id, pad_token_id=pad_token_id,
+        _unit_credit=variance_before_multiplier)
+    if variance_before_multiplier:
+        from verl.utils.torch_functional import masked_var
+        # One shared statistic, before every b_k. Use the original retained
+        # training rows, including their native duplicate weights. RPC padding
+        # and full-history tokens excluded from training do not enter it.
+        policy = _v6_retained_policy_mask(data)
+        samples = []
+        for row, owner in enumerate(inverse):
+            item = data.non_tensor_batch['dt_direct_target_artifact'][row]
+            positions = torch.as_tensor(item['retained_response_positions'], dtype=torch.long)
+            kept = (positions >= 0) & policy[row]
+            for event_index, event_owner in enumerate(owners):
+                if event_owner == owner:
+                    samples.append(per_event.batch['dt_token_advantages'][event_index, positions[kept]])
+        values = torch.cat(samples)
+        scale = torch.rsqrt(masked_var(values, torch.ones_like(values, dtype=torch.bool)) + 1e-8)
+        coefficient = torch.tensor(coefficients, dtype=values.dtype)[:, None]
+        for key in CREDIT_KEYS:
+            per_event.batch[key] = per_event.batch[key] * scale * coefficient
     owner_index = torch.tensor(owners, dtype=torch.long)
     result = {key: torch.zeros((len(selected), width),dtype=torch.float32).index_add_(
         0, owner_index, per_event.batch[key].cpu()) for key in CREDIT_KEYS}

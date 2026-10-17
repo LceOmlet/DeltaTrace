@@ -389,7 +389,8 @@ class DirectActionTargetReadout:
         self.runner, self.tokenizer = runner, tokenizer
         self.task, self.max_length = task, max_length
         self.weighted_target_credit = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
-        self.reward_target_exponential = os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_v5'
+        self.reward_target_exponential = os.environ.get('DT_CREDIT_MODE') in (
+            'reward_target_exponential_v5', 'reward_target_exponential_variance_v6')
         self.minibatch_size = minibatch_size
         self.packed_answer_targets = packed_answer_targets
         # A joint target can contain predictors before a later source span.
@@ -544,6 +545,9 @@ class DirectActionTargetReadout:
             print(f'[DT direct joint minibatch] trajectories={len(batch)} length={length} '
                   f'batch={report["finite_trace_calls"]}/{planned} '
                   f'seconds={detail.get("complete_attribution_seconds_with_diagnostics")}', flush=True)
+            if os.environ.get('DT_NATIVE_HOST_CACHE_BATCH') == '1':
+                from verl.utils.native_host_memory import release_unused_host_cache
+                release_unused_host_cache('DT_completed_B4')
         output = []
         groups = {name: dict(tokens=0, sum=0.0, sumsq=0.0, max=float('-inf'),
                              min=float('inf'), max_abs=0.0)
@@ -577,6 +581,12 @@ class DirectActionTargetReadout:
                           output_seed='original_unscaled_native_span_logp',
                           coefficient_kind='stable_target_credit; native_TextCraft_uses_official_GRPO',
                           source_credit_normalization=None)
+            if os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_variance_v6':
+                # v6 returns unit-coefficient u here. The driver applies the
+                # official shared variance and original normalized GRPO g.
+                report.update(coefficient_kind='unit_credit_before_driver_variance_and_GRPO',
+                              raw_advantage_groups_semantics='unscaled_exponential_unit_credit',
+                              environment_reward_is_not_this_coefficient=True)
         report['raw_advantage_groups'] = groups
         report['seconds'] = time.perf_counter() - started
         self.last_report = report

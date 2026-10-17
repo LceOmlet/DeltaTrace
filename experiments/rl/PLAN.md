@@ -1,3 +1,12 @@
+**2026-10-17 用户最新批准v6：TextCraft、AppWorld的DTPO均从基础权重重训；PPO对照保持原方法并正确续训。**
+v6将仅方差白化放在指数信用与优势乘子相乘之前。组内乘子g由原官方GRPO按各prompt组均值/标准差及原epsilon归一化，norm_adv_by_std_in_grpo=True；不复制公式或对已经归一化的g再做一遍统计。原EOS DT给出d，原Q/V primitive在单位事件系数下给出u=-expm1(-d)，同一target的self-token仍u=1；观察/padding为0，原future mask保持。在原完整训练批次实际保留的policy token上，独立调用固定VERL原masked_var，s_u=sqrt(masked_var(u,mask)+1e-8)，使用u/s_u，不减均值、不使用会先减均值再加回均值的替代形式。再乘原官方GRPO稳定信用g；不在乘完g后重复做v3/v5的整批优势方差缩放。Q/V/A共同使用该尺度，单事件Q=g/s_u、V=g*exp(-d)/s_u、A=g*u/s_u；观察及原因果零项保持0。
+多个真实奖励事件仍先分别求原未缩放d及指数信用u_ik，再使用同一批次所有事件在原保留policy位置上的一个共同方差尺度，逐项乘既定b_k并求和；不得每个span独立标准化或先合并d再指数。统计保留原训练行的重复权重；同次结算的多片段仍为一个事件。因果上已为0的事件项在policy位置仍为0。Q/V/A使用同一共同尺度；外部总信用为0也保留非零事件分量。混合批次中g=0的轨迹仍影响原始u的统计，不能沿用v5只因乘子为0就跳过DT并把未知u填0的优化。
+唯一方法变化为上述白化位置，DT有限传播/指数、官方GRPO/PPO/归约、target身份及mask保持。TextCraft原330/save5/keep2、AppWorld作者原200/save2/keep2与共享完整checkpoint保持。v5曲线及检查点保留，不拼接到v6；绘图与小时任务须依据实际正式manifest显示v6。v6在源、行为和实际运行绑定核验完成前只称准备候选。
+四项任务指TextCraft DTPO v6/PPO及AppWorld DTPO v6/PPO；必须同时核对逐进程RSS、物理汇总PSS、宿主MemAvailable、cgroup和驱动XTT，不能以RSS或显存单项宣称四组并发安全。资源生命周期修复须直接对应已证实global OOM，保持方法与训练超参，不挤掉其他训练。
+
+**2026-10-17 用户明确顺序与唯一新goal：先AppWorld DTPO正式训练，再验收并正式训练PPO；每2迭代共享完整checkpoint。**
+本次只做这两项正式训练、直接相关的PPO数值/32k容量/效率验收，以及原生检查点保存与连续完成预算。DTPO复用已验收v5指数Q/V/A、原GRPO稳定信用及方差缩放；从作者正式AppWorld工作量启动，不再使用两迭代小批量测速预算。两种方法均调用原固定VERL训练/保存/恢复，每2个完整训练迭代将原生完整checkpoint保存到用户共享挂载下独立AppWorld run目录。训练预算和任务工作量由现有作者原配置读取，不为避错减小B4/32k或改信用/训练超参。PPO通过与实际改动对应的官方标准后才启训。保持现有TextCraft DTPO/PPO，不重跑GRPO，不继续SQL、旧梯度根因或无直接因果关系的研究。goal持续到两项正式预算完成且最终共享完整checkpoint已核验；不能把初始化、存活或两轮测速称正式训练完成。
+
 **2026-10-16 最新补充：PPO的32k必须按对应VERL数值标准验证，且不能降低效率。**
 保持B4/32768、原GAE/critic/actor/optimizer/精度与更新配置；先定位已发生的
 critic backward OOM及历史原生activation-offload取回错误，复用官方接口。
