@@ -1,3 +1,15 @@
+## 2026-10-17T19:39:44.660336+08:00 用户确认两任务六组八卡各200轮；追加AppWorld原生队列，不重启当前TextCraft DTPO
+
+顺序已实际接通为TextCraft DTPO v6→PPO→GRPO→AppWorld DTPO v6→PPO→GRPO，各自基础权重、独占GPU0–7、200完整迭代。原TextCraft控制器3173187/1792235540.72及driver3173204/1792235541.21保持，原部署源e0a0e665未替换。新AppWorld准备源70228460、交接部署源4bf7c99b；追加控制器3335370/1792237019.8实际存活、stderr为空，原生状态waiting_for_TextCraft_three_native_completions，无新增GPU训练调用。它只在前段三组原生成功及完整保存后调用同一个run_campaign进程owner；失败或缺失不跳过。六组正式manifest、两段状态和source/launch仍分别保留。
+
+AppWorld三个实际原Hydra配置已CPU解析，完整data/env/actor_rollout_ref逐值相同，40组×6条及原LOOP取消/残批/评估策略、global32、epochs2、32k/B4/LoRA8/16保持，save2/keep2共享完整checkpoint包含loop_sampler.pt；不套用TextCraft的32×8/global64/epochs1/save5。AppWorld PPO继承已验收的12a74ca9 worker、242f7919原生critic offload与5aadf696资源owner，DTPO仍是批准v6 trainer/entry，actor3a65e173/corefc2f992b不变，DT资源仍6a112224。95项实际准备绑定记录，不把CPU解析或单worker容量证明当AppWorld实际八rank32k容量验收。原全阶段跨任务锁未启用。
+
+19:37:23实际TextCraft首组0/200、原生compute_dt_token_advantages阶段，另外五组待运行，未生成完整首轮指标或正式检查点；不称完成/健康验收。原宿主观察器当时MemAvailable568.179GiB、单XTT265.945GiB、cgroup182.024GiB、OOM4未增；AppWorld未来环境池和八rank峰值尚未实际测到，不据此作未来内存安全保证。旧两卡日志/105、5、2检查点与此前失败记录保留，不拼入新实验。
+
+小时任务textcraft已回读为ACTIVE“TextCraft 与 AppWorld 八卡六组每小时绘图”，原频率/线程保持。入口plot_both_tasks.py 04be16ab串行调用原plot_campaign aac522f9，继续复用原collector/parser和六面板renderer，不新写训练logger/解析器。两任务分别已生成19:37:01/19:37:06原始来源空窗口图，AppWorld图已视觉核对，明确待运行、不画零奖励；原CSV/PNG/SVG及source-snapshot/plot-receipt齐全。全部六组200、最终原生共享完整检查点和两任务最终三算法图完成后才暂停。goal继续active，没有把队列接通称训练预算完成。
+
+完整实际身份、配置、来源、自动任务和限制见research/temporary/rl_two_task_eight_gpu_sequential_20261017_v2/receipts/six-native-eight-GPU-queue-deployed-v2.json。
+
 ## 2026-10-17T19:22:32.516537+08:00 人类改为TextCraft三算法独占八卡各200轮；首组DTPO v6已进入原生生成，未完成首轮
 
 最新人类要求替代旧四组常驻安排。按TextCraft DTPO v6→原PPO→原GRPO各自从同一基础权重独占GPU0–7、200个完整迭代准备并提交原生顺序队列；三个原Hydra配置的data/env/actor_rollout_ref逐项相同，32组x8轨迹、global64、B4、PPO epochs1、每轮4次actor更新、32k/LoRA8/16保持。原官方更新/归约与任务/生成owner不重写；DTPO方法仍是v6，PPO原GAE/critic，GRPO原官方组优势。新save5/keep2完整checkpoint在共享挂载textcraft-8gpu-20261017下各独立run，旧曲线/检查点不拼入。旧TextPPO105、TextDT5和AppPPO2原保存状态保留。此前八卡全被本线程三项训练及排队诊断占用，按新要求只停止已核对出生的这些身份；原stop owner首12秒观察仍有5个GPU进程释放，随后只读复核全部退出，无额外信号。旧容量execution4按人类新安排取消，不冒称通过；停止后MemAvailable967.990GiB、共享空闲9947.173GiB。
