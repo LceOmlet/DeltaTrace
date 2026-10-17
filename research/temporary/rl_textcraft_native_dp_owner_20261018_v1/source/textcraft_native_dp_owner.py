@@ -35,3 +35,12 @@ def collect_native_textcraft(worker, data):
     owner = train if is_train else evaluation
     local = SimpleNamespace(world_size=1, generate_sequences=worker.generate_sequences)
     return owner._collect_native_trajectories(collector, data, local, is_train)
+
+
+def close_native_textcraft(worker):
+    """Forward the existing owner close contract to the owners placed here."""
+    cache = getattr(worker, '_native_textcraft_episode_owners', None)
+    if cache is not None:
+        for owner in cache[:2]:
+            owner.close()
+        worker._native_textcraft_episode_owners = None

@@ -19,7 +19,7 @@ from verl import DataProto
 from verl.workers.rollout.vllm_rollout.vllm_rollout_spmd import vLLMRollout
 from agent_system.multi_turn_rollout.rollout_loop import TrajectoryCollector
 from textcraft_environment_entry import configure_textcraft_tokenizer
-from textcraft_native_dp_owner import collect_native_textcraft
+from textcraft_native_dp_owner import collect_native_textcraft, close_native_textcraft
 from textcraft_owner_rollout import TextCraftOwner
 from test_vllm_active_rows import make_rollout
 
@@ -81,6 +81,10 @@ def test_actual_owner_arrays_and_direct_target_route(setup, monkeypatch,
     class Group:
         world_size = 8
 
+        def close_native_textcraft_owners(self):
+            for w in local_workers:
+                close_native_textcraft(w)
+
         def generate_sequences(self, data):
             # The actual native DataProto partitioner and collector, with no
             # model implementation or alternate environment loop in the test.
@@ -138,8 +142,9 @@ def test_actual_owner_arrays_and_direct_target_route(setup, monkeypatch,
     finally:
         baseline.close()
         candidate.close()
+        assert all(getattr(w, '_native_textcraft_episode_owners', None) is None for w in local_workers)
         for w in local_workers:
-            if hasattr(w, '_native_textcraft_episode_owners'):
+            if getattr(w, '_native_textcraft_episode_owners', None) is not None:
                 train, evaluation, _ = w._native_textcraft_episode_owners
                 train.close()
                 evaluation.close()

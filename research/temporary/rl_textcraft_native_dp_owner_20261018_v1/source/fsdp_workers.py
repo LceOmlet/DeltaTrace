@@ -660,6 +660,11 @@ class ActorRolloutRefWorker(Worker):
         return output
 
     @register(dispatch_mode=Dispatch.ONE_TO_ALL)
+    def close_native_textcraft_owners(self):
+        from textcraft_native_dp_owner import close_native_textcraft
+        return close_native_textcraft(self)
+
+    @register(dispatch_mode=Dispatch.ONE_TO_ALL)
     def begin_rollout_context(self):
         if not getattr(self, "_owner_rollout_context_open", False):
             self.rollout_sharding_manager.__enter__()

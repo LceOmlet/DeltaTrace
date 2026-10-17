@@ -46,6 +46,10 @@ class TextCraftOwner:
         self.handlers = []
 
     def close(self):
+        native = getattr(self, '_native_textcraft_worker_group', None)
+        if native is not None:
+            native.close_native_textcraft_owners()
+            self._native_textcraft_worker_group = None
         if self.dataset_client is not None:
             self.dataset_client.close()
             self.dataset_client = None
@@ -53,6 +57,7 @@ class TextCraftOwner:
     def collect_native_trajectories(self, collector, gen_batch, actor_rollout_wg, is_train):
         from verl.protocol import pad_dataproto_to_divisor, unpad_dataproto
 
+        self._native_textcraft_worker_group = actor_rollout_wg
         prepared = gen_batch.select(meta_info_keys=list(gen_batch.meta_info))
         prepared.meta_info['native_textcraft_configuration'] = OmegaConf.to_container(self.config, resolve=True)
         prepared.meta_info['native_textcraft_is_train'] = bool(is_train)

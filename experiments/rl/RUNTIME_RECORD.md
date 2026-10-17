@@ -1,3 +1,11 @@
+## 2026-10-18T01:36:53.074433+08:00 DP本地owner收尾CPU实测通过；八卡生成对照已独立准备，正式入口未切换
+
+原调优v3已由原parser读到10/200，原共享完整checkpoint10逐八rank核对通过：923项model、496项optimizer、scheduler10/optimizer40、CPU/CUDA/NumPy/Python及rollout RNG/data齐全。controller453157/1792249756.70、driver453162/1792249757.08此时仍保持，未将调优曲线称最终新六组。
+
+候选生命周期v2仅转发原owner close至DP本地缓存，32组×8实际原AgentGym HTTP/loop/parser加脚本回复CPU对照1项通过54.970秒；v1原四项数据/评估/特殊token/填充证明保留，v2源码已冻结cpu-execution-v2-source。worker710f829e/owner c79e7441/helper eb1cc42d，原worker默认分支及episode helper方法体AST保持。独立C/candidates/textcraft-native-dp-owner-20261018-v1已准备并通过CPU配置预检；原actor3a65e173/corefc2f992b/manager364e6945/checkpointf65b6538均逐SHA保持。此处CPU证明不冒称GPU、数值、32k或加速验收。
+
+有限八卡原生TaskRunner生成ABBA入口已准备，沿原trainer首个32组×8真实批次、原完整episode循环、原生greedy控制；只比较循环在driver/各DP worker的放置，原DT和optimizer均不调用，不造正式checkpoint。尚未启动GPU候选；现有调优训练尚未停止。下一步按原protected stop owner保存旧调优history并释放八卡后测速；接受后六组执行新版本从基础0轮开始，DT方法仍v6，不拼旧历史。源/CPU原始XML/预检和限制均在rl_textcraft_native_dp_owner_20261018_v1/receipts；goal active，最终六组200尚未完成。
+
 ## 2026-10-18T01:20:26.191793+08:00 首组9/200；发现driver逐回合全八卡屏障，原生DP本地owner候选CPU逐值4项通过但尚未部署
 
 原控制器453157/1792249756.70、driver453162/1792249757.08保持，原parser读TextCraft DTPOv6完成9/200、下一生成，其余5项queued；原完整共享checkpoint5核验保持。当前代码/超参/预算/释放策略未改，候选源码和CPU测试在独立receipts/textcraft-native-dp-owner-20261018-v1，不进入当前launch/PYTHONPATH。CPU服务测试时间段单独保留，不用于干净吞吐对照。

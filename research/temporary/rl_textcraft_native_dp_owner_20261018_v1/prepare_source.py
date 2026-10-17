@@ -22,6 +22,7 @@ assert owner.count(signature) == 1
 wrapper = '''    def collect_native_trajectories(self, collector, gen_batch, actor_rollout_wg, is_train):
         from verl.protocol import pad_dataproto_to_divisor, unpad_dataproto
 
+        self._native_textcraft_worker_group = actor_rollout_wg
         prepared = gen_batch.select(meta_info_keys=list(gen_batch.meta_info))
         prepared.meta_info['native_textcraft_configuration'] = OmegaConf.to_container(self.config, resolve=True)
         prepared.meta_info['native_textcraft_is_train'] = bool(is_train)
@@ -49,6 +50,13 @@ wrapper = '''    def collect_native_trajectories(self, collector, gen_batch, act
 
     def _collect_native_trajectories(self, collector, gen_batch, actor_rollout_wg, is_train):'''
 candidate_owner = owner.replace(signature, wrapper)
+close_signature = '    def close(self):\n'
+assert candidate_owner.count(close_signature) == 1
+candidate_owner = candidate_owner.replace(close_signature, close_signature + '''        native = getattr(self, '_native_textcraft_worker_group', None)
+        if native is not None:
+            native.close_native_textcraft_owners()
+            self._native_textcraft_worker_group = None
+''', 1)
 source.joinpath('textcraft_owner_rollout.py').write_text(candidate_owner, encoding='utf-8')
 source.joinpath('owner_environment_configs.json').write_bytes(
     original.joinpath('owner_environment_configs.json').read_bytes())
@@ -63,6 +71,14 @@ addition = '''        if 'native_textcraft_configuration' in prompts.meta_info:
 
 '''
 candidate_worker = worker.replace(anchor, anchor + addition, 1)
+anchor = '    @register(dispatch_mode=Dispatch.ONE_TO_ALL)\n    def begin_rollout_context(self):'
+assert candidate_worker.count(anchor) == 1
+candidate_worker = candidate_worker.replace(anchor, '''    @register(dispatch_mode=Dispatch.ONE_TO_ALL)
+    def close_native_textcraft_owners(self):
+        from textcraft_native_dp_owner import close_native_textcraft
+        return close_native_textcraft(self)
+
+''' + anchor, 1)
 source.joinpath('fsdp_workers.py').write_text(candidate_worker, encoding='utf-8')
 
 
@@ -78,9 +94,12 @@ new = b.pop('_collect_native_trajectories')
 new.name = old.name
 assert ast.dump(old, include_attributes=False) == ast.dump(new, include_attributes=False)
 b.pop('collect_native_trajectories')
+assert isinstance(b['close'].body[0], ast.Assign) and isinstance(b['close'].body[1], ast.If)
+b['close'].body = b['close'].body[2:]
 assert {k: ast.dump(v) for k, v in a.items()} == {k: ast.dump(v) for k, v in b.items()}
 a, b = methods(worker, 'ActorRolloutRefWorker'), methods(candidate_worker, 'ActorRolloutRefWorker')
-assert a.keys() == b.keys()
+assert b.keys() - a.keys() == {'close_native_textcraft_owners'}
+b.pop('close_native_textcraft_owners')
 assert isinstance(b['generate_sequences'].body[0], ast.If)
 b['generate_sequences'].body.pop(0)
 assert {k: ast.dump(v) for k, v in a.items()} == {k: ast.dump(v) for k, v in b.items()}
@@ -88,7 +107,7 @@ for path in source.glob('*.py'):
     compile(path.read_bytes(), str(path), 'exec')
 record = dict(status='prepared_only_unaccepted_no_runtime_or_training_changes',
     original_owner_body_AST_unchanged=True, original_worker_default_branch_AST_unchanged=True,
-    only_worker_extension='Default-inert metadata boundary in existing generate_sequences; no new dispatcher or generation loop',
+    only_worker_extension='Default-inert metadata boundary in existing generate_sequences and existing owner close delegation; no new dispatcher or generation loop',
     original_AgentGym_loop_or_reward_or_DT_or_actor_or_core_copied_or_changed=False,
     source_SHA256={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                    for p in source.iterdir() if p.is_file()})
