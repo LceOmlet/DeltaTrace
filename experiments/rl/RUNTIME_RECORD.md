@@ -1,3 +1,15 @@
+## 2026-10-17T22:32:43.921538+08:00 新六组队列首组完成2轮；自然DT及原生更新后的八rank状态已实读
+
+同一控制器4158912/1792245185.89、driver4158944/1792245186.29保持，TextCraft DTPO v6新v2 run完成2/200，进入第3轮生成；其余五组仍按原顺序等待。第1轮原TaskRunner第304行：reward0.598、entropy0.648、首rank裁剪前分片grad0.007、参考KL日志0.000、含工具返回响应3192.516、工具交互16.719；gen460.505/old54.034/ref33.224/DT230.659/actor152.339/整轮931.146秒。第2轮同一原日志第311行：reward0.609、entropy0.652、分片grad0.008、参考KL0.001、响应3248.137、工具16.484；gen418.284/DT157.680/actor123.566/整轮763.810秒。KL沿原参考actor/kl_loss口径，不与近零actor/ppo_kl混称，日志0.000不是精确零；两轮自然样本不是同输入速度对照或方法质量结论。
+
+原只读RPC在自然DT之后逐rank核实了实际runner6a112224、GDN3f51f5f7、capture5ad0bf9b、counterfactual14ca2a3c、worker198f509c及原actor3a65e173/corefc2f992b，全部8rank为reward_target_exponential_variance_v6、DP8/B4/local8/LoRA8-16、原默认图、无全阶段跨任务锁。原prepared中为null的digest仍保留，另按既定接受摘要核对，没有倒填准备记录。DT后scheduler0/optimizer0；首轮更新后8rank实际scheduler1/optimizer496，源回执SHAfb1cfc4f50cc536a7f00fa3eba45590bea092be98c358063272e864cf47a096c。DT后实际导入回执SHAb30a076de1abadf310bb52a9caa98ddb1fde444394a299318e8bb960e16648b7。这些都是自然训练之后的元数据读取，0额外model/DT/optimizer/保存；未重启或改变超参/信用/数值owner，也不宣称旧梯度原因已修好。
+
+从新driver启动至首次完成记录获取的111个原10秒样本，MemAvailable最低406.243GiB、cgroup最高608.541GiB、单XTT最高434.165GiB，OOM计数始终4。不同口径不相加，也不把采样峰或本轮短上下文当八rank最坏32768证明。原rollouts/1.jsonl已实际保存3641952字节、SHA7322cd147dafbda57e4afc6ccbb62f0138043686d21a00293e3ca3b5baa69d88；原save5尚未到，不造检查点。
+
+一次自然B4的host原生计数在8rank均返回、原callable均还原；调用约3.804–3.880秒，host申请/释放累计API时间约0.485–1.778秒，含等待，不能当独立可省时间或整段DT份额。为覆盖内部全部B4，同一原计数观察已在8rank scheduler2时挂到原attribute_prepared_batch边界，返回对象保持不解释，下一自然批次完成后自行还原，0新增训练计算；明确不含外层worker前后处理。当前仅等待实际记录，没有更改allocator资源配置或提前采信线程数假设。
+
+原绘图已更新并视觉核对TextCraft22:27:53的2点六面板；AppWorld22:27:58仍排队空窗口。各PNG/SVG/CSV/原路径行号/来源快照/plot-receipt齐全，缺失不填0，不拼接旧调优历史。详细证据见research/temporary/rl_six_run_fresh_after_efficiency_20261017_v1/receipts/two-native-iterations-and-resource-observation-v1.json；所有六组200预算、最终原生完整保存及最终图仍未完成，goal active。
+
 ## 2026-10-17T22:01:40.122551+08:00 效率修复后六组全部重新从0提交；第一组八rank基础状态及实际资源绑定已核对
 
 最新人类要求“调好后直接从0开始训练”已写入唯一PLAN，替代此前保留首组不重启。旧八卡TextCraft首组7轮/完整checkpoint5及其他历史日志、曲线、状态保留为调优历史，不拼入六组新v2 run。顺序为TextCraft DTPO v6→原PPO→原GRPO→AppWorld DTPO v6→原PPO→原GRPO；各自同任务原基础权重/seed、物理GPU0–7、200完整迭代。TextCraft原32×8/global64/epochs1/save5/keep2；AppWorld原40×6/取消/残批/评估/global32/epochs2/save2/keep2及loop_sampler.pt保持。6项CPU原Hydra解析已完成，任务内data/env/actor_rollout_ref逐值相同，resume_mode=disable/resume_from_path=None。
