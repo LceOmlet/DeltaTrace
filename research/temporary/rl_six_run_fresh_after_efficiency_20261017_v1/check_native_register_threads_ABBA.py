@@ -79,6 +79,7 @@ def install(worker):
             record.update(baseline_config=restore_config,candidate_config=candidate_config,
                 scheduler_before=actor.actor_lr_scheduler.last_epoch,
                 optimizer_entries_before=len(actor.actor_optimizer.state),
+                threads_before=psutil.Process().num_threads(),
                 input_shape=list((args[0] if args else kwargs['paired_ids']).shape))
             cpu_rng = torch.get_rng_state()
             gpu_rng = torch.cuda.get_rng_state()
@@ -102,6 +103,7 @@ def install(worker):
             assert candidate_settings['pinned_num_register_threads'] == 8
             assert all(candidate_settings[k] == current[k] for k in current if k not in ('PYTORCH_CUDA_ALLOC_CONF','pinned_num_register_threads'))
             cold = call('B8_first', additional=True)
+            record['threads_after_B8_first'] = psutil.Process().num_threads()
             warm = call('B8_warm', additional=True)
             torch.cuda.memory._set_allocator_settings(restore_config)
             repeat = call('A1_after', additional=True)
