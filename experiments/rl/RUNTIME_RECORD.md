@@ -1,3 +1,13 @@
+## 2026-10-17T21:14:12.902875+08:00 八卡自然更新计数与首个优化后完整迭代已实测；共享checkpoint5八rank状态通过
+
+TextCraft DTPO v6同一driver3173204/1792235541.21已完成5/200，进入第6轮生成；Text PPO/GRPO与AppWorld三组仍等待原顺序，不将其缺失填0。原TaskRunner第332行第5轮：生成/环境470.544秒、oldlogprob39.022、ref34.002、DT202.820、actor141.432、原save checkpoint47.094，整轮935.402秒；实际token1080964、含工具返回响应3907.516、工具交互19.227、reward0.512、entropy0.660、原首返回rank分片裁剪前grad0.006、KL日志0.000不是精确零。原前3轮DT592.464/721.590/824.561秒、actor184.942/168.912/174.008；这是不同自然输入/长度下的阶段记录，不能冒称严格同输入整轮速度比。严格同输入八rank小批DT的4.7445倍中位加速及逐值一致证据保持，不能推广成整轮4.7445倍。
+
+实际原actor3a65e173的自然第5轮已被动核对：每rank32条输入，固定B4/use_dynamic_bsz=False/local optimizer minibatch8/epochs1，原forward恰8次，每两次forward后原optimizer一次，共4次；全部原调用一次委托，原callable已经自行还原，无额外forward/backward/tensor/optimizer/sync。八rank更新公共重叠140.770秒、各rank总窗口140.800–140.999秒，8个对应微批开始离差0.0001–0.2192秒，故不是逐卡串行。Text全局64的两卡8波B8变为八卡2波B32；对32条子工作量，才是4波B8变1波B32。原官方归约和全局更新预算保持，观察不是一次更新质量测试。
+
+原latest_checkpointed_iteration.txt已覆盖5；复用91d73825只读native verifier对8rank原actor/model/optimizer/extra_state及data.pt逐份mmap读取通过，scheduler5、optimizer20、各923模型项/496optimizer项、CPU/CUDA/NumPy/Python训练RNG及rollout gen_random_states存在。使用原checkpoint ownerf65b6538，0新增保存或训练恢复，不将元数据可读验收称已经实际恢复训练。共享路径/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v6-8gpu-200-20261017-v1/checkpoints/global_step_5，回执native-eight-rank-checkpoint-5-verified.json。
+
+新的最大实测时间仍为官方生成/环境470.544秒；保留20秒非阻塞采样中rank0运行、rank6多次提前空闲的直接线索，以及原vLLM mrope_positions二维H2D copy位置。尚未证实该copy的独立可省成本，未改vLLM位置张量/采样/环境或增加未验证优化。物理OOM计数仍4未增；八rank精确32768最坏容量和未来AppWorld环境池容量仍未验收。6组200预算、最终保存和比较图未完成，goal继续active。两任务21:12:35/21:12:40新图已保存，Text5点图视觉核对，原CSV/来源快照齐全。证据及范围见research/temporary/rl_six_run_efficiency_20261017_v1/receipts/native-update-parallelism-and-full-iteration5-v1.json。
+
 ## 2026-10-17T21:03:30.490030+08:00 原生锁页分配优化在八rank完成；原DT逐值一致，完整新配置轮次尚待实测
 
 TextCraft DTPO v6 driver3173204/1792235541.21、原控制器3173187/1792235540.72及AppWorld successor3335370/1792237019.8保持，原TaskRunner完成4/200，第5轮按原生流程进行；其余五组prepared-only。方法v6、原PPO actor3a65e173/corefc2f992b、DT数值runner6a112224、32k/B4/全局64/原四次optimizer及六组200预算没有改变。TextCraft全局64在八卡为每rank local8，原固定B4/use_dynamic_bsz=False，每次optimizer两次B32并行微批；AppWorld原全局32则每次一个B32，不能混用二者计数。
