@@ -39,6 +39,6 @@ replace("r=subprocess.run(argv,capture_output=True,text=True,timeout=10)\n    ph
                              stdout=r.stdout,stderr=r.stderr))""")
 replace("manifest=active['manifest']", "manifest=str(root/'active-training.json')")
 if '--native' in sys.argv:
-    replace("'--idle','--nonblocking','--output'", "'--idle','--nonblocking','--native','--output'")
+    raise RuntimeError('Installed py-spy cannot combine native unwinding with nonblocking sampling; retain the nonblocking owner path')
 sys.path.insert(0, str(source.parent))
 exec(compile(code, str(source), 'exec'), globals())
