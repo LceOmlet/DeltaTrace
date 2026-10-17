@@ -1,3 +1,15 @@
+## 2026-10-17T23:15:04.026565+08:00 六组v3在官方锁页注册线程8验收后全部从0提交；首组实际八rank零状态与资源配置已核对
+
+原完整自然DT producer批次在8rank约182.856–184.445秒，rank0原host申请61.154秒、释放36.876秒；API累计含等待，不当作可直接删除的耗时。随后一个自然B4同输入A1/B8首次/B8热/A1恢复对照在8rank均完成；paired上下文574–623，原owner中位耗时4.080593/3.121388/3.093749/4.439433秒。24个原DT向量对照逐值相同、max_abs0，CPU/CUDA RNG、scheduler和optimizer条目均保持；原callable和1线程配置已还原。官方线程8只是锁页page mapping并行资源配置，原Torch会各建立128线程池，原记录保留首次初始化与热态；不把该短B4结果推广为整段DT、32768或训练总倍数，不改变任何浮点容差。证据在rl_six_run_fresh_after_efficiency_20261017_v1/receipts/register-threads-ABBA-evidence-v1。旧v2第5轮含额外3次DT/rank，原时序保留并明确为诊断调优，不能进入新公平比较。
+
+按照最新人类“调好后从0”要求，六项均建立独立v3 run：TextCraft DTPOv6→原PPO→原GRPO，再AppWorld DTPOv6→原PPO→原GRPO，各物理0–7/200完整迭代。6项原Hydra配置CPU解析完成，任务内data/env/actor_rollout_ref相同，原32k/B4/LoRA8-16、seed/采样/学习率/原PPO归约和各任务原工作量保持。唯一新增资源配置pinned_num_register_threads=8，与先前已接受host_register及vLLM整数位置row-copy统一用于全部6项；原DT runner6a112224、actor3a65e173/corefc2f992b不变。准备提交52e51ee2439dfd5700d23025bb39f86108aef98f，执行54aa661301fa2ce8c706812f65a93fd2159a76ae，上游20bd331bdbc9026a5668e11362178e10ab7400c8。仅组合原f71ff4d8过程owner，无新训练/环境/解析/归约实现。
+
+控制器453157/1792249756.70、首组driver453162/1792249757.08；原八worker实际pid459023、462788–462794，出生与完整来源在回执。原只读RPC已核实全部8rank optimizer0/scheduler0、DP8/B4/local8、v6模式、原默认图、无跨任务全阶段锁、host_register=True/threads8、实际vLLM6ed94945及原actor/core。回执/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v6-8gpu-200-20261017-v3/runtime-overrides/actual-worker-imports-threads8-eight-GPU-initial-v1.json，SHA945e2aa6c3c1d07f0eff9e76406c71f9c0cbdb3d5464cd7da280689c51dee42f。当前第1轮generate_sequences，0/200，另5组排队；DT懒加载模块尚未首次执行，不能把已绑定磁盘文件当本次实际DT导入，不能把初始化或零状态当训练健康/质量/容量验收。
+
+旧v2控制器4158912/1792245185.89和driver4158944/1792245186.29已按原保护停止owner撤下，原5完整迭代及共享checkpoint5保留，不恢复或拼入v3。原f65b6538 checkpoint的八rank原模型/optimizer/extra scheduler/CPU-CUDA-NumPy-Python RNG/rollout RNG与data可读；全部scheduler5/optimizer20，0保存/训练恢复。首次调用远端d5a6f3ee旧reader实际仅限AppWorld而返回pending，未采信；复用已跟踪91d73825的task/world-size扩展CPU reader在独立source路径正确核对TextCraft，原旧reader未覆盖。详细原CP5回执已保存。最新宿主已有观察样本MemAvailable约667.598GiB/cgroup351.890/900GiB，OOM仍4；不相加forkRSS/PSS/XTT，不当8rank最坏32768证明。
+
+小时绘图ACTIVE已切到新v3入口832144d1，继续复用原collect/read_job_logs/parse_logs和六面板renderer。新TextCraft23:10:01、AppWorld23:10:06图均为真实空窗口，PNG/SVG/CSV/来源/plot-receipt保留，缺失不填0、不拼旧v1/v2。输出F:/DeltaTraceBackups/plots/{textcraft,appworld}-eight-gpu-sequential-20261017-v3下。原native exit0、日志1..200和完整8rank checkpoint200（AppWorld另loop_sampler）之后自动切换，不跳过失败；各预算/最终保存与最终图尚未完成，goal active。
+
 ## 2026-10-17T22:32:43.921538+08:00 新六组队列首组完成2轮；自然DT及原生更新后的八rank状态已实读
 
 同一控制器4158912/1792245185.89、driver4158944/1792245186.29保持，TextCraft DTPO v6新v2 run完成2/200，进入第3轮生成；其余五组仍按原顺序等待。第1轮原TaskRunner第304行：reward0.598、entropy0.648、首rank裁剪前分片grad0.007、参考KL日志0.000、含工具返回响应3192.516、工具交互16.719；gen460.505/old54.034/ref33.224/DT230.659/actor152.339/整轮931.146秒。第2轮同一原日志第311行：reward0.609、entropy0.652、分片grad0.008、参考KL0.001、响应3248.137、工具16.484；gen418.284/DT157.680/actor123.566/整轮763.810秒。KL沿原参考actor/kl_loss口径，不与近零actor/ppo_kl混称，日志0.000不是精确零；两轮自然样本不是同输入速度对照或方法质量结论。
