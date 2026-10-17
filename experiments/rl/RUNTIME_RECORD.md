@@ -1,3 +1,11 @@
+## 2026-10-18T03:16:53.180083+08:00 新六组首个完整迭代实际完成：TextCraft DTPOv6 1/200，继续第二轮生成
+
+原TaskRunner2007835日志第304行经原collect/read_job_logs/parse_logs读取完整step1：reward0.625、entropy0.646、首返回rank裁剪前分片grad0.006、控制台KL0.000（舍入）；平均响应3201.285（含工具返回）、原交互计数16.020。原阶段gen484.362秒、old52.828、ref31.809、DT/adv150.903、actor147.900，整轮868.221秒、总token900169。其余五项queued；不将单轮或不同token负载当跨算法质量/整段加速对照，也不据小梯度宣称旧根因已修好。
+
+只读RPC实核八rank自然DT后的counterfactual14ca2a3c、Q/V producer2aa5f552、GDN3f51f5f7、capture5ad0bf9b、runner6a112224全部为已接受源；原receipt中某些expected=null保持，独立verification明确与accepted SHA逐项对照。首轮原生更新后八rank scheduler1/optimizer496，未追加forward/DT/optimizer或checkpoint。DT时原allocator expandable=True、进入下一生成恢复False，hostregister/threads8始终保留；这是原owner生命周期，不是新配置改动。原EpisodeRewardManager有rm_scores时dict只缺空reward_extra_info，原VERL回退直接返回同一已有rm_scores张量，不重算或丢失真实环境奖励，因此不为这一非大头警告改官方方法。
+
+控制器2004205/1792263400.01、driver2004329/1792263400.35继续，实际原生成进入第二完整训练迭代；首个原save5 checkpoint尚未到期，不制造额外保存。两任务031418/031423新PNG/SVG/CSV/来源快照在F:/DeltaTraceBackups/plots下各20261018-v5目录。当前共同窗口仍0，其他算法不补零。小时textcraft ACTIVE保持，原物理dmon/phase归约仅新身份绑定，保持边界/mixed/missing明确；goal active至六组各200、最终完整CP200和图均完成。新增原始绑定、metric路径/行号与限制见rl_six_run_fresh_validated_efficiency_20261018_v1/receipts/first-complete-native-iteration.json。
+
 ## 2026-10-18T03:05:13.918090+08:00 新六组v5已实际提交；首组v6八rank初始绑定通过，进入原生生成
 
 控制器2004205/1792263400.01直接组合原f71ff4d8两个任务段；首组TextCraft DTPOv6 driver2004329/1792263400.35，正式run textcraft-dtpo-v6-8gpu-200-20261018-v5，八卡独占，从基础0轮进入官方环境生成，其余五项queued。本次仅执行身份v5，方法仍v6，原32×8/global64/B4/32k/epochs1/4更新与AppWorld40×6/global32/epochs2/原取消/残批/评估保持，6项CPU配置已逐section核对。原生exit0+原日志1..200+八rank完整checkpoint200后才自动交接，不跳过失败。全部预算和最终保存尚未完成，goal active。
