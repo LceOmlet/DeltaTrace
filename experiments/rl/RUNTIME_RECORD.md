@@ -1,3 +1,15 @@
+## 2026-10-17T20:25:52.708124+08:00 六组顺序训练已实测DT低利用率；原生锁页分配候选仍未部署
+
+TextCraft DTPO v6原driver3173204/1792235541.21保持，最新20:22:47原图快照完成2/200，其余五组待顺序执行。第2轮原TaskRunner第310行：reward0.578、entropy0.647、首返回rank裁剪前分片grad_norm0.005、KL0.001，含工具返回响应3354.957token、工具交互17.039；gen443.821秒、oldlogprob38.149、ref33.214、DT721.590、actor更新168.912、整轮1406.181秒。原save5前没有完整checkpoint，八rank最坏32768容量仍未实际验收。
+
+新增CPU只读物理mx-smi dmon观察器3446825/1792238110.16，原始CSV加接收时间，与原10秒worker阶段记录双侧一致才合并，边界/混合/缺失单列。当前已采窗口DT各卡均值15.01–22.32%，actor更新62.05–71.08%，old/ref前向68.9–86.2%；这只是设备活动百分比而非峰值FLOPS，不能把八卡占用或单峰值当充分利用。两rank20秒非阻塞Python采样成功，主要位置为CPU捕获复制及stream等待；追加native+nonblocking被py-spy明确拒绝，两次return1无native栈，不称成功、不改用暂停worker。
+
+原一次自然DT调用的8rank原生host_memory_stats实测owner18.667–19.001秒，host申请10.304–11.857秒、释放4.462–4.983秒；原每层_host_emptyCache及后续重新申请实际存在。计时包含CUDA host API等待/重叠，不把二者简单相加当独立可省成本。官方PyTorch2.8 CachingHostAllocator提供host_register并记录每块原分配方式，实际MetaX2.8.0+3.5.3.9独立CPU锁页逐值复制/混用释放已通过，GPU张量/model/optimizer调用0。v1可选统计因CUDA未初始化返回空mapping后KeyError的观察失败保留，v2明确缺失非0；旧首次分配含驱动启动，不能据3.82秒对0.004秒声称千倍加速。
+
+已提交一次未来自然B4的原owner同输入分配器对照，候选只调用官方配置API，正式训练返回原baseline结果、测试后还原；当前等待原RPC边界，尚无DT数值/性能验收或正式配置部署。既有数值runner6a112224、原v6信用、官方PPO更新/工作量与队列不改。源码6add5f14及相关cee8f23a/baef4e81/fe08a74e均单独版本；正式训练源仍e0a0e665，不把观察器commit当方法部署。
+
+AppWorld三组prepared记录补齐实际原生loop_sampler.pt元数据的0620b7ad回执已取回；只是prepared-only身份对齐，配置/源/原saver与工作量没变。两任务图已更新并视觉核对TextCraft20:22:47及AppWorld20:22:51，原日志CSV/来源快照保留，空共同窗口不造0。证据及限制见research/temporary/rl_six_run_efficiency_20261017_v1/receipts/native-DT-efficiency-observation-and-candidate-status-v1.json。goal保持active，严重DT浪费尚未修复，六组预算与最终保存/图仍未完成。
+
 ## 2026-10-17T19:46:12.767644+08:00 八卡DTPO首个原生完整迭代完成；8rank实际DT导入及原更新状态已回读
 
 原driver3173204/1792235541.21及两个控制器身份保持，TextCraft DTPO v6已完成1/200并进入第2轮生成，其余五组待运行。原TaskRunner首轮指标来自session_2026-10-17_19-12-50_992583_3173204的3178125.out第303行：环境训练回报0.586、entropy0.652、首返回rank裁剪前分片grad_norm0.006、KL日志0.000（不称精确0），平均含工具返回响应3321.020token、工具交互17.176次。原整轮1360.714秒，gen493.534、oldlogprob56.401、ref32.938、DT/优势592.464、actor update184.942秒。首轮包含warmup，不拿单轮或不同输入当稳定吞吐/算法质量结论。
