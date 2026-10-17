@@ -1,3 +1,9 @@
+## 2026-10-18T04:51:27.577470+08:00 TextCraft DTPOv6完成8/200并进入第9轮；原生带宽首窗口按原phase汇总
+
+原TaskRunner line354与collect/read_job_logs/parse_logs确认step8，训练回报0.516/entropy0.690/原首rank裁剪前分片grad0.006/KL控制台0.000（非精确零），响应3794.672含工具返回、交互18.516；生成449.318s、DT/adv144.521s、actor143.818s、整轮812.619s。原driver2004329/1792263400.35与controller2004205/1792263400.01继续，第9轮生成；共享标记及已核验checkpoint5保持，原checkpoint10只读等待器仍在，无额外模型/DT/optimizer/save/restore。其他5组合queued，原源09e9f192全SHA和方法/超参未变。新图TextCraft044953/AppWorld044958。
+
+新增资源只读report_native_bandwidth.py SHAc8147d1e601eb2be9f0f5be8eb150d386be85dd1418f5a95e23d35dc43309144，读取原mx-smi时间戳文本（该版本JSON不含带宽字段），复用既有phase/summary owner e6f3b171和同一相邻观测15s匹配条件；不是训练logger/训练解析器或新的方法实现。原native CLI三观察进程保持。首窗口DT有每卡13个已匹配rate样本；HBM各卡均值约139238–386267 MBytes/s，PCIe TX约2375–8087 MBytes/s。该窗口不是持续时间加权整阶段均值/峰值占比，传输量不是可删耗时；严格八rank生成仅2个样本，较多活跃帧仍在mixed/boundary，不能据此称整段生成低带宽或为0。源统计/原字段缺失0项及限制在native-bandwidth-first-window-summary-v1.json/review-v1.json；0GPU模型调用/训练改动，不新增性能通过门槛。goal active，全部6×200及最终checkpoint200尚未完成。
+
 ## 2026-10-18T04:41:13.453634+08:00 原生带宽只读采集补齐HBM/PCIe/MetaXLink；TextCraft DTPOv6完成7/200
 
 复用安装版mx-smi2.2.12原show/--loop接口，binary SHA644ad8934139b2b5cab27d9d282b7e53bec7eec4d965e9237c86aa86c5d694d7；仅物理0–7，每10,000ms发起原查询，实际原生时间戳保留，不当作连续10s均值或峰值FLOPS占比。HBM observer2654072/1792269559.88、PCIe2654073/1792269559.89、MetaXLink2654074/1792269559.90均活且多个原样本已落盘，stderr为空。保留原dmon与原phase observer，后续按实际时间对齐；无训练logger/parser、GPU模型/optimizer/save/restore或配置改动。该版本--json输出不含所请求带宽字段，原stdout/stderr及help保留，不把缺失当0。新增带宽只从第8轮中途开始覆盖，前7轮不补值；比较须使用匹配的已观测窗口，全部六组完成后按PID出生停止这3个只读观察进程。回执native-bandwidth-observer-job-v1.json记录实际argv/路径/SHA/覆盖。
