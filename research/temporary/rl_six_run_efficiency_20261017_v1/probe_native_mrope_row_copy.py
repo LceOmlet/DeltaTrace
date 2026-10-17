@@ -45,7 +45,8 @@ replace('    target_addresses = (positions.gpu.data_ptr(), positions.cpu.data_pt
         positions.cpu.data_ptr()+axis*positions.cpu.stride(0)*positions.cpu.element_size()) for axis in range(3)}""")
 replace('== target_addresses', 'in target_addresses')
 replace("        additional_model_tensor_copy_optimizer_sync_calls=0, calls=[],",
-        """        additional_model_tensor_copy_optimizer_sync_calls=0, calls=[],
+        """        additional_model_optimizer_sync_calls=0, calls=[],
+        transfer_change='Three native row H2D copies replace native strided transfer and its temporaries',
         resource_probe='A32 original / B64 exact-int64 native row copy / A32 original',
         candidate_source=str(candidate_path),candidate_SHA256=prepared['candidate_SHA256'],
         disabled_branch_whole_module_AST_equal_original=True,""")
@@ -64,4 +65,6 @@ replace('                del runner._prepare_inputs\n',
         '                del runner._prepare_inputs\n                del runner._native_mrope_row_copy\n')
 replace('    runner._prepare_inputs = MethodType(observe, runner)',
         '    runner._native_mrope_row_copy = True\n    runner._prepare_inputs = MethodType(observe, runner)')
+replace('additional_model_tensor_copy_optimizer_sync_calls=0), indent=2)',
+        "additional_model_optimizer_sync_calls=0, integer_transfer_only_resource_probe=True), indent=2)")
 exec(compile(code, str(source), 'exec'), globals())
