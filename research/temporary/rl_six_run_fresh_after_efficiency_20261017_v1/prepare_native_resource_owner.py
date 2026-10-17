@@ -36,10 +36,16 @@ def main():
     compile(changed, str(OWNER), 'exec')
     # Replacing exactly this one copy node reconstructs the whole native AST.
     tree = ast.parse(changed)
-    target = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == '_prepare_inputs')
-    branch = next(n for n in ast.walk(target) if isinstance(n, ast.If) and ast.unparse(n.test) == 'self.uses_mrope')
-    assert len(branch.body) == 1 and isinstance(branch.body[0], ast.For)
-    branch.body = ast.parse(before.strip()).body
+    class RestoreCopy(ast.NodeTransformer):
+        changed = 0
+        def visit_For(self, node):
+            if isinstance(node.target, ast.Name) and node.target.id == 'position_axis':
+                self.changed += 1
+                return ast.parse(before.strip()).body
+            return self.generic_visit(node)
+    restore = RestoreCopy()
+    tree = restore.visit(tree)
+    assert restore.changed == 1
     assert ast.dump(tree, include_attributes=False) == ast.dump(ast.parse(original), include_attributes=False)
     candidate = ROOT / 'candidates/native-mrope-row-copy-20261017-v2/gpu_model_runner.py'
     candidate.parent.mkdir(parents=True, exist_ok=False)
