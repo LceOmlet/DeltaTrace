@@ -3,6 +3,7 @@
 This reads physical CSV and existing owner observations only. Training metrics
 continue to come from the original collect/read_job_logs/parse_logs entry.
 """
+import argparse
 import bisect
 import csv
 import hashlib
@@ -35,11 +36,22 @@ def phase(row):
     return (job['task'], job['method'], job['version'], phases.pop())
 
 
-def main():
+def main(window='all'):
+    lower, upper = None, None
+    if window == 'before_allocator_pair':
+        lower = 0
+        upper = min(json.loads((AUDIT / f'one-natural-DT-native-allocator-pair-v2-rank{rank}.json').read_bytes())['started']
+                    for rank in range(8))
+    elif window == 'after_native_configuration':
+        lower = json.loads((AUDIT / 'native-pinned-host-register-20261017-v1-completed.json').read_bytes())['collected']
     rows = []
     with PHYSICAL.open() as stream:
         for line in stream:
             value = json.loads(line)
+            if lower is not None and value['received_unix'] < lower:
+                continue
+            if upper is not None and value['received_unix'] >= upper:
+                continue
             fields = next(csv.reader([value['native_csv_line']], skipinitialspace=True))
             if len(fields) != 9:
                 continue
@@ -72,7 +84,8 @@ def main():
     report = dict(collected=time.time(), status='native_physical_rows_joined_to_existing_phase_observations',
         source=__file__, source_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         native_physical_source=str(PHYSICAL), original_phase_source=str(HOST),
-        window=dict(first_received=first, last_received=last),
+        window=dict(condition=window, lower_unix=lower, upper_unix=upper,
+                    first_received=first, last_received=last),
         phase_alignment='Both adjacent original ten-second observations must agree and be within15 seconds; boundaries/mixed/partial observations remain explicit',
         physical_utilization_meaning='Native device activity percentage, not a measured fraction of peak FLOPS',
         missing_values='Never filled with zero',
@@ -82,7 +95,8 @@ def main():
             board_power_W=summary(values['board_power'])) for device, values in sorted(devices.items())})
             for label, devices in groups.items()],
         model_calls=0, training_mutations=0)
-    destination = AUDIT / 'native-utilization-phase-summary.json'
+    suffix = '' if window == 'all' else '-'+window.replace('_', '-')
+    destination = AUDIT / ('native-utilization-phase-summary'+suffix+'.json')
     temporary = destination.with_suffix('.tmp')
     temporary.write_text(json.dumps(report, indent=2)+'\n')
     temporary.replace(destination)
@@ -90,4 +104,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--window', choices=('all', 'before_allocator_pair', 'after_native_configuration'), default='all')
+    main(parser.parse_args().window)
