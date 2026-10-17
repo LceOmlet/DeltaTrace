@@ -32,7 +32,13 @@ def main():
     assert not (AUDIT / 'controller-job.json').exists(), 'Inspect actual existing launch; no duplicate'
     prepared = json.loads((AUDIT / 'native-resource-owner-prepared.json').read_bytes())
     assert sha(prepared['candidate']) == prepared['candidate_SHA256']
-    assert sha(prepared['owner_path']) == prepared['original_SHA256']
+    deployed_path = AUDIT / 'native-resource-owner-deployed.json'
+    if deployed_path.exists():
+        existing = json.loads(deployed_path.read_bytes())
+        assert existing['status'] == 'deployed_after_pilot_stopped'
+        assert sha(prepared['owner_path']) == prepared['candidate_SHA256']
+    else:
+        assert sha(prepared['owner_path']) == prepared['original_SHA256']
     stop_path = AUDIT / 'user-replaced-tuning-jobs-stop.json'
     if not stop_path.exists():
         processes, seen = [], set()
@@ -106,14 +112,15 @@ def main():
         value['sequential_campaign_plan']=str(AUDIT/'six-combination-manifest.json')
         write(ROOT/name,value)
     owner = Path(prepared['owner_path'])
-    owner.write_bytes(Path(prepared['candidate']).read_bytes())
-    assert sha(owner)==prepared['candidate_SHA256']
-    deployed=dict(prepared,status='deployed_after_pilot_stopped',deployed=time.time(),
-        pilot_stop_receipt=str(stop_path),source_commit=os.environ['RL_CAMPAIGN_COMMIT'],
-        original_owner_backup=str(AUDIT/'gpu_model_runner.before.py'),
-        allocator_configuration='expandable_segments:False,pinned_use_cuda_host_register:True',
-        numerical_model_sampler_critic_actor_changes=0)
-    write(AUDIT/'native-resource-owner-deployed.json',deployed)
+    if not deployed_path.exists():
+        owner.write_bytes(Path(prepared['candidate']).read_bytes())
+        assert sha(owner)==prepared['candidate_SHA256']
+        deployed=dict(prepared,status='deployed_after_pilot_stopped',deployed=time.time(),
+            pilot_stop_receipt=str(stop_path),source_commit=os.environ['RL_CAMPAIGN_COMMIT'],
+            original_owner_backup=str(AUDIT/'gpu_model_runner.before.py'),
+            allocator_configuration='expandable_segments:False,pinned_use_cuda_host_register:True',
+            numerical_model_sampler_critic_actor_changes=0)
+        write(deployed_path,deployed)
     text_prepared = json.loads(Path(plan['segments'][0]['prepared']).read_bytes())
     python=text_prepared['jobs'][0]['effective_environment']['VENV_PYTHON']
     env=dict(os.environ,CUDA_VISIBLE_DEVICES='')

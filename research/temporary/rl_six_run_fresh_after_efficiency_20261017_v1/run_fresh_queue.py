@@ -12,9 +12,9 @@ AUDIT = ROOT / 'receipts/six-run-fresh-after-efficiency-20261017-v1'
 
 
 def main():
-    old_source = ROOT / 'receipts/textcraft-eight-gpu-sequential-20261017-v1/source'
+    old_source = ROOT / 'receipts/two-task-eight-gpu-sequential-20261017-v2/source'
     owner = old_source / 'run_campaign.py'
-    assert hashlib.sha256(owner.read_bytes()).hexdigest() == '86d65a671e1c7167b025388ffcd07e1dbdbbf0291eba62c68ed085cb9313ff6f'
+    assert hashlib.sha256(owner.read_bytes()).hexdigest() == 'f71ff4d85087c18d37bdb9fd2e40dbf7f36763e64b528e772612f24004e85441'
     sys.path.insert(0, str(old_source))
     native = runpy.run_path(str(owner), run_name='pinned_six_run_process_owner')
     plan = json.loads((AUDIT / 'six-combination-manifest.json').read_bytes())
