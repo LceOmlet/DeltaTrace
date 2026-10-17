@@ -175,6 +175,10 @@ def main(task='TextCraft'):
             upstream_commit='20bd331bdbc9026a5668e11362178e10ab7400c8',
             effective_config_SHA256=sha(AUDIT / (method + '-effective-config.yaml')),
             verified_DT_resource_receipt=str(ROOT / 'receipts/dt-native-replay-host-lifetime-20261017-v3/execution2/native-comparison-summary-v1.json'))
+        if appworld:
+            assert parent['sampler_checkpoint_artifact'] == 'loop_sampler.pt'
+            row['sampler_checkpoint_artifact'] = parent['sampler_checkpoint_artifact']
+            row['accepted_sampler_checkpoint_source'] = parent['sampler_checkpoint_extension']
         write(AUDIT / (method + '-prepared.json'), row)
         rows.append(row)
     # Fairness checks compare actual owner-resolved configuration, not a second

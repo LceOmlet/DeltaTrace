@@ -11,12 +11,16 @@ import textwrap
 import time
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
-AUDIT = ROOT / 'receipts/appworld-formal-training-20261017-v1'
+AUDIT = Path(os.environ.get('DT_CHECKPOINT_VERIFY_AUDIT',
+                           str(ROOT / 'receipts/appworld-formal-training-20261017-v1')))
+task = os.environ.get('DT_CHECKPOINT_VERIFY_TASK', 'AppWorld')
+assert task in ('TextCraft', 'AppWorld')
 method = sys.argv[1]
-assert method in ('dt', 'ppo')
+assert method in ('dt', 'ppo', 'grpo')
 job, = [j for j in json.loads((ROOT / 'formal-training.json').read_bytes())['jobs']
-        if j.get('task') == 'AppWorld' and j.get('method') == method]
+        if j.get('task') == task and j.get('method') == method]
 source = json.loads(Path(job['source_receipt']).read_bytes())
+world_size = len(job.get('devices') or job['physical_gpus'])
 directory = Path(job['checkpoints'])
 marker = directory / 'latest_checkpointed_iteration.txt'
 if not marker.is_file():
@@ -57,8 +61,8 @@ required_rng -= {'npu'}
 assert 'cuda' in required_rng
 roles = []
 for role in (('actor', 'critic') if method == 'ppo' else ('actor',)):
-    for rank in (0, 1):
-        files = {kind: checkpoint / role / f'{kind}_world_size_2_rank_{rank}.pt'
+    for rank in range(world_size):
+        files = {kind: checkpoint / role / f'{kind}_world_size_{world_size}_rank_{rank}.pt'
                  for kind in ('model', 'optim', 'extra_state')}
         assert all(p.is_file() and p.stat().st_size > 0 for p in files.values())
         extra = torch.load(files['extra_state'], map_location='cpu', weights_only=False)
@@ -85,35 +89,37 @@ for role in (('actor', 'critic') if method == 'ppo' else ('actor',)):
 data_path = checkpoint / 'data.pt'
 data = torch.load(data_path, map_location='cpu', weights_only=False)
 assert data
-assert source.get('sampler_checkpoint_artifact') == 'loop_sampler.pt', 'Actual LOOP sampler state was not included by this execution'
-sampler_path = checkpoint / source['sampler_checkpoint_artifact']
-assert sampler_path.is_file() and sampler_path.stat().st_size > 0
-import site
-site.addsitedir(os.environ['LOOP_EXTRAS'])
-from phi_agents.rl.appworld_scenario_runner import AppWorldScenarioSampler
-sampler_states = torch.load(sampler_path, map_location='cpu', weights_only=False)
-assert len(sampler_states) == 2
+sampler_path = None
 sampler_metadata = []
-for rank, state in enumerate(sampler_states):
-    assert len(state['samplers']) == 1  # Actual run_owner constructs one native sampler thread per rank.
-    saved = state['samplers'][0]
-    validation_owner = AppWorldScenarioSampler(saved['dataset_name'])
-    validation_owner.load_state_dict(saved)
-    assert validation_owner.state_dict() == saved
-    sampler_metadata.append(dict(rank=rank, dataset_name=saved['dataset_name'],
-        native_NumPy_RNG_and_remaining_order_roundtrip_exact=True,
-        remaining_tasks=len(saved['task_ids']), prefetched_scenarios=len(state['scenarios']),
-        pending_scenario_requests=state['n_scenarios_requested']))
+if task == 'AppWorld':
+    assert source.get('sampler_checkpoint_artifact') == 'loop_sampler.pt', 'Actual LOOP sampler state was not included by this execution'
+    sampler_path = checkpoint / source['sampler_checkpoint_artifact']
+    assert sampler_path.is_file() and sampler_path.stat().st_size > 0
+    import site
+    site.addsitedir(os.environ['LOOP_EXTRAS'])
+    from phi_agents.rl.appworld_scenario_runner import AppWorldScenarioSampler
+    sampler_states = torch.load(sampler_path, map_location='cpu', weights_only=False)
+    assert len(sampler_states) == world_size
+    for rank, state in enumerate(sampler_states):
+        assert len(state['samplers']) == 1  # Actual run_owner constructs one native sampler thread per rank.
+        saved = state['samplers'][0]
+        validation_owner = AppWorldScenarioSampler(saved['dataset_name'])
+        validation_owner.load_state_dict(saved)
+        assert validation_owner.state_dict() == saved
+        sampler_metadata.append(dict(rank=rank, dataset_name=saved['dataset_name'],
+            native_NumPy_RNG_and_remaining_order_roundtrip_exact=True,
+            remaining_tasks=len(saved['task_ids']), prefetched_scenarios=len(state['scenarios']),
+            pending_scenario_requests=state['n_scenarios_requested']))
 assert not torch.cuda.is_initialized()
 result = dict(status='passed_native_shared_checkpoint_state_metadata', collected=time.time(),
-              method=method, version=job['version'], step=step, checkpoint=str(checkpoint), marker=str(marker),
+              method=method, task=task, world_size=world_size, version=job['version'], step=step, checkpoint=str(checkpoint), marker=str(marker),
               current_marker_after_read=marker.read_text().strip(), roles=roles,
               data_state_keys=list(data), data_SHA256=hashlib.sha256(data_path.read_bytes()).hexdigest(),
-              actual_LOOP_sampler_state=sampler_metadata, sampler_state_path=str(sampler_path),
-              sampler_state_SHA256=hashlib.sha256(sampler_path.read_bytes()).hexdigest(),
+              actual_LOOP_sampler_state=sampler_metadata, sampler_state_path=str(sampler_path) if sampler_path else None,
+              sampler_state_SHA256=hashlib.sha256(sampler_path.read_bytes()).hexdigest() if sampler_path else None,
               standalone_CPU_sampler_validation_restores=len(sampler_metadata),
               native_RNG_required_keys=sorted(required_rng), owner_path=str(owner), owner_SHA256=owner_sha,
               model_calls=0, optimizer_updates=0, checkpoint_create_calls=0, checkpoint_restore_calls=0,
-              scope='Completed native marker and readable saved model/optimizer/scheduler/training and rollout RNG/data plus actual LOOP sampler RNG/order/prefetch state. CPU validation instances only; no training restore or trajectory equivalence claim')
+              scope='Completed native marker and readable saved model/optimizer/scheduler/training and rollout RNG/data; AppWorld also includes actual LOOP sampler RNG/order/prefetch state. CPU validation instances only; no training restore or trajectory equivalence claim')
 receipt.write_text(json.dumps(result,indent=2)+'\n')
 print(json.dumps(dict(status=result['status'],receipt=str(receipt),step=step,roles=roles)))
