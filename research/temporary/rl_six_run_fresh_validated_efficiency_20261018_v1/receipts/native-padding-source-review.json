@@ -1,0 +1,29 @@
+{
+  "status": "read_only_source_review_no_deployment",
+  "actor_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/workers/actor/dp_actor.py",
+  "actor_SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+  "inspected_HF_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/lib/python3.12/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py",
+  "inspected_HF_SHA256": "59f9c339e3c01672b67ba09b0e56e2e960ba28c6c3d9975faadf00d15ee0b4c8",
+  "launch_trim_flags": {
+    "VERL_TRIM_RESPONSE_HEAD": "1",
+    "VERL_TRIM_SHARED_PADDING": "1"
+  },
+  "current_remove_padding": false,
+  "current_shared_padding_trim": true,
+  "source_findings": {
+    "actor_unpad_retains_only_ids_and_indices_line": 106,
+    "actor_model_call_lines": [
+      142,
+      155
+    ],
+    "explicit_cu_seqlens_and_seq_idx_forwarded_by_this_actor_branch": false,
+    "HF_conv_seq_idx_line": 509,
+    "HF_gated_delta_cu_seq_lens_q_line": 561
+  },
+  "scope": "Inspected owner interfaces, not a claim of runtime packed support, numerical equivalence, measured padding cost or speedup. Current valid padded-and-shared-trimmed path remains unchanged. Earlier microbatch input-shape observations are before internal shared-padding trimming.",
+  "training_changes": 0,
+  "new_model_or_optimizer_calls": 0,
+  "classification": "Read-only compatibility finding for an optional optimization; not an active-path defect or a new production gate.",
+  "next_action": "Keep current validated padded/shared-trimmed native path; continue the six-run training queue and native checkpoint verification.",
+  "new_production_requirement": false
+}
