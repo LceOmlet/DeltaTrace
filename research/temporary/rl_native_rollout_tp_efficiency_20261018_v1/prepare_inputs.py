@@ -5,6 +5,9 @@ import json
 from pathlib import Path
 
 import torch
+import numpy as np
+from verl import DataProto
+from verl.protocol import pad_dataproto_to_divisor
 from reward_readout import DirectActionTargetReadout
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
@@ -22,6 +25,25 @@ def main():
         prefixes.append(row['input_ids'][:entry['target_start']].tolist())
         sources.append(dict(path=str(path), SHA256=hashlib.sha256(path.read_bytes()).hexdigest(), target_start=entry['target_start']))
     assert len(prefixes) == 32
+    tail_path = ROOT/'receipts/textcraft-native-dp-owner-20261018-v1/native-benchmark/0-A-global.pt'
+    native = torch.load(tail_path, map_location='cpu', weights_only=False)
+    tail, tail_sources = [], []
+    for i, turns in enumerate(native.batch['task_rounds']):
+        artifact = native.non_tensor_batch['dt_direct_target_artifact'][i]
+        if int(turns) != 30 or not any(artifact['target_mask']):
+            continue
+        start = artifact['target_mask'].index(True)
+        ids = artifact['prompt_ids'] + artifact['response_ids'][:start]
+        assert 0 < len(ids) <= 32640
+        tail.append(ids)
+        tail_sources.append(dict(native_row=i, action_target_offset=start, prefix_tokens=len(ids)))
+    assert tail, 'Actual completed native tail prefixes are required'
+    raw = np.empty(len(tail), dtype=object)
+    raw[:] = tail
+    packet = DataProto.from_dict(tensors=dict(input_ids=torch.zeros(len(tail), 1, dtype=torch.long)),
+        non_tensors=dict(raw_prompt_ids=raw))
+    padded, padding = pad_dataproto_to_divisor(packet, 8)
+    tail = padded.non_tensor_batch['raw_prompt_ids'].tolist()
     old = ROOT/'runs/textcraft-dt-formal-eventwait-fresh-20261012-v2/credit-records'
     captured = sorted(old.glob('rank*/*.pt'))[0]
     rows = torch.load(captured, map_location='cpu', weights_only=False)['rows']
@@ -45,11 +67,13 @@ def main():
     capacity = [row['input_ids'][:32640].tolist() for row, _ in expanded]
     assert all(len(row) == 32640 for row in capacity)
     cases = dict(dense=[prefixes[i % 32] for i in range(256)],
-        tail=[prefixes[i % 32] for i in range(72)],
+        tail=tail,
         numeric_short=[prefixes[(0,10,20,31)[i % 4]] for i in range(8)],
         capacity_32768=[capacity[i % 4] for i in range(8)])
     value = dict(status='prepared_CPU_only_no_model_calls', cases=cases,
-        rationale='Dense256 and observed tail70 padded by native world8 to72; exact same global requests for TP1 andTP2; all output lengths fixed128',
+        rationale='Dense256 captured-prefix fixture and actual native terminal-action tail padded by original DataProto world8; exact same global requests for TP1 andTP2; all output lengths fixed128',
+        tail_source=str(tail_path), tail_source_SHA256=hashlib.sha256(tail_path.read_bytes()).hexdigest(),
+        tail_sources=tail_sources, tail_original_rows=len(tail_sources), native_padding=padding,
         prefix_sources=sources, capacity_source=str(captured),
         capacity_owner=str(owner), capacity_owner_SHA256=hashlib.sha256(owner.read_bytes()).hexdigest(),
         capacity_receipts=[x[1] for x in expanded],
