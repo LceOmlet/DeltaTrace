@@ -37,10 +37,25 @@ if requested_task in ('AppWorld', 'both'):
     assert old in code
     code = code.replace(old, "assert current_DT['version']=='appworld-dtpo-reward-target-exponential-variance-formal-20261017-v6'; snapshot['DT_display_label']='DTPO v6（指数信用仅方差，官方组优势）'")
     code = code.replace("assert last['dt']>0,'Current DTPO has no completed native iteration yet; source snapshot retained.'", '# Empty fresh native histories retain missing values.')
-    code = code.replace("else:ax.text(.5,.5,'原日志无此指标',ha='center',va='center',transform=ax.transAxes)",
-                        "else:ax.text(.5,.5,('尚无共同完成迭代' if common==0 else '原日志无此指标'),ha='center',va='center',transform=ax.transAxes)")
-    code = code.replace("        if ax.lines:ax.legend(frameon=False,fontsize=8)",
-                        "        if limit is None:\n            for empty_job in selected:\n                if last[empty_job['method']]==0:\n                    style=styles[empty_job['method']]\n                    ax.plot([],[],color=style['color'],linestyle=style['linestyle'],label=style['label']+'（无完成迭代）')\n        if common==0 and all(len(line.get_xdata())==0 for line in ax.lines):\n            ax.text(.5,.5,'尚无已完成迭代；指标缺失',ha='center',va='center',transform=ax.transAxes)\n        if ax.lines:ax.legend(frameon=False,fontsize=8)")
+    legend_and_missing = ("        if ax.lines:ax.legend(frameon=False,fontsize=8)\n"
+                          "        else:ax.text(.5,.5,'原日志无此指标',ha='center',va='center',transform=ax.transAxes)")
+    assert code.count(legend_and_missing) == 1
+    code = code.replace(legend_and_missing,
+                        "        has_metric_data=bool(ax.lines)\n"
+                        "        if limit is None:\n"
+                        "            for empty_job in selected:\n"
+                        "                if last[empty_job['method']]==0:\n"
+                        "                    style=styles[empty_job['method']]\n"
+                        "                    ax.plot([],[],color=style['color'],linestyle=style['linestyle'],label=style['label']+'（无完成迭代）')\n"
+                        "        if ax.lines:ax.legend(frameon=False,fontsize=8)\n"
+                        "        if not has_metric_data:\n"
+                        "            if limit is not None and common==0:\n"
+                        "                missing_label='尚无共同完成迭代；指标缺失'\n"
+                        "            elif not any(last[j['method']]>0 for j in selected):\n"
+                        "                missing_label='尚无已完成迭代；指标缺失'\n"
+                        "            else:\n"
+                        "                missing_label='原日志未记录此指标'\n"
+                        "            ax.text(.5,.5,missing_label,ha='center',va='center',transform=ax.transAxes)")
     code = code.replace('TextCraft ·', 'AppWorld ·').replace('/330', '/200')
     code = code.replace('工具调用数沿用原 TextCraft 交互计数', '工具调用数沿用原 AppWorld 交互计数')
     code = code.replace('; original GRPO/PPO controls', '; original native PPO control')
