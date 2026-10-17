@@ -111,6 +111,7 @@ def launch(key):
               'budget', 'entry', 'source_receipt', 'local_patch_commit', 'devices')
     row = {k: record[k] for k in fields}
     row.update(active=True, alive=True, verl_root=env['VERL_ROOT'], dt_root=env['DT_ROOT'],
+               paper_budget={'iterations': int(record['budget'].get('total_iterations', record['budget'].get('iterations')))},
                resume_from_path=record['resume_checkpoint'], resumed_completed_iteration=record['resumed_completed_iteration'],
                previous_job_identity=old, actual_native_restore_receipt=None)
     for name in ('formal-training.json', 'active-training.json', 'active-source.json'):
