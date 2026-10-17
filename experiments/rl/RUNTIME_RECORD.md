@@ -1,3 +1,13 @@
+## 2026-10-17T19:46:12.767644+08:00 八卡DTPO首个原生完整迭代完成；8rank实际DT导入及原更新状态已回读
+
+原driver3173204/1792235541.21及两个控制器身份保持，TextCraft DTPO v6已完成1/200并进入第2轮生成，其余五组待运行。原TaskRunner首轮指标来自session_2026-10-17_19-12-50_992583_3173204的3178125.out第303行：环境训练回报0.586、entropy0.652、首返回rank裁剪前分片grad_norm0.006、KL日志0.000（不称精确0），平均含工具返回响应3321.020token、工具交互17.176次。原整轮1360.714秒，gen493.534、oldlogprob56.401、ref32.938、DT/优势592.464、actor update184.942秒。首轮包含warmup，不拿单轮或不同输入当稳定吞吐/算法质量结论。
+
+复用原只读metadata RPC，没有新增模型、DT或optimizer调用；八rank实际counterfactual14ca2a3c、DT runner6a112224、GDN3f51f5f7、capture5ad0bf9b、worker198f509c、actor3a65e173/corefc2f992b均已实际加载，v6模式/DP8/B4/local minibatch8、原vLLM图和空跨任务锁保持；八rank optimizer均496条目、scheduler epoch1。原metadata期望为null的fallback/GDN项目原样保留，accepted SHA匹配另有明确核对，不追改准备记录假装原先已验证；driver所有的dt_training_batch在worker中未import为正常身份区分。
+
+原10秒宿主观察器从driver启动至首次完整迭代观察共179点，MemAvailable最低417.643GiB、单XTT最高415.801GiB、OOM计数始终4。窗口含初始化及下一轮早期生成，不称精确phase峰；本轮response最大10240，不称八rank最坏精确32768容量验收。原并发warmup缓存临时文件warning保留，未重新装包/清缓存/改超参或重启。
+
+两任务图已分别更新为19:42:27和19:42:32快照，TextCraft图已视觉核对：DTPO1点、其余原生PPO/GRPO待运行，AppWorld三组仍待运行；缺失不填0、共同窗口仍为空。首个正式完整检查点按原save5在第5轮产生，当前无完整marker不造额外保存。完整原指标、原路径/行号、8rank回读及资源采样在research/temporary/rl_two_task_eight_gpu_sequential_20261017_v2/receipts/first-native-complete-iteration-and-imports-v1.json。goal保持active，下一实际检查点边界仍为5，不将1轮或初始化当200预算完成。
+
 ## 2026-10-17T19:39:44.660336+08:00 用户确认两任务六组八卡各200轮；追加AppWorld原生队列，不重启当前TextCraft DTPO
 
 顺序已实际接通为TextCraft DTPO v6→PPO→GRPO→AppWorld DTPO v6→PPO→GRPO，各自基础权重、独占GPU0–7、200完整迭代。原TextCraft控制器3173187/1792235540.72及driver3173204/1792235541.21保持，原部署源e0a0e665未替换。新AppWorld准备源70228460、交接部署源4bf7c99b；追加控制器3335370/1792237019.8实际存活、stderr为空，原生状态waiting_for_TextCraft_three_native_completions，无新增GPU训练调用。它只在前段三组原生成功及完整保存后调用同一个run_campaign进程owner；失败或缺失不跳过。六组正式manifest、两段状态和source/launch仍分别保留。
