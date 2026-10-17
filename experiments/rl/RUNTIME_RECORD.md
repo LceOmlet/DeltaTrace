@@ -1,3 +1,9 @@
+## 2026-10-18T04:23:41.663619+08:00 新六组首组TextCraft DTPOv6完成6/200，第7轮生成；原生八卡并行链保持
+
+原TaskRunner line340与原collect/read_job_logs/parse_logs确认step6：reward0.613、entropy0.645、原首rank裁剪前分片grad0.006、KL控制台0.000（非精确零），响应均长3309.766含工具返回，原工具交互16.512。生成/环境428.663s、DT/adv126.327s、actor更新142.105s，整轮771.289s；各项来自原日志，不把不同样本间耗时变化称同输入加速。controller2004205/1792263400.01与driver2004329/1792263400.35仍同身份，第7轮生成；原共享完成标记5及既有checkpoint5核验保持，下一原生保存10。其余5组合仍queued，无额外保存/恢复/模型或optimizer调用。
+
+读取实际worker198f509c的generate_sequences确认原Dispatch.DP_COMPUTE_PROTO，原outer rollout context保持；官方AgentGym每回合生成/工具交互顺序保留，不能将其误称八引擎串行。原控制器每60s只读采集，进度文件短暂落后新step属正常采集间隔。旧线程1的host allocator计时不能冒称当前已验收线程8的测量；本次未新增优化部署或改变方法。原入口图更新至TextCraft042208/AppWorld042213，common窗口0，最新原来源与完整指标在rl_six_run_fresh_validated_efficiency_20261018_v1/receipts/sixth-complete-native-iteration.json。源代码提交09e9f192全SHA不变；goal active，全部6×200及最终checkpoint200尚未完成。
+
 ## 2026-10-18T04:12:04.169572+08:00 新六组首个正式共享checkpoint5原生状态核验通过；TextCraft DTPOv6完成5/200并继续第6轮
 
 原标记latest_checkpointed_iteration.txt=5，路径/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v6-8gpu-200-20261018-v5/checkpoints/global_step_5。复用原只读reader91d73825与checkpoint owner f65b6538，八rank模型923项/optimizer496项均可读取，scheduler均5、每个原optimizer state step均20，符合5完整轮×每轮4原生更新；CPU/CUDA/NumPy/Python训练RNG、各rank rollout gen_random_states和data.pt原数据游标键齐全，data SHA256=ad4cf2f9b104a5bfb8a40b07ce3726f7a0c1ecb1d049ab43dc452a9fce3d8561。0额外model/optimizer/save/训练restore调用；这是原生完成标记及保存状态可读性核验，不称新恢复逐值试验或全模型字节SHA验收。原角色文件与完整核验输出保留在rl_six_run_fresh_validated_efficiency_20261018_v1/receipts/textcraft-dtpo-v6-8gpu-200-20261018-v5-checkpoint-5-verified.json。
