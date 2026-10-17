@@ -1,3 +1,39 @@
+## 2026-10-18T00:39:12.185764+08:00 六组v3首组6/200；原生生成trace确认每卡32请求批量decode，八rank观察均已还原
+
+同一控制器/driver453157/453162及出生保持，原TaskRunner第340行完成6/200，正在下一轮生成；其余五项仍排队，原完整checkpoint5已验收。第6轮reward0.574、entropy0.654、首rank裁前分片grad0.006、参考KL三位0.000、含工具返回响应3384.586、工具16.973；gen438.299/old38.261/ref33.329/DT155.895/actor138.614/整轮804.818秒。仍为原v6/官方组内乘子与指数u分别标准化、8卡/B4/32k/原学习工作量，无新超参或数值/释放策略部署。
+
+原ProfilerConfig最大16的自然批次观察已在8rank完成，原generate与profiler slot全部还原，无observation/cleanup错误。各原调用32条请求，16个原GPU注释范围中14个为纯decode32(32)；每步范围中位25.398–25.619毫秒，实际32条请求同一步推进，排除该已观察路径逐条串行生成。原counter为17、捕获GPU范围16，保留官方停止语义未重写。纯decode窗口的kernel union约84.34–85.36%，在原GPU注释range内约89.23–90.47%；这是有界时间覆盖，不是峰值FLOPS/带宽或整段利用率，profiler扰动时长不作为干净吞吐对照。混合prefill的kernel/runtime/CPU inclusive不相加，更不能把同步等待全当可删开销。
+
+原模型短窗口已确认批量和默认图实际mcGraphLaunch，但不能由此证明全部长尾/环境等待已优化。安装只记录scheduler5，原generate内未原子读完整训练step，所以不强行填确切被观察迭代；原时间戳、原日志和全部receipt保存，靠近观察的阶段耗时单独标记。实际短窗口未测试新TP配置，不把静态TP代码当性能/数值验收；最坏8rank32768容量亦未由此证明。没有追加model/DT/optimizer、停止或重启训练。
+
+复用原9b080450 trace归约器，仅8rank与路径适配57016511；raw trace及SHA保留在A/native-rollout-profile-one-batch-v1，summary与8rank观察结果已收本地receipts。图已视觉核对TextCraft00:37:40六点六面板，AppWorld00:37:45仍全排队；共同窗口0、不拼旧曲线/填0。最新证据recorded-native-progress6-and-generation-profile-v1.json；目标仍active，六组200及最终共享完整checkpoint200/最终图尚未完成。
+
+## 2026-10-18T00:34:07.099175+08:00 六组v3首组5/200，原生共享checkpoint5已核验；整段DT计数完成，生成只加有界原生观察
+
+控制器453157/1792249756.70与driver453162/1792249757.08保持，TextCraft DTPOv6已完成5/200，当前第6轮原生actor更新，其余5组仍等待。第5轮原TaskRunner第333行reward0.531、entropy0.658、首返回rank裁前分片grad0.005、参考KL控制台0.000、含工具返回响应3822.227、工具交互18.695；gen447.100/old39.151/ref34.079/DT157.257/actor141.644/保存48.377/整轮868.090秒。0.000不当精确零，不由初期梯度/奖励推旧根因或质量结论。
+
+复用原91d73825 CPU读取器在A/source独立路径核验本v3共享原checkpoint5：8rank模型923条目、optimizer496条目，全部scheduler5/optimizer20，cpu/cuda/numpy/random训练RNG、actor rollout RNG和data.pt实际可读，原save5/keep2未改，0新增保存/恢复/model。回执textcraft-dtpo-v6-8gpu-200-20261017-v3-checkpoint-5-verified.json，不能用旧v2检查点充当本次保存。
+
+第4轮原完整attribute_prepared_batch的8rank被动计数已完成并全部还原callable，原owner142.939–143.578秒，host申请累计API13.132–16.063秒、释放23.648–35.494秒；每rank约2089–2131次申请/2654–2699次释放。计数含等待，非可直接删除收益，也不是8rank最坏32768容量证明；未改逐层释放策略，0新增DT/model/optimizer/sync。原物理dmon同阶段双邻样本下生成约50.52–52.04%、DT48.32–54.06%、actor77.05–80.06%，明确只是可对齐采样，非全阶段/峰值FLOPS或带宽。
+
+继续直接针对更大的生成成本：核对原AgentGym04148278的逐轮全批模型调用及ThreadPoolExecutor环境step，不是逐轨迹单条串行；原native配置send_interval1秒保持，不能把该必需原等待或max_num_seqs32上限当成已测并发数。当前native get_metrics因disable_log_stats=True按原API不可用，没有强行启用或新造metrics实现。实际vLLM/MetaX/Qwen3.5/原VERL TP源只作只读审计，静态支持不冒称TP性能/数值通过。
+
+复用旧cfde2c02原ProfilerConfig/TorchProfilerWrapper和原generate观察函数，仅当前身份/路径薄适配3f73add8，通过原public collective_rpc核对8rank当前runner6ed94945、profiler None及CPU/CUDA后安装；8rank均在scheduler5，等待下一自然至少16请求批次，仅profile前16个原worker步，0新增generation/optimizer。现时只称installed/pending，结束需核对原profiler及generate还原，不将安装当测完；被观察迭代从干净耗时比较中单独标注。没有部署TP/新cache候选或重启。一个可选NFS递归receipt列目录扫描已按精确PID946587/1792254383.95终止，原训练无信号。
+
+图更新TextCraft00:33:11五点与AppWorld00:33:16排队空窗口，共同窗口0；PNG/SVG/原来源CSV/快照保持，不拼历史或填0。详细数据在research/temporary/rl_six_run_fresh_after_register_threads_20261017_v1/receipts/recorded-native-progress5-and-checkpoint-v1.json。六组200/最终共享checkpoint200和最终图尚未完成，goal active。
+
+## 2026-10-17T23:56:17.127772+08:00 六组v3首组已完成3/200；实际DT及首轮原生更新八rank来源与状态已核实
+
+同一控制器453157/1792249756.70、driver453162/1792249757.08保持，TextCraft DTPOv6完成3/200，进入第4轮生成，其余5组排队。第1轮原TaskRunner第304行reward0.625/entropy0.646/首rank裁前分片grad0.006/参考KL日志0.000/含工具返回响应3201.285/工具交互16.020；gen484.769/old51.788/ref31.825/DT148.156/actor147.270/整轮864.217秒。第2轮reward0.570、entropy0.648、grad0.007、参考KL0.000、响应3380.426/工具17.188，DT131.800/actor132.042/整轮761.821秒；第3轮reward0.562、entropy0.695、grad0.007、参考KL0.000、响应3503.527/工具16.973，gen445.001/DT132.076/actor140.770/整轮790.861秒。三位日志0.000不是精确零；不是独立评估或旧梯度根因验收，不由不同输入的自然迭代推出严格加速比。
+
+首次真实DT后原只读RPC已逐8rank核对runner6a112224、GDN3f51f5f7、capture5ad0bf9b、counterfactual14ca2a3c、Q/V2aa5f552及原actor3a65e173/corefc2f992b。prepared原null摘要仍保留，另按既定接受SHA验证，没有倒填。原dtype/32k/B4/LoRA8-16、v6组内乘子与u分别标准化保持，动态allocator切换后全部仍threads8。DT后scheduler0/optimizer0，首次更新后8rank实际scheduler1/optimizer496条目；实际绑定SHA33a51513f86e971022083f99e7adfa51a953ec1b523ba5dd896495445aba35fa与72469095acc731fa0368847e5fe9743b7dd18ee67747b7270d81b2c7a9769dcd。元数据读取0新增model/DT/optimizer/保存。首轮原rollouts/1.jsonl已保存3658476B/SHA6f6f64fabd4b324d0f4e50e42bcb07909c7436e74b9389cf54d18168b494fedd。原save5尚未到，不造检查点。
+
+从新driver出生到首次完成记录采集的106个原10秒宿主样本，MemAvailable最低443.209GiB、cgroup最高573.986GiB、单XTT最高399.793GiB，OOM计数仍4。不同口径不相加，也不是最坏8rank32768容量证明。复用原物理dmon/阶段归约，八rank同阶段且双邻10秒记录一致的样本DT活动率约45.65–47.78%、actor约69.80–80.51%；边界/混合/缺失显式保留，生成窗口含首轮及次轮部分，不当作完整阶段或峰值FLOPS。原dmon help只提供usage/occupancy，不将VRAM/XTT百分比冒称带宽。现有reward_extra_info警告已由原owner与本次实际rm_scores字段核清：原manager直接返回已有rm_scores，原compute_reward缺可选extras后回退同一tensor，未补算奖励或修改方法。
+
+为量化已定位的逐层锁页cache全清开销，第3轮一个自然B4/rank被动计时了原C函数；paired长度720–789，8rank各33次原free共0.38368–0.46597秒，原owner约4.04878–4.11738秒，原host申请计数时间约0.453–0.519秒。原free与attribute callable均已还原，0新增DT/optimizer/free/sync，释放策略未改。计时含等待与观察开销，短B4不能外推整段或32k容量，allocator字节计数不当物理RAM。随后复用已验证a268fb7e整批opaque DataProto观察器，实际8rank scheduler3时挂载，待第4轮原自然producer返回后还原；只读原API计数、0新增model/DT/optimizer。第3轮观察及第4轮待测在原时序中保留并单独标记，不能把安装当测完或把局部API耗时当可独立删除的收益。没有部署新释放候选、调参或重启。
+
+TextCraft23:55:16的3点六面板、AppWorld23:55:21排队空窗口已更新，沿原parser/renderer保存共同/全部PNG/SVG、来源CSV及快照。三算法共同窗口仍0，不拼旧调优/两卡数据、不填缺失。小时任务继续ACTIVE。源、8rank元数据和观察原记录见research/temporary/rl_six_run_fresh_after_register_threads_20261017_v1/receipts；六组200及最终原生共享完整checkpoint/最终图尚未完成，goal active。
+
 ## 2026-10-17T23:15:04.026565+08:00 六组v3在官方锁页注册线程8验收后全部从0提交；首组实际八rank零状态与资源配置已核对
 
 原完整自然DT producer批次在8rank约182.856–184.445秒，rank0原host申请61.154秒、释放36.876秒；API累计含等待，不当作可直接删除的耗时。随后一个自然B4同输入A1/B8首次/B8热/A1恢复对照在8rank均完成；paired上下文574–623，原owner中位耗时4.080593/3.121388/3.093749/4.439433秒。24个原DT向量对照逐值相同、max_abs0，CPU/CUDA RNG、scheduler和optimizer条目均保持；原callable和1线程配置已还原。官方线程8只是锁页page mapping并行资源配置，原Torch会各建立128线程池，原记录保留首次初始化与热态；不把该短B4结果推广为整段DT、32768或训练总倍数，不改变任何浮点容差。证据在rl_six_run_fresh_after_efficiency_20261017_v1/receipts/register-threads-ABBA-evidence-v1。旧v2第5轮含额外3次DT/rank，原时序保留并明确为诊断调优，不能进入新公平比较。

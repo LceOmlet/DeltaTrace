@@ -1,0 +1,42 @@
+{
+  "collected": 1792254641.5508127,
+  "status": "read_only_actual_sources_no_generation_configuration_change",
+  "sources": [
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/entrypoints/llm.py",
+      "SHA256": "99b21d6bddc6f2b2f83694fcbe78da58b5849a45e7de508cc25b2eec94a503eb",
+      "purpose": "native LLM public get_metrics delegates engine"
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm/v1/engine/llm_engine.py",
+      "SHA256": "24a9145d7236c1d4ff03eb98a7be5e1160e3e2619bf8cbb4651a664d7ecb5988",
+      "purpose": "native get_metrics asserts log_stats"
+    },
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/vllm_metax/models/qwen3_5.py",
+      "SHA256": "d282661ff26a3b213cef3eb11eed63c6a4102546e4dee156f2b3977c69c5a287",
+      "purpose": "actual installed Qwen3.5 LoRA/TP owner, static source only"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py",
+      "SHA256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
+      "purpose": "actual native tensor parallel option and LLM call"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/entry/textcraft_owner_rollout.py",
+      "SHA256": "f52a408e17191bbceb6aaf3709ec4ee2d222403dedcd357f8f42d64c53b93325",
+      "purpose": "thin original AgentGym transport and native data dispatcher"
+    }
+  ],
+  "effective_rollout": {
+    "disable_log_stats": true,
+    "tensor_parallel_size": 1,
+    "max_num_seqs": 32,
+    "max_num_batched_tokens": 32768,
+    "gpu_memory_utilization": 0.75
+  },
+  "inference": "Configured max_num_seqs32 is a cap, not a measured request count. Static TP support is not numerical or efficiency validation.",
+  "public_metrics_unavailable": "Native LLMEngine.get_metrics asserts log_stats, current config disables stats. No forced enable or custom metric implementation.",
+  "next_observation": "Existing native bounded profiler with maximum16 steps in one natural generate batch/rank; original workload unchanged",
+  "new_model_or_optimizer_calls": 0
+}
