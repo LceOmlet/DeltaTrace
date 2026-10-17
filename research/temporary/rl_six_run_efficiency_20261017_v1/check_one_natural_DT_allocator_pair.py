@@ -18,7 +18,7 @@ import psutil
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT = ROOT / 'receipts/six-run-native-utilization-20261017-v1'
 RUN = ROOT / 'runs/textcraft-dtpo-v6-8gpu-200-20261017-v1'
-VERSION = 'one-natural-DT-native-allocator-pair-v1'
+VERSION = 'one-natural-DT-native-allocator-pair-v2'
 
 
 def install(worker):
@@ -35,23 +35,43 @@ def install(worker):
         'runtime-overrides/actual-worker-imports-after-first-DT-v1.json').read_bytes())['results']}
     assert psutil.Process().create_time() == expected[os.getpid()]
     runner = actor._deltatrace_producer.runner
+    cancellation = None
+    if 'attribute' in vars(runner):
+        pending = runner.attribute
+        assert pending.__func__.__name__ == 'observe'
+        assert Path(pending.__func__.__code__.co_filename) == AUDIT / 'source/check_one_natural_DT_allocator_pair.py'
+        assert not (AUDIT / f'one-natural-DT-native-allocator-pair-v1-rank{actor.rank}.json').exists()
+        cells = dict(zip(pending.__func__.__code__.co_freevars, pending.__func__.__closure__))
+        previous = cells['delegate'].cell_contents
+        del runner.attribute
+        assert runner.attribute == previous
+        del runner._native_allocator_pair_installed
+        cancellation = dict(status='v1_cancelled_before_execution_no_allocator_change',
+            reason='Actual VERL allocator settings differ from the launch environment; use call-time owner settings',
+            previous_callable_restored=True, additional_DT_calls=0,
+            native_allocator_settings=torch.cuda.memory._snapshot()['allocator_settings'])
+        (AUDIT / f'one-natural-DT-native-allocator-pair-v1-cancelled-rank{actor.rank}.json').write_text(
+            json.dumps(cancellation, indent=2)+'\n')
     assert 'attribute' not in vars(runner), 'Wait for prior one-RPC observations to restore'
     delegate = runner.attribute
     assert delegate.__func__.__name__ == 'attribute'
     assert not hasattr(runner, '_native_allocator_pair_installed')
     runner._native_allocator_pair_installed = True
-    original_config = os.environ['PYTORCH_CUDA_ALLOC_CONF']
-    assert original_config == 'expandable_segments:False'
     settings = torch.cuda.memory._snapshot()['allocator_settings']
     assert settings['pinned_use_cuda_host_register'] is False
     assert settings['pinned_num_register_threads'] == 1
-    baseline_config = original_config + ',pinned_use_cuda_host_register:False,pinned_num_register_threads:1'
-    candidate_config = original_config + ',pinned_use_cuda_host_register:True,pinned_num_register_threads:1'
 
     def observe(instance, *args, **kwargs):
+        current = torch.cuda.memory._snapshot()['allocator_settings']
+        assert current['pinned_use_cuda_host_register'] is False
+        current_config = current['PYTORCH_CUDA_ALLOC_CONF']
+        baseline_config = (current_config + ',pinned_use_cuda_host_register:False,pinned_num_register_threads:'
+            + str(current['pinned_num_register_threads']))
+        candidate_config = (current_config + ',pinned_use_cuda_host_register:True,pinned_num_register_threads:'
+            + str(current['pinned_num_register_threads']))
         record = dict(rank=actor.rank, pid=os.getpid(), birth=psutil.Process().create_time(),
             started=time.time(), version=VERSION, baseline_config=baseline_config,
-            candidate_config=candidate_config, original_allocator_settings=settings,
+            candidate_config=candidate_config, original_allocator_settings=current,
             baseline_training_result_returned_unchanged=True, additional_DT_calls=1,
             additional_optimizer_calls=0, additional_rollout_calls=0,
             scheduler_before=actor.actor_lr_scheduler.last_epoch,
@@ -71,6 +91,8 @@ def install(worker):
                 and torch.equal(gpu_rng, torch.cuda.get_rng_state()))
             torch.cuda.memory._set_allocator_settings(candidate_config)
             record['candidate_allocator_settings'] = torch.cuda.memory._snapshot()['allocator_settings']
+            other_keys = [k for k in current if k not in ('PYTORCH_CUDA_ALLOC_CONF','pinned_use_cuda_host_register')]
+            assert all(record['candidate_allocator_settings'][k] == current[k] for k in other_keys), 'Only the requested native pinned allocator backend may change'
             before = dict(torch.cuda.memory.host_memory_stats())
             candidate = delegate(*args, **kwargs)
             after = dict(torch.cuda.memory.host_memory_stats())
@@ -94,6 +116,9 @@ def install(worker):
                 restored_allocator_settings=torch.cuda.memory._snapshot()['allocator_settings'],
                 scheduler_after=actor.actor_lr_scheduler.last_epoch,
                 optimizer_entries_after=len(actor.actor_optimizer.state))
+            record['native_allocator_semantics_restored'] = all(
+                record['restored_allocator_settings'][k] == current[k] for k in current
+                if k != 'PYTORCH_CUDA_ALLOC_CONF')
             try:
                 with (AUDIT / f'{VERSION}-rank{actor.rank}.json').open('x') as stream:
                     json.dump(record, stream, indent=2)
@@ -104,6 +129,7 @@ def install(worker):
     return dict(pid=os.getpid(), birth=psutil.Process().create_time(), rank=actor.rank,
         installed=True, scheduler=actor.actor_lr_scheduler.last_epoch,
         original_allocator_settings=settings, original_runner_source=delegate.__func__.__code__.co_filename,
+        prior_unexecuted_v1_cancellation=cancellation,
         status='one_next_natural_attribute_pair_prepared_not_executed')
 
 
