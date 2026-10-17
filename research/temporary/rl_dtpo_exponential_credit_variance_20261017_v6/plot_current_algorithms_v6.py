@@ -33,9 +33,30 @@ if requested_task in ('AppWorld', 'both'):
     # AppWorld PPO is already selected by the same original collector; it is
     # a fresh native run, not the historical TextCraft checkpoint resume chain.
     code = code[:start] + code[end:]
+    alive_check = "assert all(j['pid_alive'] for j in snapshot['jobs'])"
+    assert code.count(alive_check) == 1
+    # Keep the original collector/parser. A recorded native driver failure is
+    # historical data, not a live process or permission to restart training.
+    code = code.replace(alive_check, """for collected_job in snapshot['jobs']:
+    selected_job=next(j for j in chosen if j['method']==collected_job['method'])
+    if collected_job['pid_alive']:
+        continue
+    assert collected_job['method']=='dt'
+    failure_path=Path(selected_job['failure_receipt'])
+    failure=json.loads(failure_path.read_bytes())
+    assert failure['status']=='native_driver_failed_after_manual_worker_suspension'
+    assert (collected_job['pid'],collected_job['observed_process_created_unix']) in {
+        (p['pid'],p['birth']) for p in failure['identities'] if not p['alive']}
+    assert failure['run']==selected_job['run']
+    collected_job['training_status']=failure['status']
+    snapshot['DT_native_failure']=dict(receipt=str(failure_path),
+        SHA256=hashlib.sha256(failure_path.read_bytes()).hexdigest(),
+        native_exception=failure['native_exception'],
+        completed_formal_iterations=failure['completed_formal_iterations'],
+        native_full_checkpoint=failure['native_full_checkpoint'])""")
     old = "snapshot['DT_display_label']=('DTPO v3（组乘子，仅方差）' if current_DT.get('variance_standardization')\n                               else '新 DTPO（组乘子，无白化）')"
     assert old in code
-    code = code.replace(old, "assert current_DT['version']=='appworld-dtpo-reward-target-exponential-variance-formal-20261017-v6'; snapshot['DT_display_label']='DTPO v6（指数信用仅方差，官方组优势）'")
+    code = code.replace(old, "assert current_DT['version']=='appworld-dtpo-reward-target-exponential-variance-formal-20261017-v6'; snapshot['DT_display_label']=('DTPO v6（RPC超时退出）' if 'DT_native_failure' in snapshot else 'DTPO v6（指数信用仅方差，官方组优势）')")
     code = code.replace("assert last['dt']>0,'Current DTPO has no completed native iteration yet; source snapshot retained.'", '# Empty fresh native histories retain missing values.')
     legend_and_missing = ("        if ax.lines:ax.legend(frameon=False,fontsize=8)\n"
                           "        else:ax.text(.5,.5,'原日志无此指标',ha='center',va='center',transform=ax.transAxes)")
