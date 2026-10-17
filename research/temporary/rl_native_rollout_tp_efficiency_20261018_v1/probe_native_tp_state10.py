@@ -12,6 +12,9 @@ assert code.count(anchor) == 1
 code = code.replace(anchor, anchor + '''INPUT_SNAPSHOT = OUT/'inputs.snapshot.json'
 if not INPUT_SNAPSHOT.exists():
     INPUT_SNAPSHOT.write_bytes((AUDIT/'matched-inputs-v2-all-tail.json').read_bytes())
+DIAGNOSTIC_CHECKPOINT = Path('/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v6-8gpu-200-20261017-v3/checkpoints/global_step_10/actor')
+assert all((DIAGNOSTIC_CHECKPOINT/f'{kind}_world_size_8_rank_{rank}.pt').is_file()
+    for rank in range(8) for kind in ('model', 'optim', 'extra_state'))
 ''')
 code = code.replace("hashlib.sha256((AUDIT/'matched-inputs.json').read_bytes()).hexdigest()",
     'hashlib.sha256(INPUT_SNAPSHOT.read_bytes()).hexdigest()')
@@ -19,10 +22,8 @@ code = code.replace("cases = json.loads((AUDIT/'matched-inputs.json').read_bytes
     "cases = json.loads(INPUT_SNAPSHOT.read_bytes())['cases']")
 anchor = '    handles = trainer.actor_rollout_wg.workers\n'
 assert code.count(anchor) == 1
-code = code.replace(anchor, '''    checkpoint = ROOT/'../deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v6-8gpu-200-20261017-v3/checkpoints/global_step_10/actor'
-    checkpoint = checkpoint.resolve()
-    trainer.actor_rollout_wg.load_checkpoint(local_path=str(checkpoint), del_local_after_load=False)
-    record['diagnostic_nonzero_model_state'] = str(checkpoint)
+code = code.replace(anchor, '''    trainer.actor_rollout_wg.load_checkpoint(local_path=str(DIAGNOSTIC_CHECKPOINT), del_local_after_load=False)
+    record['diagnostic_nonzero_model_state'] = str(DIAGNOSTIC_CHECKPOINT)
     record['formal_resume_or_optimizer_update'] = False
 ''' + anchor)
 code = code.replace("w.actor_lr_scheduler.last_epoch == 0 and len(w.actor_optimizer.state) == 0",
