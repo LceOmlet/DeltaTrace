@@ -1,0 +1,51 @@
+{
+  "collected": "2026-10-17T15:49:14.843675+08:00",
+  "scope": "Original TextCraft PPO historical exits, separate from the new manual-suspension RPC failure",
+  "kernel_evidence": [
+    {
+      "path": "research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\host-global-OOM-20261017-035315.txt",
+      "SHA256": "e2892b163fa0223c8cebd575e492d0bd543d019f7d88592a3c85f2f245d9a86f",
+      "events": [
+        {
+          "line": 1,
+          "text": "[Sat Oct 17 03:53:15 2026] task_io_context invoked oom-killer: gfp_mask=0x100cca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=-997"
+        },
+        {
+          "line": 732,
+          "text": "[Sat Oct 17 03:53:15 2026] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=cri-containerd-7cc1299e1de96c80db746457447a9ef8226a989c0ee7caf3799d82e64c22b13c.scope,mems_allowed=0,global_oom,task_memcg=/kubepods.slice/kubepods-poda0a8fabb_17a5_419c_b737_68bfdc83e7b3.slice/cri-containerd-7cc1299e1de96c80db746457447a9ef8226a989c0ee7caf3799d82e64c22b13c.scope,task=ray::WorkerDict,pid=3953367,uid=0"
+        },
+        {
+          "line": 733,
+          "text": "[Sat Oct 17 03:53:15 2026] Out of memory: Killed process 3953367 (ray::WorkerDict) total-vm:444816396kB, anon-rss:42516272kB, file-rss:0kB, shmem-rss:461236kB, UID:0 pgtables:156616kB oom_score_adj:1000"
+        }
+      ]
+    },
+    {
+      "path": "research\\temporary\\rl_appworld_formal_training_20261017_v1\\receipts\\host-global-OOM-third-20261017.txt",
+      "SHA256": "e4517f6efa6726fc8baef4563af7665be1aea19deace022dc10eeb2c544f1935",
+      "events": [
+        {
+          "line": 5900,
+          "text": "[Sat Oct 17 06:05:47 2026] kubelet invoked oom-killer: gfp_mask=0x100cca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=-999"
+        },
+        {
+          "line": 6605,
+          "text": "[Sat Oct 17 06:05:47 2026] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/kubepods.slice/kubepods-poda0a8fabb_17a5_419c_b737_68bfdc83e7b3.slice/cri-containerd-7cc1299e1de96c80db746457447a9ef8226a989c0ee7caf3799d82e64c22b13c.scope,task=ray::WorkerDict,pid=1928971,uid=0"
+        },
+        {
+          "line": 6606,
+          "text": "[Sat Oct 17 06:05:47 2026] Out of memory: Killed process 1928971 (ray::WorkerDict) total-vm:988915124kB, anon-rss:44000396kB, file-rss:0kB, shmem-rss:461068kB, UID:0 pgtables:189812kB oom_score_adj:1000"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    "03:53:15: task_io_context invoked the kernel OOM killer; original PPO worker3953367 was the selected global_oom victim.",
+    "06:05:47: kubelet invoked the kernel OOM killer; resumed original PPO worker1928971 was the selected global_oom victim.",
+    "These were global host-memory OOM events, not a PPO numeric assertion, a local CUDA allocator exception, or an intentional trainer stop.",
+    "The invoking process is the allocation that encountered the exhausted host; this alone does not uniquely attribute the accumulated host pressure to that process or another training job.",
+    "Later real unused TextCraft PPO pinned-cache release36.09375GiB proves its own contribution to host occupancy; it is not proof of exclusive historical causation."
+  ],
+  "training_actions": 0,
+  "model_calls": 0
+}
