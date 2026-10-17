@@ -17,7 +17,8 @@ def main():
     evidence = ROOT / 'receipts/six-run-native-utilization-20261017-v1'
     for rank in (0, 6):
         observed = json.loads((evidence / f'native-MRoPE-row-copy-ABA-20261017-v1-rank{rank}.json').read_bytes())
-        assert observed['status'] == 'completed' and observed['original_callable_restored']
+        assert observed['status'] == 'bounded_natural_input_preparation_observation_completed'
+        assert observed['original_callable_restored']
     original = OWNER.read_text()
     before = '''            self.mrope_positions.gpu[:, :total_num_scheduled_tokens].copy_(
                 self.mrope_positions.cpu[:, :total_num_scheduled_tokens],
