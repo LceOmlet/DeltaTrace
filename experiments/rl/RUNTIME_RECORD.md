@@ -1,3 +1,9 @@
+## 2026-10-18T01:45:41.145300+08:00 原protected stop完整结束v3调优；八卡原生生成ABBA实际启动，六组新v4配置仅准备
+
+按PID出生核对后停止controller453157/1792249756.70、driver453162/1792249757.08及该session子进程；原b5be347a protected stop段执行，剩余非zombie=0，mx-smi逐八卡空闲后才提交有限测速。原日志、共享完整checkpoint10保留，不造新保存。此前v3为调优历史，不称新正式六组进度。
+
+原生测速parent1393183/1792258695.58，native child1393206/1792258695.70，source014dfbcb462266300bba1aa66556088af51e195d、harness96e0f2ed。8个实际worker均读到candidate710f829e，scheduler0/optimizer0；正在A-global生成完整32组×8，尚无速度结论、尚不接受部署。全程不执行DT/optimizer或正式迭代。配置预检六组均通过，执行身份统一20261018-v4、DT方法仍v6，TextCraft与AppWorld共同任务工作量逐section相同；prepared only，尚无v4训练PID。新队列复用原f71ff4d8结束/切换/完整200检查点owner，不写另一训练器。新训练必须等本次GPU行为与速度证据接受后才启动。
+
 ## 2026-10-18T01:36:53.074433+08:00 DP本地owner收尾CPU实测通过；八卡生成对照已独立准备，正式入口未切换
 
 原调优v3已由原parser读到10/200，原共享完整checkpoint10逐八rank核对通过：923项model、496项optimizer、scheduler10/optimizer40、CPU/CUDA/NumPy/Python及rollout RNG/data齐全。controller453157/1792249756.70、driver453162/1792249757.08此时仍保持，未将调优曲线称最终新六组。
