@@ -1,3 +1,11 @@
+## 2026-10-18T07:32:02.137956+08:00 新六组首组完成20/200；原生共享checkpoint20八rank状态核验通过
+
+同一controller2004205/1792263400.01及driver2004329/1792263400.35继续第21轮生成，其他五组合queued。原TaskRunner line441确认step20：训练回报0.520、entropy0.635、首返回rank裁剪前分片grad0.008、KL控制台0.000（非精确零）、含工具返回响应3528.070、原交互18.375；生成/DT/actor/保存/整轮446.043/132.865/136.963/49.242/836.143秒。原1–20完整step来源齐全，较前成功图增加5轮；新图TextCraft072938/AppWorld072945。其他方法缺失不填0，不拼旧调优曲线，共同窗口仍0。
+
+原latest_checkpointed_iteration.txt=20；reader91d73825/owner f65b6538核验八actor rank各923模型项/496 optimizer项可读，scheduler均20、全部optimizer step均80（20×4更新），训练CPU/CUDA/NumPy/Python RNG及各rank rollout RNG齐全，原data.pt游标可读，SHA256=b5752cc569b1909e2c4ca1f4c12f5fdbfcd92d07aaa4c30bd47d5f106601121b。原回执SHA256=1956f876ef699f3d3a876198c738a3b8fad76e368b8062fa99d8fe05358b73f2。0额外模型/DT/optimizer/save/训练restore；不称全模型字节SHA、恢复逐值或AppWorld sampler验收。44716读取器已exit0；51878只读等待下一原生checkpoint25，观察超时不重启训练。
+
+物理利用率和HBM/PCIe/卡间带宽报告仍复用原owner，未修改副本及采集窗口/SHA见formal-native-checkpoint20-and-progress.json。匹配点/速率采样不作峰值算力比例、时长加权全阶段均值或满载证明；当前自然采样MemAvailable635.43GiB、oom_kill4未增，不外推最坏32k容量。实际训练源仍09e9f19293e6829cbb16126d5e2d8c0fe07e40cb；本次仅记录更新，未改方法、超参或部署。六组200/最终原生checkpoint200与最终图未完成，goal保持active。
+
 ## 2026-10-18T06:27:16.587410+08:00 新六组首组完成15/200；原生共享checkpoint15八rank只读状态核验通过
 
 同一controller2004205/1792263400.01与driver2004329/1792263400.35继续第16轮生成；其他五组合仍queued。原TaskRunner line405完整step15：回报0.633、entropy0.682、首返回rank裁剪前分片grad0.006、KL控制台0.000（非精确零）、响应3208.754含工具返回、原交互15.375；生成/DT/actor/保存/整轮434.959/157.559/143.809/48.994/859.975秒。原1–15完整step来源齐全，不混旧调优或诊断数据；新图TextCraft062331/AppWorld062337，较上一成功图增加3轮，其他算法缺失不填0。
