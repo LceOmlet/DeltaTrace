@@ -74,13 +74,23 @@ def verify_GPU_empty():
     return physical
 
 
-def main():
+def main(*, audit=None, version=None, readiness=None):
+    # An appended task segment composes this same process owner; the already
+    # running predecessor retains its deployed source and process identity.
+    global AUDIT, VERSION
+    if audit is not None:
+        AUDIT = Path(audit)
+    if version is not None:
+        VERSION = version
     with (AUDIT / 'campaign-controller.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         prepared = json.loads((AUDIT / 'campaign-prepared.json').read_bytes())
         assert prepared['status'] == 'three_native_CPU_configs_resolved_and_common_workload_equal'
-        stopped = json.loads((AUDIT / 'user-replaced-prior-jobs-stop.json').read_bytes())
-        assert stopped['status'] == 'stopped_by_user_replacement' and not stopped['remaining_non_zombie']
+        if readiness is None:
+            stopped = json.loads((AUDIT / 'user-replaced-prior-jobs-stop.json').read_bytes())
+            assert stopped['status'] == 'stopped_by_user_replacement' and not stopped['remaining_non_zombie']
+        else:
+            readiness()
         assert not (AUDIT / 'campaign-state.json').exists(), 'Inspect existing campaign identity; no duplicate submission'
         state = dict(version=VERSION, status='starting', started_unix=time.time(),
                      controller_pid=os.getpid(), controller_birth=psutil.Process().create_time(),
@@ -155,6 +165,8 @@ def main():
                 roles = ('actor', 'critic') if method == 'ppo' else ('actor',)
                 files = [final / 'data.pt'] + [final / role / f'{kind}_world_size_8_rank_{rank}.pt'
                     for role in roles for rank in range(8) for kind in ('model', 'optim', 'extra_state')]
+                if row['task'] == 'AppWorld':
+                    files.append(final / 'loop_sampler.pt')
                 assert all(p.is_file() and p.stat().st_size for p in files), 'Native final state files missing'
                 row.update(status='completed_200_native_iterations', active=False, alive=False,
                            completed_iterations=200, final_native_checkpoint=str(final), finished_unix=time.time(),

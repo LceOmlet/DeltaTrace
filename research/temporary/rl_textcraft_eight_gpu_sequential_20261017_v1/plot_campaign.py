@@ -1,7 +1,10 @@
 """Adapt campaign identity/empty queues around the unchanged original renderer."""
 import hashlib
+import os
 from pathlib import Path
 
+task = os.environ.get('RL_CAMPAIGN_PLOT_TASK', 'TextCraft')
+assert task in ('TextCraft', 'AppWorld')
 source = Path(__file__).resolve().parent.parent / 'rl_textcraft_gradient_rootcause_20261013_v1/plot_current_approved_DTPO_v63.py'
 assert hashlib.sha256(source.read_bytes()).hexdigest() == 'f6ed1ff351b9f8ea7980577d4897acd59e953bc105defe47fe4cb3e700d46244'
 code = source.read_text()
@@ -13,12 +16,14 @@ from pathlib import Path
 ROOT=Path(ROOT_VALUE)
 AUDIT=ROOT/'receipts/textcraft-eight-gpu-sequential-20261017-v1'
 state_path=AUDIT/'campaign-state.json'
-state=json.loads(state_path.read_bytes())
+state=json.loads(state_path.read_bytes()) if state_path.exists() else dict(
+    jobs=[],status='queued_after_TextCraft',order=['dt','ppo','grpo'])
 prepared=json.loads((AUDIT/'campaign-prepared.json').read_bytes())
 parser_path=ROOT/'receipts/textcraft-gradient-rootcause-20261013-v1/original_plot_training_progress.py'
 assert hashlib.sha256(parser_path.read_bytes()).hexdigest()=='c20559e38e651284859837735b8e7d15fe7ca59b090c62b7bc651228f6ba3607'
 owner=runpy.run_path(str(parser_path),run_name='native_eight_GPU_comparison_parser')
-snapshot=owner['collect'](str(ROOT),[j['output'] for j in state['jobs']])
+snapshot=owner['collect'](str(ROOT),[j['output'] for j in state['jobs']]) if state['jobs'] else dict(
+    jobs=[],collected_at=__import__('time').time())
 actual={j['method']:j for j in state['jobs']}
 for job in snapshot['jobs']:
     selected=actual[job['method']]
@@ -35,17 +40,22 @@ snapshot['jobs'].sort(key=lambda j:prepared['order'].index(j['method']))
 snapshot['DT_version']=prepared['version']
 snapshot['DT_display_label']='DTPO v6（8卡）'
 snapshot['source_label']='TextCraft; fresh native 8-GPU sequential 200-iteration comparison'
-snapshot['campaign_source']=dict(path=str(state_path),SHA256=hashlib.sha256(state_path.read_bytes()).hexdigest(),
+snapshot['campaign_source']=dict(path=str(state_path),SHA256=hashlib.sha256(state_path.read_bytes()).hexdigest() if state_path.exists() else None,
     status=state['status'],order=state['order'])
 snapshot['original_parser_source']=dict(path=str(parser_path),SHA256=hashlib.sha256(parser_path.read_bytes()).hexdigest())
 snapshot['gradient_norm_scope']='Original first-returned rank preclip shard norm; no missing global norm estimated'
 snapshot['collection_model_calls']=0
 print(json.dumps(snapshot))
 '''
+if task == 'AppWorld':
+    remote = remote.replace('textcraft-eight-gpu-sequential-20261017-v1',
+                            'appworld-eight-gpu-sequential-20261017-v1').replace('TextCraft', 'AppWorld')
 code = code[:start] + 'remote=' + repr(remote) + ".replace('ROOT_VALUE', repr(entry.ROOT))" + code[end:]
 code = code.replace("assert last['dt']>0,'Current DTPO has no completed native iteration yet; source snapshot retained.'",
                     '# Pending combinations and fresh empty histories retain missing metrics.')
 code = code.replace('/330', '/200').replace("label='原生 GRPO'", "label='原生 GRPO（8卡）'").replace("label='原生 PPO'", "label='原生 PPO（8卡）'")
+if task == 'AppWorld':
+    code = code.replace('TextCraft ·', 'AppWorld ·').replace('原 TextCraft 交互计数', '原 AppWorld 交互计数')
 anchor = "        if ax.lines:ax.legend(frameon=False,fontsize=8)\n        else:ax.text(.5,.5,'原日志无此指标',ha='center',va='center',transform=ax.transAxes)"
 assert code.count(anchor) == 1
 code = code.replace(anchor, """        has_data=bool(ax.lines)
