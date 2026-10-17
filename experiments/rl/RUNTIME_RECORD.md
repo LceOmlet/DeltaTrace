@@ -1,3 +1,9 @@
+## 2026-10-18T04:41:13.453634+08:00 原生带宽只读采集补齐HBM/PCIe/MetaXLink；TextCraft DTPOv6完成7/200
+
+复用安装版mx-smi2.2.12原show/--loop接口，binary SHA644ad8934139b2b5cab27d9d282b7e53bec7eec4d965e9237c86aa86c5d694d7；仅物理0–7，每10,000ms发起原查询，实际原生时间戳保留，不当作连续10s均值或峰值FLOPS占比。HBM observer2654072/1792269559.88、PCIe2654073/1792269559.89、MetaXLink2654074/1792269559.90均活且多个原样本已落盘，stderr为空。保留原dmon与原phase observer，后续按实际时间对齐；无训练logger/parser、GPU模型/optimizer/save/restore或配置改动。该版本--json输出不含所请求带宽字段，原stdout/stderr及help保留，不把缺失当0。新增带宽只从第8轮中途开始覆盖，前7轮不补值；比较须使用匹配的已观测窗口，全部六组完成后按PID出生停止这3个只读观察进程。回执native-bandwidth-observer-job-v1.json记录实际argv/路径/SHA/覆盖。
+
+原TaskRunner line347确认第7轮reward0.520/entropy0.679/首rank裁剪前分片grad0.008/KL控制台0.000（非精确零），响应3621.176含工具返回、交互18.277；生成/DT/actor更新446.445/124.125/144.732s，整轮790.656s。第8轮生成继续，原共享标记5及其核验保持；checkpoint10只读等待器仍在，不制造额外checkpoint。共享空闲9.590TiB，F空闲25.015GiB，F仅现有绘图/来源快照，不恢复旧双备份。新图TextCraft043447/AppWorld043452；记录seventh-native-iteration-and-bandwidth-observation.json。实际训练源09e9f192全SHA不变，其他5组合queued，goal active，尚未完成6×200。
+
 ## 2026-10-18T04:23:41.663619+08:00 新六组首组TextCraft DTPOv6完成6/200，第7轮生成；原生八卡并行链保持
 
 原TaskRunner line340与原collect/read_job_logs/parse_logs确认step6：reward0.613、entropy0.645、原首rank裁剪前分片grad0.006、KL控制台0.000（非精确零），响应均长3309.766含工具返回，原工具交互16.512。生成/环境428.663s、DT/adv126.327s、actor更新142.105s，整轮771.289s；各项来自原日志，不把不同样本间耗时变化称同输入加速。controller2004205/1792263400.01与driver2004329/1792263400.35仍同身份，第7轮生成；原共享完成标记5及既有checkpoint5核验保持，下一原生保存10。其余5组合仍queued，无额外保存/恢复/模型或optimizer调用。

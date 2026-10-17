@@ -1,0 +1,291 @@
+
+USAGE: 
+
+   mx-smi  [-hjLrsvy] [--count-ecc] [--show-ap-usage]
+           [--show-apusage-toggle] [--show-board-power] [--show-clk-tr]
+           [--show-clock] [--show-core-usage] [--show-eeprom]
+           [--show-fan-speed] [--show-hbm-bandwidth] [--show-hwinfo]
+           [--show-memory] [--show-metaxlink-bandwidth]
+           [--show-pcie-bandwidth] [--show-pcie-slot] [--show-pmbus-power]
+           [--show-power-state] [--show-pptable-version] [--show-sn]
+           [--show-sysinfo] [--show-temperature]
+           [--show-unavailable-reason] [--show-usage] [--show-vbios]
+           [--show-version] [--show-vpu] [--set-pci-speed <[1, 5]>|
+           --show-pcie] [--kill-all-process|--show-all-process|
+           --show-process] [--flr|--vfflr] [--set-ecc-state <[0, 1]>|
+           --show-ecc-state] [-U <bin>|-u <bin>|--force-vbios-flash <bin>]
+           [--set-op-mode <[0, 1]>|--show-op-mode] [--set-persistence-mode
+           <[0, 1]>|--show-persistence-mode] [--set-dpm-max <DPM IP,DPM
+           level>|--show-dpm-max] [--set-power-mode <[0, 1]>|
+           --show-power-mode] [-i <deviceId>] [-l <ms>] [-o <output.csv>]
+           [-t <[60, 36000]>] [--die <dieId>] [--dump-vbios <>]
+           [--set-apusage-toggle <[0, 1]>] [--show-clocks <all|clock IP>]
+           [--show-dpm <all|cur>] [--show-event <aer_ue|aer_ce|synfld|dbe|
+           mmio|all>] [subsystem]
+
+
+Where: 
+
+   --show-temperature
+     Display temperature
+
+   --show-pmbus-power
+     Display pmbus voltage, current and power
+
+   --show-board-power
+     Display board voltage, current and power
+
+   --show-sn
+     Display chip serial
+
+   --show-memory
+     Display memory information in KBytes
+
+   --show-eeprom
+     Display eeprom information
+
+   --show-version
+     Display maca, bios, driver, firmware version
+
+   --show-usage
+     Display VPUE,VPUD,GPU usage
+
+   --show-power-state
+     Display power state
+
+   -L,  --list
+     List all devices discovered on the host
+
+   --show-unavailable-reason
+     Display device unavailable reason
+
+   --show-hbm-bandwidth
+     Display hbm bandwidth in MBytes/s
+
+   --show-vpu
+     Display encoder and decoder codec status
+
+   --show-pcie-bandwidth
+     Display pcie bandwidth in MBytes/s
+
+   -s,  --summary
+     Display device summary information
+
+   --show-core-usage
+     Display single core usage
+
+   --show-vbios
+     Display vbios information
+
+   --show-pcie-slot
+     Display the device pcie slot
+
+   --show-fan-speed
+     Display fan speed information
+
+   --show-hwinfo
+     Display hardware information
+
+   -j,  --json
+     Display gpu information in json format
+
+   -y,  --yes
+     Automatic yes to prompts for PF warm reset and run non-interactively
+
+   --show-clock
+     Display brief clock frequency
+
+   --show-sysinfo
+     Display device system info
+
+   --show-clk-tr
+     Display current clocks throttling reason(only support C-class device)
+
+   -o <output.csv>,  --output <output.csv>
+     Write show commands' data to file in csv format 
+     supported show commands:
+         show-temperature, show-board-power, show-version,
+         show-usage, show-memory, show-pcie, show-dpm cur,
+         show-pmbus-power, show-vpu, show-fan-speed,
+         show-metaxlink-bandwidth, show-pcie-bandwidth
+
+   --show-dpm <all|cur>
+     Display DPM performance levels
+
+   -l <ms>,  --loop <ms>
+     Display until Ctrl+C at specified millisecond interval
+
+   -i <deviceId>,  --index <deviceId>
+     Target specific devices. The specified id may be the GPU's index in
+     the natural enumeration, chip serial number, uuid, or PCI bus ID(as
+     domain:bus:device.function in hex). Multiple devices can be combined
+     as '0,1,5', '0-2' '0-4,6', 'GPU-2f8ab36b-882a-0248-494e-0da5d8ae9698,
+     0000:03:00.0', 'all'
+
+   --die <dieId>
+     Target specific die index.
+
+   --dump-vbios <>
+     Dump vbios data
+         Usage: mx-smi --dump-vbios ./mxvbios-xxx.bin -t 90
+                mx-smi --dump-vbios ./mxvbios-xxx.bin # default time limit
+     is 60s
+
+   -t <[60, 36000]>,  --timelimit <[60, 36000]>
+     Time limit for upgrade or dump command, unit: second
+
+   --show-event <aer_ue|aer_ce|synfld|dbe|mmio|all>
+     Display kmd events info
+
+   --show-clocks <all|clock IP>
+     Display target IPs' clocks
+        clock IP: csc, xcore, mc0, mc1, vpue, vpud, soc, dnoc, ccx
+        clock IP(MXC600): csc, xcore, soc, dnoc
+            multiple IPs can be combined with comma
+
+   --set-apusage-toggle <[0, 1]>
+     Disable/enable collecting xcore ap usage
+            state: 0(disable) 1(enable)
+     Note: The device must be specified by -i, --index.
+
+   -r,  --reset
+     Trigger warm reset of the gpu. Reset operations are not guaranteed to
+     work in all cases and should be used with caution.
+
+   --show-metaxlink-bandwidth
+     Display MetaXLink bandwidth in MBytes/s
+
+   --show-pptable-version
+     Display pptable version
+
+   --show-ap-usage
+     Show xcore ap usage
+
+   --show-apusage-toggle
+     Show xcore ap usage toggle states
+
+   --count-ecc
+     Display Ecc error count
+
+   Either of:
+      --show-pcie
+        Display pcie speed and width
+
+      --set-pci-speed <[1, 5]>
+        Set pci speed by changing pci generation(only support N-class
+        device)
+
+   Either of:
+      --show-process
+        Show process currently running
+
+      --show-all-process
+        show all process opening device file
+
+      --kill-all-process
+        Kill all process opening device file
+
+   Either of:
+      --flr
+        Function level reset
+
+      --vfflr
+        Perform VF function level reset from PF
+
+   Either of:
+      --show-ecc-state
+        Display ecc's state
+
+      --set-ecc-state <[0, 1]>
+        Disable/enable ecc
+            ecc state: 0(disable) 1(enable)
+        Note: The device must be specified by -i, --index.
+
+   Either of:
+      -u <bin>,  --vbios-upgrade <bin>
+        Upgrade vbios for all devices
+        Use -U/--force-vbios-upgrade to update specified devices
+            Usage: mx-smi -u ./mxvbios-xxx.bin -t 90
+                   mx-smi -u ./mxvbios-xxx.bin # default time limit is 60s
+
+      -U <bin>,  --force-vbios-upgrade <bin>
+        Force upgrade vbios
+            Usage: mx-smi -U ./mxvbios-xxx.bin -t 90
+                   mx-smi -U ./mxvbios-xxx.bin # default time limit is 60s
+
+      --force-vbios-flash <bin>
+        Force flash vbios for not available devices
+            Usage: mx-smi --force-vbios-flash ./mxvbios-xxx.bin
+
+   Either of:
+      --show-op-mode
+        Display system operation mode
+
+      --set-op-mode <[0, 1]>
+        Set system operation mode
+            mode: 0(Normal mode) 1(Maintenance mode)
+
+   Either of:
+      --show-persistence-mode
+        Display persistence mode
+
+      --set-persistence-mode <[0, 1]>
+        Disable/enable persistence mode
+            persistence mode: 0(disable) 1(enable)
+        Note: The device must be specified by -i, --index.
+
+   Either of:
+      --set-dpm-max <DPM IP,DPM level>
+        Set dpm IP max performance level
+            format: <DPM IP>,<DPM level>; (e.g. "mc,1")
+                DPM IP: <xcore|mc|soc|dnoc|vpue|vpud|ccx>
+                DPM level: get from cmd: mx-smi --show-dpm all
+        Note: The device must be specified by -i, --index.
+              (N-class device is not support)
+
+      --show-dpm-max
+        Display dpm max performance level (N-class device is not support)
+
+   Either of:
+      --show-power-mode
+        Display power mode
+
+      --set-power-mode <[0, 1]>
+        Set power mode
+            Power mode: 0(Normal) 1(High)
+        Note: The device must be specified by -i, --index.
+
+   --,  --ignore_rest
+     Ignores the rest of the labeled arguments following this flag.
+
+   -v,  --version
+     Displays version information and exits.
+
+   -h,  --help
+     Displays usage information and exits.
+
+   subsystem <ras|topo|dmon|mxlk|misc|om|cxl|eth|vm|sgpu>
+     The desired subsystem to be accessed.
+     
+     Subsystems available:
+       ras     Device RAS management [mx-smi ras -h for more info]
+       topo    Display device topology [mx-smi topo -h for more info]
+       dmon    Display device stats in scrolling format
+               [mx-smi dmon -h for more info]
+       om      Display optical module info
+               [mx-smi om -h for more info]
+       vm      Device virtualization management
+               [mx-smi vm -h for more info]
+       sgpu    Device slice gpu interface
+               [mx-smi sgpu -h for more info]
+       mxlk    Device metaxlink management
+               [mx-smi mxlk -h for more info]
+       cxl     Display cxl device info
+               [mx-smi cxl -h for more info]
+       eth     Display eth info
+               [mx-smi eth -h for more info]
+       misc    Various utility commands
+               [mx-smi misc -h for more info]
+
+   MetaX GPU System Management Interface
+
