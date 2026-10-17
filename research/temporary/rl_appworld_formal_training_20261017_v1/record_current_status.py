@@ -67,6 +67,8 @@ for method, key in [('dt', 'DTPO'), ('ppo', 'PPO')]:
     current['actual_worker_bindings'] = read(bindings) if bindings.exists() else dict(status='read_only_rpc_pending')
     after_DT = source_dir / 'actual-worker-imports-after-first-DT-v1.json'
     if after_DT.exists():current['actual_worker_bindings_after_DT']=read(after_DT)
+    after_update = source_dir / 'actual-worker-imports-after-first-update-v1.json'
+    if after_update.exists():current['actual_worker_bindings_after_update']=read(after_update)
     current['actual_environment_owner_bindings'] = [read(p) for p in sorted(source_dir.glob('loop-owner-*.json'))]
     if source.get('sampler_checkpoint_artifact'):
         current['sampler_checkpoint'] = dict(

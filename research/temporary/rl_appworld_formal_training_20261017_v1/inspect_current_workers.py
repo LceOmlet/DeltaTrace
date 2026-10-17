@@ -12,7 +12,8 @@ ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT = ROOT / 'receipts/appworld-formal-training-20261017-v1'
 method = sys.argv[1]
 assert method in ('dt', 'ppo')
-phase = 'after-first-DT-v1' if '--after-DT' in sys.argv else 'formal-v1'
+phase = ('after-first-DT-v1' if '--after-DT' in sys.argv else
+         'after-first-update-v1' if '--after-update' in sys.argv else 'formal-v1')
 manifest = json.loads((ROOT / 'formal-training.json').read_bytes())
 job, = [j for j in manifest['jobs'] if j.get('task') == 'AppWorld' and j.get('method') == method]
 source = json.loads(Path(job['source_receipt']).read_bytes())
@@ -24,6 +25,8 @@ if '--client' not in sys.argv:
     command = [env['VENV_PYTHON'], '-X', 'utf8', __file__, method, '--client']
     if '--after-DT' in sys.argv:
         command.append('--after-DT')
+    if '--after-update' in sys.argv:
+        command.append('--after-update')
     raise SystemExit(subprocess.call(command, env=env))
 
 import psutil
