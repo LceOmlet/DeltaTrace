@@ -1,3 +1,9 @@
+## 2026-10-18T05:20:04.143038+08:00 新六组首组完成10/200；原生共享checkpoint10八rank状态只读核验通过
+
+原标记latest_checkpointed_iteration.txt=10，checkpoint位于/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v6-8gpu-200-20261018-v5/checkpoints/global_step_10。复用reader91d73825与原owner f65b6538；八actor rank各923模型项/496 optimizer项可读，scheduler均10、全部optimizer step均40，符合10轮×每轮4更新。CPU/CUDA/NumPy/Python训练RNG、各rank rollout gen_random_states及原data.pt数据游标键均齐全；data SHA256=d670d80727032375d73807167d27af5ea1db9b49bfbf3135db9037424e8bd1df。0额外模型/DT/optimizer/save/训练restore调用。此为原生完成标记及保存状态可读性/计数核验，不称新恢复逐值试验或全模型字节SHA校验；AppWorld尚未启动，不宣称已验证其sampler。核验原回执与SHA在formal-native-checkpoint10-and-progress.json。
+
+同一controller2004205/1792263400.01与driver2004329/1792263400.35继续第11轮生成；99571仅只读等待器已exit0，不是训练结束。原TaskRunner line369确认step10：回报0.531、entropy0.658、首rank裁剪前分片grad0.008、KL控制台0.000（非精确零），响应3522.938含工具返回、交互18.121；生成/DT/actor/save/整轮443.572/140.450/139.644/48.121/844.385秒。原1–10完整step均在来源快照，未混诊断或旧曲线；新图TextCraft051641/AppWorld051647，其他五组合queued。复核既有TP probe按8/TP引擎数切分同一全局256/72请求池，TP1/2 dense每引擎32/64、tail9/18，不追加重复GPU试验，亦不将引擎计时扩称整训练/所有资源配置最优。原训练源09e9f192全SHA及方法/超参保持；下一原生保存15，goal active，全部6×200/最终checkpoint200未完成。
+
 ## 2026-10-18T04:51:27.577470+08:00 TextCraft DTPOv6完成8/200并进入第9轮；原生带宽首窗口按原phase汇总
 
 原TaskRunner line354与collect/read_job_logs/parse_logs确认step8，训练回报0.516/entropy0.690/原首rank裁剪前分片grad0.006/KL控制台0.000（非精确零），响应3794.672含工具返回、交互18.516；生成449.318s、DT/adv144.521s、actor143.818s、整轮812.619s。原driver2004329/1792263400.35与controller2004205/1792263400.01继续，第9轮生成；共享标记及已核验checkpoint5保持，原checkpoint10只读等待器仍在，无额外模型/DT/optimizer/save/restore。其他5组合queued，原源09e9f192全SHA和方法/超参未变。新图TextCraft044953/AppWorld044958。
