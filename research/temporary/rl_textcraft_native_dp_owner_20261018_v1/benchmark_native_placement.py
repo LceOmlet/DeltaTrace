@@ -143,7 +143,7 @@ def measured_loop(collector, gen_batch, actor_rollout_wg, envs, is_train=True):
             torch.save(output, path)
             equal = (set(output.batch.keys()) == set(outputs[0].batch.keys()) and all(
                         output.batch[k].dtype == outputs[0].batch[k].dtype and
-                        torch.equal(output.batch[k], outputs[0].batch[k]) for k in output.batch)
+                        torch.equal(output.batch[k], outputs[0].batch[k]) for k in output.batch.keys())
                      if outputs else True)
             state['cases'].append(dict(mode=mode, seconds=elapsed, rows=len(output),
                 policy_tokens=int(output.batch['response_mask'].sum()),
@@ -205,6 +205,18 @@ except BaseException as error:
     save()
     raise
 finally:
-    ray.shutdown()
+    try:
+        if holder and not state.get('all8_native_episode_owner_caches_closed', False):
+            holder[0].envs.close()
+            holder[0].val_envs.close()
+            closed = ray.get([h.execute_with_func_generator.remote(func=worker_state)
+                             for h in holder[0].actor_rollout_wg.workers])
+            state['all8_native_episode_owner_caches_closed'] = all(r['owner_cache_closed'] for r in closed)
+            save()
+    except Exception as cleanup_error:
+        state['owner_cleanup_error'] = repr(cleanup_error)
+        save()
+    finally:
+        ray.shutdown()
 print(json.dumps(dict(status=state['status'], matched_workload=state['matched_original_tensor_workload'],
                       cases=state['cases']), indent=2))

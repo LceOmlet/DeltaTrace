@@ -1,0 +1,155 @@
+{
+  "status": "not_accepted_efficiency_not_proved_full_outputs_preserved",
+  "collected": 1792260327.8493464,
+  "CPU_transport_parity_passed": true,
+  "original_numerical_owners_unchanged": true,
+  "native_8GPU_sessions_completed_generation_for_two_cases": true,
+  "harness_reporting_error": "TensorDict iteration yields rows; compare must iterate .keys(); no DT or optimizer executed; completed native outputs preserved",
+  "A_seconds": 527.362837387016,
+  "B_start_control_mtime": 1792259392.313822,
+  "B_output_file_mtime": 1792259908.788954,
+  "B_generation_plus_output_serialization_approx_seconds": 516.4751319885254,
+  "B_exact_elapsed_not_written": true,
+  "ABBA_completed": false,
+  "comparison": {
+    "status": "CPU_saved_native_outputs_compared_no_model_calls",
+    "rows": [
+      256,
+      256
+    ],
+    "tensors": {
+      "prompts": {
+        "shapeA": [
+          256,
+          512
+        ],
+        "shapeB": [
+          256,
+          512
+        ],
+        "equal": true,
+        "different_elements": 0
+      },
+      "responses": {
+        "shapeA": [
+          256,
+          10240
+        ],
+        "shapeB": [
+          256,
+          10240
+        ],
+        "equal": false,
+        "different_elements": 585338
+      },
+      "input_ids": {
+        "shapeA": [
+          256,
+          10752
+        ],
+        "shapeB": [
+          256,
+          10752
+        ],
+        "equal": false,
+        "different_elements": 585338
+      },
+      "attention_mask": {
+        "shapeA": [
+          256,
+          10752
+        ],
+        "shapeB": [
+          256,
+          10752
+        ],
+        "equal": false,
+        "different_elements": 164766
+      },
+      "position_ids": {
+        "shapeA": [
+          256,
+          10752
+        ],
+        "shapeB": [
+          256,
+          10752
+        ],
+        "equal": true,
+        "different_elements": 0
+      },
+      "response_mask": {
+        "shapeA": [
+          256,
+          10240
+        ],
+        "shapeB": [
+          256,
+          10240
+        ],
+        "equal": false,
+        "different_elements": 208743
+      },
+      "task_rounds": {
+        "shapeA": [
+          256
+        ],
+        "shapeB": [
+          256
+        ],
+        "equal": false,
+        "different_elements": 51
+      },
+      "task_scores": {
+        "shapeA": [
+          256,
+          10240
+        ],
+        "shapeB": [
+          256,
+          10240
+        ],
+        "equal": false,
+        "different_elements": 172
+      },
+      "rm_scores": {
+        "shapeA": [
+          256,
+          10240
+        ],
+        "shapeB": [
+          256,
+          10240
+        ],
+        "equal": false,
+        "different_elements": 172
+      },
+      "loss_mask": {
+        "shapeA": [
+          256,
+          10752
+        ],
+        "shapeB": [
+          256,
+          10752
+        ],
+        "equal": false,
+        "different_elements": 208743
+      }
+    },
+    "A": {
+      "policy_tokens": 758089,
+      "all_input_tokens": 946886,
+      "tools": 3483.0,
+      "reward_mean": 0.73046875
+    },
+    "B": {
+      "policy_tokens": 848810,
+      "all_input_tokens": 1039780,
+      "tools": 3737.0,
+      "reward_mean": 0.66796875
+    }
+  },
+  "conclusion": "Initial prompts/positions match; complete autoregressive trajectories differ. About2percent wall difference plus more B tokens is not an exact matched-workload acceleration. Marked candidate only; no formal deployment.",
+  "followup": "Inspect native tensor-parallel option to shorten the observed single-engine generation critical path; no credit or PPO changes"
+}

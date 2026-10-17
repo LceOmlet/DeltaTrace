@@ -1,0 +1,14 @@
+{
+  "status": "corresponding_pinned_official_protocol_identified_not_yet_passed",
+  "method": "test_distributed_correctness",
+  "owner_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/vllm015-hybrid.py",
+  "owner_SHA256": "5d19fe9ba7d28901bd244d557886aa1603b0da55a00ded645c53c7de0d0c9962",
+  "owner_test": "def test_distributed_correctness(\n    vllm_runner,\n    example_prompts,\n    model: str,\n    max_tokens: int,\n    num_logprobs: int,\n) -> None:\n    with vllm_runner(\n        model, tensor_parallel_size=1, max_num_seqs=MAX_NUM_SEQS\n    ) as vllm_model:\n        vllm_outputs_tp_1 = vllm_model.generate_greedy_logprobs(\n            example_prompts, max_tokens, num_logprobs\n        )\n\n    with vllm_runner(\n        model, tensor_parallel_size=2, max_num_seqs=MAX_NUM_SEQS\n    ) as vllm_model:\n        vllm_outputs_tp_2 = vllm_model.generate_greedy_logprobs(\n            example_prompts, max_tokens, num_logprobs\n        )\n\n    check_logprobs_close(\n        outputs_0_lst=vllm_outputs_tp_1,\n        outputs_1_lst=vllm_outputs_tp_2,\n        name_0=\"vllm_tp_1\",\n        name_1=\"vllm_tp_2\",\n    )",
+  "comparator_file": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/upstream-alignment-20260929/vllm015-test-utils.py",
+  "comparator_SHA256": "e4a2ab8e182234b13c89feac6aab4541eea732f46d12cffc4e7c7f9b04ec2e6d",
+  "official_url": "https://github.com/vllm-project/vllm/blob/v0.15.0/tests/models/language/generation/test_hybrid.py#L226",
+  "reason": "Same hybrid recurrent architecture and same TP1 versusTP2 intervention; comparator defaults unchanged",
+  "scope": "Sampler consistency at first divergence/top5; not a bound on all logprob differences; not PPO-gradient equivalence",
+  "extra_fixture": "Native checkpoint10 nonzero actor state, unchanged fixedVERL loader; original short prefixes and original32k storage fixture; 0 optimizer updates",
+  "new_numeric_thresholds": 0
+}

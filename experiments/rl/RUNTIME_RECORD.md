@@ -1,3 +1,11 @@
+## 2026-10-18T02:49:20.035793+08:00 原生TP1/TP2同状态比较完成；DP放置候选不接受，六组正式新run尚未启训
+
+原v3调优已由原protected stop结束，原日志完成10/200、共享原生完整checkpoint10八rank核验保留；不拼入最新从基础0轮的六组。DP本地episode候选完成CPU接口/生命周期检查，但GPU报告代码在A和B生成后失败，且保存轨迹输出不同；原失败与输出保留，不据墙钟近似或token归一化宣称匹配加速，不部署候选，也不启动其prepared-v4队列。
+
+原固定VERL20bd331b/worker198f509c/actor3a65e173、实际vLLM runner6ed94945保持。TP1/TP2采用相同原生checkpoint10非零LoRA、同一输入SHA626cb7bc、原生begin/end rollout及生成接口，8rank均scheduler10/optimizer496；未执行DT、optimizer或正式迭代。源码0b657306/probe3d92b76b，TP1子进程1880911/1792262314.55、TP2子进程1715685/1792261683.36均正常完成。满批256×128热生成TP1=3.959381秒、TP2=5.480307秒；尾段原70请求pad72×128热生成3.785887/3.275852秒、冷生成17.818577/18.021539秒。TP2满批更慢，尾部仅有限收益，因此不选TP2。两种配置均完成32640+128=32768容量与原vLLM0.15 hybrid test_distributed_correctness所调用check_logprobs_close；这是首处分歧互在top5的一致性，不称绝对logprob误差界或PPO更新容差。
+
+官方NgramProposer对保存原始32轨迹/489助手span/62919 policy token的CPU提议匹配，乐观target调用比1.516157，仅作为直接生成瓶颈调查线索；尚无engine/GPU/采样数值/32k验收，无部署，不以此称实测加速。原始结果及绑定在receipts/native-rollout-TP-efficiency-20261018-v1；已接受threads8主机注册与原MRoPE整数复制修复保留。goal active，六组各200、最终原生checkpoint200及新图尚未完成。
+
 ## 2026-10-18T01:45:41.145300+08:00 原protected stop完整结束v3调优；八卡原生生成ABBA实际启动，六组新v4配置仅准备
 
 按PID出生核对后停止controller453157/1792249756.70、driver453162/1792249757.08及该session子进程；原b5be347a protected stop段执行，剩余非zombie=0，mx-smi逐八卡空闲后才提交有限测速。原日志、共享完整checkpoint10保留，不造新保存。此前v3为调优历史，不称新正式六组进度。
