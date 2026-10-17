@@ -1,0 +1,20 @@
+--- /opt/conda/lib/python3.12/site-packages/vllm/v1/worker/gpu_model_runner.py
++++ /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/native-mrope-row-copy-20261017-v2/gpu_model_runner.py
+@@ -1562,10 +1562,13 @@
+ 
+         if self.uses_mrope:
+             # Only relevant for models using M-RoPE (e.g, Qwen2-VL)
+-            self.mrope_positions.gpu[:, :total_num_scheduled_tokens].copy_(
+-                self.mrope_positions.cpu[:, :total_num_scheduled_tokens],
+-                non_blocking=True,
+-            )
++            # Keep the native padded strides and input-prep event lifetime.
++            # Contiguous pinned rows avoid a temporary for the strided 2D view.
++            for position_axis in range(self.mrope_positions.gpu.shape[0]):
++                self.mrope_positions.gpu[position_axis, :total_num_scheduled_tokens].copy_(
++                    self.mrope_positions.cpu[position_axis, :total_num_scheduled_tokens],
++                    non_blocking=True,
++                )
+         elif self.uses_xdrope_dim > 0:
+             # Only relevant for models using XD-RoPE (e.g, HunYuan-VL)
+             self.xdrope_positions.gpu[:, :total_num_scheduled_tokens].copy_(

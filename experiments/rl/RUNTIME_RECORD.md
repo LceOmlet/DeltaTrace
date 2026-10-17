@@ -1,3 +1,17 @@
+## 2026-10-17T22:01:40.122551+08:00 效率修复后六组全部重新从0提交；第一组八rank基础状态及实际资源绑定已核对
+
+最新人类要求“调好后直接从0开始训练”已写入唯一PLAN，替代此前保留首组不重启。旧八卡TextCraft首组7轮/完整checkpoint5及其他历史日志、曲线、状态保留为调优历史，不拼入六组新v2 run。顺序为TextCraft DTPO v6→原PPO→原GRPO→AppWorld DTPO v6→原PPO→原GRPO；各自同任务原基础权重/seed、物理GPU0–7、200完整迭代。TextCraft原32×8/global64/epochs1/save5/keep2；AppWorld原40×6/取消/残批/评估/global32/epochs2/save2/keep2及loop_sampler.pt保持。6项CPU原Hydra解析已完成，任务内data/env/actor_rollout_ref逐值相同，resume_mode=disable/resume_from_path=None。
+
+旧控制器3173187/1792235540.72、successor3335370/1792237019.8和driver3173204/1792235541.21已按原stop owner核对出生后撤下；原停止后短暂延迟释放已只读复核，没有重复信号，八卡物理进程表清空。首次新编排控制器4147023在调用原owner前因选到旧单任务main接口退出，0训练调用；完整失败/源码/manifest保留controller-attempt1。更正为原两任务过程ownerf71ff4d8，不重写训练循环。新实际控制器4158912/1792245185.89、driver4158944/1792245186.29，session_2026-10-17_21-53-23_133136_4158944，8worker均已进入原生generate_sequences，当前0/200，另外5组等待原顺序。不能将进程存活或初始化称完整迭代完成。
+
+八rank只读原RPC核对通过：optimizer state均0、scheduler均0、DP8、跨任务全阶段锁None；原actor/core与v6方法保持。原vLLM实际导入SHA6ed94945、官方pinned_use_cuda_host_register=True在全部8rank实际生效；元数据回执SHA761c01ac5dfe808090dc2cb3f9f3da80204756fb18320fa25f769f4aa32f7163。DT数值模块此时尚未首次调用，不把磁盘来源当执行。执行源2879f514cd9fcccfd5783c3cfd4ec157f30c1050、准备源c05ed3b0566b09b026b675d32f366724b9eb39ee；原upstream20bd331b、DT runner6a112224、actor3a65e173、corefc2f992b不变。
+
+已验收的大头是原host allocator锁页申请/释放争用，复用官方host_register配置。此前同一自然B4的8rank原DT向量torch.equal/max_abs0，CPU/CUDA RNG、optimizer/scheduler保持，paired长度854–956的中位加速4.7445倍；不推广成32k或整轮倍数。自然新配置DT5/6/7为202.820/147.387/182.511秒，对应整轮935.402/819.910/839.706秒；优化前首3轮DT592.464/721.590/824.561、整轮1360.714/1406.181/1529.145秒，输入不同不能当严格同输入速度比。旧自然更新计数证明8rank同时执行、各8次B4forward/4次optimizer，无逐卡串行，更新物理活动约78–83%。
+
+原vLLM位置复制只将非连续二维int64拷贝拆成同原缓冲的3行连续copy_，原形状/stride/地址/async input-prep event及全部浮点model/sampler/actor/critic不变；完整AST回替后相同。8rank×7长度的56个全缓冲/未使用位置逐值一致。自然A32/B64/A32对照的主机copy等待显著下降，但匹配请求数的解码步长只改善约3.6–4.5%；不冒称大幅生成加速。该最小native owner修复与allocator配置统一用于6项新run。
+
+首次资源记录宿主MemAvailable668.735GiB、cgroup348.139GiB、单XTT186.406GiB，原OOM计数4未增加；这不是八rank最坏32768容量证明。已有独立CPU物理/宿主观察器继续记录，新的只读归约按fresh v2身份及启动时间排除旧调优样本。小时任务textcraft已实际回读ACTIVE/每小时/原线程，切换d7343805新绘图入口，复用原parser与renderer。21:53:42/21:53:47两任务新空图/CSV/来源快照齐全且视觉核对，缺失无填零。详见research/temporary/rl_six_run_fresh_after_efficiency_20261017_v1/receipts/fresh-submission-and-efficiency-v1.json。六组预算、最终原生完整保存与最终图尚未完成，goal继续active。
+
 ## 2026-10-17T21:14:12.902875+08:00 八卡自然更新计数与首个优化后完整迭代已实测；共享checkpoint5八rank状态通过
 
 TextCraft DTPO v6同一driver3173204/1792235541.21已完成5/200，进入第6轮生成；Text PPO/GRPO与AppWorld三组仍等待原顺序，不将其缺失填0。原TaskRunner第332行第5轮：生成/环境470.544秒、oldlogprob39.022、ref34.002、DT202.820、actor141.432、原save checkpoint47.094，整轮935.402秒；实际token1080964、含工具返回响应3907.516、工具交互19.227、reward0.512、entropy0.660、原首返回rank分片裁剪前grad0.006、KL日志0.000不是精确零。原前3轮DT592.464/721.590/824.561秒、actor184.942/168.912/174.008；这是不同自然输入/长度下的阶段记录，不能冒称严格同输入整轮速度比。严格同输入八rank小批DT的4.7445倍中位加速及逐值一致证据保持，不能推广成整轮4.7445倍。
