@@ -56,7 +56,7 @@ if requested_task in ('AppWorld', 'both'):
                         "            else:\n"
                         "                missing_label='原日志未记录此指标'\n"
                         "            ax.text(.5,.5,missing_label,ha='center',va='center',transform=ax.transAxes)")
-    code = code.replace('TextCraft ·', 'AppWorld ·').replace('/330', '/200')
+    code = code.replace('TextCraft ·', 'AppWorld ·').replace('三算法前', '两算法前').replace('/330', '/200')
     code = code.replace('工具调用数沿用原 TextCraft 交互计数', '工具调用数沿用原 AppWorld 交互计数')
     code = code.replace('; original GRPO/PPO controls', '; original native PPO control')
     exec(compile(code, str(source), 'exec'), globals())
