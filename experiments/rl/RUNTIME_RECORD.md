@@ -1,3 +1,11 @@
+## 2026-10-18T04:12:04.169572+08:00 新六组首个正式共享checkpoint5原生状态核验通过；TextCraft DTPOv6完成5/200并继续第6轮
+
+原标记latest_checkpointed_iteration.txt=5，路径/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v6-8gpu-200-20261018-v5/checkpoints/global_step_5。复用原只读reader91d73825与checkpoint owner f65b6538，八rank模型923项/optimizer496项均可读取，scheduler均5、每个原optimizer state step均20，符合5完整轮×每轮4原生更新；CPU/CUDA/NumPy/Python训练RNG、各rank rollout gen_random_states和data.pt原数据游标键齐全，data SHA256=ad4cf2f9b104a5bfb8a40b07ce3726f7a0c1ecb1d049ab43dc452a9fce3d8561。0额外model/optimizer/save/训练restore调用；这是原生完成标记及保存状态可读性核验，不称新恢复逐值试验或全模型字节SHA验收。原角色文件与完整核验输出保留在rl_six_run_fresh_validated_efficiency_20261018_v1/receipts/textcraft-dtpo-v6-8gpu-200-20261018-v5-checkpoint-5-verified.json。
+
+原collect/read_job_logs/parse_logs读step5为reward0.578、entropy0.621、首rank裁剪前分片grad0.005、KL控制台0.000（舍入）、响应3583.633（含工具返回）、原交互数18.219。原阶段gen434.486秒、DT140.391、actor135.907、原生save47.545、整轮829.073秒；不据早期曲线宣称旧梯度根因修好。源行333及全部原指标保留于first-formal-native-checkpoint5-and-progress.json。其余五项queued；未部署新方法/资源候选，控制器2004205/1792263400.01与driver2004329/1792263400.35持续。
+
+第3轮DT出现宿主可用内存约330GiB的阶段峰值，结束后回升约641GiB；后续未新增OOM，计数仍4。未以瞬时WorkerDict进程名推断持续空闲：原回合日志证实采样持续推进。041005/041010新六面板PNG/SVG/CSV和source-snapshot在F:/DeltaTraceBackups/plots各20261018-v5目录；共同窗口仍0，不补其他算法数据。只读checkpoint5等待进程已自然退出，训练未停止；下一个TextCraft原保存点为10。AppWorld未来各组仍为作者原工作量和共享save2，队列继续按原生200完成状态交接。goal active，六组200及最终CP200/图尚未完成。
+
 ## 2026-10-18T03:16:53.180083+08:00 新六组首个完整迭代实际完成：TextCraft DTPOv6 1/200，继续第二轮生成
 
 原TaskRunner2007835日志第304行经原collect/read_job_logs/parse_logs读取完整step1：reward0.625、entropy0.646、首返回rank裁剪前分片grad0.006、控制台KL0.000（舍入）；平均响应3201.285（含工具返回）、原交互计数16.020。原阶段gen484.362秒、old52.828、ref31.809、DT/adv150.903、actor147.900，整轮868.221秒、总token900169。其余五项queued；不将单轮或不同token负载当跨算法质量/整段加速对照，也不据小梯度宣称旧根因已修好。
