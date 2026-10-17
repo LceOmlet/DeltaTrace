@@ -30,13 +30,19 @@ def main():
     tail, tail_sources = [], []
     for i, turns in enumerate(native.batch['task_rounds']):
         artifact = native.non_tensor_batch['dt_direct_target_artifact'][i]
-        if int(turns) != 30 or not any(artifact['target_mask']):
+        if int(turns) != 30:
             continue
-        start = artifact['target_mask'].index(True)
+        # Read the owner's last generated assistant span, including requests
+        # whose final action was not accepted by the environment parser.
+        # This is a boundary in the emitted mask, not a text/parser inference.
+        mask = artifact['policy_mask']
+        starts = [j for j, value in enumerate(mask) if value and (j == 0 or not mask[j-1])]
+        assert starts
+        start = starts[-1]
         ids = artifact['prompt_ids'] + artifact['response_ids'][:start]
         assert 0 < len(ids) <= 32640
         tail.append(ids)
-        tail_sources.append(dict(native_row=i, action_target_offset=start, prefix_tokens=len(ids)))
+        tail_sources.append(dict(native_row=i, native_policy_span_offset=start, prefix_tokens=len(ids)))
     assert tail, 'Actual completed native tail prefixes are required'
     raw = np.empty(len(tail), dtype=object)
     raw[:] = tail
@@ -71,14 +77,16 @@ def main():
         numeric_short=[prefixes[(0,10,20,31)[i % 4]] for i in range(8)],
         capacity_32768=[capacity[i % 4] for i in range(8)])
     value = dict(status='prepared_CPU_only_no_model_calls', cases=cases,
-        rationale='Dense256 captured-prefix fixture and actual native terminal-action tail padded by original DataProto world8; exact same global requests for TP1 andTP2; all output lengths fixed128',
+        rationale='Dense256 captured-prefix fixture and all actual native last-assistant-span tail requests padded by original DataProto world8; exact same global requests for TP1 andTP2; all output lengths fixed128',
         tail_source=str(tail_path), tail_source_SHA256=hashlib.sha256(tail_path.read_bytes()).hexdigest(),
         tail_sources=tail_sources, tail_original_rows=len(tail_sources), native_padding=padding,
         prefix_sources=sources, capacity_source=str(captured),
         capacity_owner=str(owner), capacity_owner_SHA256=hashlib.sha256(owner.read_bytes()).hexdigest(),
         capacity_receipts=[x[1] for x in expanded],
         capacity_scope='Synthetic storage/forward capacity only; same accepted observation-repeat owner; not natural-task quality')
-    (AUDIT/'matched-inputs.json').write_text(json.dumps(value, indent=2)+'\n')
+    temp = AUDIT/'matched-inputs.tmp'
+    temp.write_text(json.dumps(value, indent=2)+'\n')
+    temp.replace(AUDIT/'matched-inputs.json')
     print(json.dumps(dict(status=value['status'], case_rows={k:len(v) for k,v in cases.items()},
         short_prefix_lengths=[len(x) for x in prefixes], capacity_prefix_length=32640, output_length=128)))
 
