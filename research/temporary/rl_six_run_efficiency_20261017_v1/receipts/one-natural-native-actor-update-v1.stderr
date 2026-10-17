@@ -1,0 +1,30 @@
+2026-10-17 20:50:57,360	INFO worker.py:1821 -- Connecting to existing Ray cluster at address: 10.200.112.75:62683...
+2026-10-17 20:50:57,373	INFO worker.py:2007 -- Connected to Ray cluster.
+Traceback (most recent call last):
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/six-run-native-utilization-20261017-v1/source/observe_one_native_actor_update.py", line 138, in <module>
+    rows = ray.get([ray.get_actor(a['name'], namespace=a['namespace']).execute_with_func_generator.remote(func=install)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/auto_init_hook.py", line 22, in auto_init_wrapper
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/client_mode_hook.py", line 104, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py", line 2967, in get
+    values, debugger_breakpoint = worker.get_objects(
+                                  ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/ray/_private/worker.py", line 1015, in get_objects
+    raise value.as_instanceof_cause()
+ray.exceptions.RayTaskError(AssertionError): [36mray::WorkerDict.execute_with_func_generator()[39m (pid=3184023, ip=10.200.112.75, actor_id=a20bda68743a430c80dff73c01000000, repr=<verl.single_controller.ray.base.WorkerDict object at 0x7f41c46afe00>)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/single_controller/base/decorator.py", line 534, in inner
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/single_controller/base/worker.py", line 319, in execute_with_func_generator
+    ret_proto = func(self, *args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/six-run-native-utilization-20261017-v1/source/observe_one_native_actor_update.py", line 40, in install
+    assert source_sha == '3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

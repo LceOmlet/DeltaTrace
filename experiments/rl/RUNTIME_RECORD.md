@@ -1,3 +1,19 @@
+## 2026-10-17T21:03:30.490030+08:00 原生锁页分配优化在八rank完成；原DT逐值一致，完整新配置轮次尚待实测
+
+TextCraft DTPO v6 driver3173204/1792235541.21、原控制器3173187/1792235540.72及AppWorld successor3335370/1792237019.8保持，原TaskRunner完成4/200，第5轮按原生流程进行；其余五组prepared-only。方法v6、原PPO actor3a65e173/corefc2f992b、DT数值runner6a112224、32k/B4/全局64/原四次optimizer及六组200预算没有改变。TextCraft全局64在八卡为每rank local8，原固定B4/use_dynamic_bsz=False，每次optimizer两次B32并行微批；AppWorld原全局32则每次一个B32，不能混用二者计数。
+
+实际8rank同一自然B4的原DT owner对照全部完成：paired输入854–956，每rank29秒左右降到6秒左右，中位加速4.7445倍，原DT向量torch.equal、max_abs0，原CPU/CUDA RNG、optimizer496状态条目及scheduler3保持，正式训练返回原baseline结果。只额外执行一次原DT/rank、0生成或optimizer；第4轮含此诊断约6秒/并行rank，不能当纯净吞吐对照。此前v1在执行前按原RPC撤销，因其还原配置会错用launch的expandable=False；v2保留调用时实际expandable=True及其他字段，两版本/取消回执都保留。
+
+资源版本native-pinned-host-register-20261017-v1、源6da21017/d909758b于20:51:17在原worker边界八rank实际完成，使用原torch.cuda.memory._set_allocator_settings开启pinned_use_cuda_host_register，其他调用时配置不变，0模型/DT/optimizer/重启。独立run/runtime-overrides完成回执是真实事实，未重写startup来源。后续Text PPO/GRPO及AppWorld三组的prepared资源项统一追加原官方allocator选项，未改变argv、源或工作量。官方PyTorch2.8 allocator保存各块原分配方式，支持与旧块混用；installed MetaX原API行为及该8rank DT逐值核对均有回执。不能用首次驱动初始化的3.82秒比0.004秒宣称千倍加速。
+
+原DT3六批/rank，rank0输入paired长度600/916/1399/2289/3378/14527，owner18.875/31.131/44.021/77.993/129.663/516.376秒；最后长批占主要时间，但原timing含CPU锁页申请/释放及等待，不冒称全是GPU计算。物理mx-smi基线DT15.21–22.21%、actor63.72–68.28%；完成配置后的actor4窗口77.32–82.62%，原update_actor130.300秒（前3轮168.912–184.942）。样本/长度不同，不能把这些自然轮次称同输入严格速度实验；第5轮才是新配置完整DT/整轮测量。
+
+生成的20秒原有非阻塞采样成功：调用方397个主线程样本中320个等待原Ray生成RPC；rank0主线程387样本中250在原vLLM mrope位置copy、100已空闲，rank6的396样本中318已空闲、68在同一copy。证明观察窗口存在负载尾部，不能把Python位置当GPU内核耗时或整轮份额。原AgentGym同步多轮、原ThreadPool环境交互和vLLM默认图保持，没有重写采样/环境。原native+nonblocking不兼容的两次失败记录仍保留，不改用暂停式全worker追踪。
+
+一次自然actor更新的纯计数观察已在scheduler4装入8rank，不额外forward/backward/optimizer/sync；v1因原GPUMemoryLogger装饰器的文件位置校验失败，在安装前终止；v2按实际actor类原文件SHA校验，原装饰器仍原样委托，结果尚待第5轮自然更新。此观察不是旧梯度原因或一次更新质量测试。
+
+DT3自然上下文最大14527，宿主可用内存最低290.250GiB、原OOM计数4未增；不能据此或旧单rank32k验收宣称八rank最坏32768及AppWorld环境池容量通过。6组正式预算、实际AppWorld八卡、原完整checkpoint和最终图仍未完成，goal保持active。两任务20:55:12/20:55:17图已保存并视觉核对，缺失无填零、不拼接旧历史。详细8rank原值/来源及限制见research/temporary/rl_six_run_efficiency_20261017_v1/receipts/native-allocator-eight-rank-validation-and-deployment-v1.json。
+
 ## 2026-10-17T20:25:52.708124+08:00 六组顺序训练已实测DT低利用率；原生锁页分配候选仍未部署
 
 TextCraft DTPO v6原driver3173204/1792235541.21保持，最新20:22:47原图快照完成2/200，其余五组待顺序执行。第2轮原TaskRunner第310行：reward0.578、entropy0.647、首返回rank裁剪前分片grad_norm0.005、KL0.001，含工具返回响应3354.957token、工具交互17.039；gen443.821秒、oldlogprob38.149、ref33.214、DT721.590、actor更新168.912、整轮1406.181秒。原save5前没有完整checkpoint，八rank最坏32768容量仍未实际验收。
