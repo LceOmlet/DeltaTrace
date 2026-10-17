@@ -1,3 +1,19 @@
+## 2026-10-18T03:05:13.918090+08:00 新六组v5已实际提交；首组v6八rank初始绑定通过，进入原生生成
+
+控制器2004205/1792263400.01直接组合原f71ff4d8两个任务段；首组TextCraft DTPOv6 driver2004329/1792263400.35，正式run textcraft-dtpo-v6-8gpu-200-20261018-v5，八卡独占，从基础0轮进入官方环境生成，其余五项queued。本次仅执行身份v5，方法仍v6，原32×8/global64/B4/32k/epochs1/4更新与AppWorld40×6/global32/epochs2/原取消/残批/评估保持，6项CPU配置已逐section核对。原生exit0+原日志1..200+八rank完整checkpoint200后才自动交接，不跳过失败。全部预算和最终保存尚未完成，goal active。
+
+源提交09e9f19293e6829cbb16126d5e2d8c0fe07e40cb（controller原短ref保留，独立resolution回执解析完整commit），固定上游20bd331bdbc9026a5668e11362178e10ab7400c8。原只读metadata RPC实核8rank optimizer/scheduler均0、DP8/B4、host register threads8、原worker198f509c/actor3a65e173/corefc2f992b和实际GPUModelRunner6ed94945；默认图enforce_eager=False/free_cache_engine=False保持。DT lazy模块初始尚未导入，不把磁盘runner6a112224当已执行；首轮自然DT后再读绑定。回执位于本run/runtime-overrides/actual-worker-imports-validated-efficiency-v5-initial-v1.json，不重跑模型或更新验收。
+
+生成阶段原物理mx-smi及PSS观察：宿主MemAvailable661.270GiB，八worker PSS242.613GiB；端口36005 listener及当前children PSS0.067GiB，仅此服务范围，不伪称全部环境/驱动内存。cgroup usage402118688768 bytes，OOM计数4未增加。物理显存取mx-smi，不用Torch虚拟allocator。初始化的FXgraph临时文件并发rename警告被原cache reader捕获，随后原生成继续；不清缓存、不重装。此初始生成快照不称最坏32k容量或完整训练加速。
+
+已成功生成两任务新版本空窗口图，0/200不填伪造指标、不拼旧v3的10轮。小时自动任务textcraft ACTIVE已切换到新plot_both_tasks.py（379f71ea），仅读取v5新队列和原parser/renderer；不运行诊断/启停训练。完整原始配置、选择/拒绝证据、初始实际绑定和提交状态在research/temporary/rl_six_run_fresh_validated_efficiency_20261018_v1/receipts；正式源和共享checkpoint路径由manifest/launch/source.json为准。
+
+## 2026-10-18T02:56:38.564122+08:00 六组全新v5执行配置CPU验收通过，准备从基础0轮正式启动
+
+六组原生Hydra全部解析，TextCraft、AppWorld任务内data/env/actor_rollout_ref逐section保持相同；每组8GPU/200完整迭代/32k/B4，TextCraft32×8/global64/epochs1/4actor更新/save5，AppWorld作者40×6/global32/epochs2/原取消/残批/test5/共享save2及原sampler保持。v5仅为新执行身份，DTPO方法仍v6，所有6组resume disable/path None、基础权重，旧v3调优10轮/CP10和候选不拼接。配置源09e9f192，原f71ff4d8进程/原生完成200检查点交接owner复用，尚未启动本批正式controller或driver。
+
+实际Ngram候选1966543/1792263074.88由原VllmConfig在初始化拒绝：Mamba cache mode align与speculative decoding不兼容；0生成、0DT/optimizer/正式迭代，不改缓存来绕过，原失败回执保留。选定原TP1、threads8 host register、6ed94945原MRoPE整数逐行复制，worker198f509c/actor3a65e173/corefc2f992b保持，不部署DP放置候选或TP2。选择依据及全部SHA在receipts/six-run-fresh-validated-efficiency-20261018-v1/selected-native-resources.json；准备时mx-smi八卡均空，宿主MemAvailable962.298GiB/cgroup79.597GiB、OOM4未变。此观察不是初始化后的容量结论或峰值算力保证。
+
 ## 2026-10-18T02:49:20.035793+08:00 原生TP1/TP2同状态比较完成；DP放置候选不接受，六组正式新run尚未启训
 
 原v3调优已由原protected stop结束，原日志完成10/200、共享原生完整checkpoint10八rank核验保留；不拼入最新从基础0轮的六组。DP本地episode候选完成CPU接口/生命周期检查，但GPU报告代码在A和B生成后失败，且保存轨迹输出不同；原失败与输出保留，不据墙钟近似或token归一化宣称匹配加速，不部署候选，也不启动其prepared-v4队列。

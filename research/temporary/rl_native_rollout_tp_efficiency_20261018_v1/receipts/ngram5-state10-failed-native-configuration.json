@@ -1,0 +1,429 @@
+{
+  "status": "failed",
+  "TP": 1,
+  "actor_DP": 8,
+  "physical_gpus": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "pid": 1966543,
+  "birth": 1792263074.88,
+  "started": 1792263088.9256465,
+  "source_commit": "c812433b2e8af07d36fdde77bb9454100ff69f58",
+  "source_SHA256": "096266017589e905898ea18e4de7e459a5ce93781a17fc78d96e12747a1a6c8a",
+  "formal_iterations": 0,
+  "DT_calls": 0,
+  "optimizer_updates": 0,
+  "checkpoint_create_calls": 0,
+  "effective_configuration": {
+    "data": {
+      "tokenizer": null,
+      "use_shm": false,
+      "train_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/train.parquet",
+      "val_files": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/datasets/textcraft-native-20260930/validation.parquet",
+      "prompt_key": "prompt",
+      "reward_fn_key": "data_source",
+      "max_prompt_length": 32256,
+      "max_response_length": 512,
+      "train_batch_size": 32,
+      "val_batch_size": 32,
+      "return_raw_input_ids": false,
+      "return_raw_chat": true,
+      "return_full_prompt": false,
+      "shuffle": true,
+      "filter_overlong_prompts": false,
+      "filter_overlong_prompts_workers": 1,
+      "truncation": "error",
+      "image_key": "images",
+      "video_key": "videos",
+      "trust_remote_code": false,
+      "apply_chat_template_kwargs": {},
+      "custom_cls": {
+        "path": null,
+        "name": null
+      },
+      "dataloader_num_workers": 0
+    },
+    "actor_rollout_ref": {
+      "hybrid_engine": true,
+      "model": {
+        "path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "use_shm": false,
+        "external_lib": null,
+        "override_config": {},
+        "enable_gradient_checkpointing": true,
+        "enable_activation_offload": true,
+        "use_remove_padding": false,
+        "lora_rank": 8,
+        "lora_alpha": 16,
+        "target_modules": "all-linear",
+        "use_liger": false,
+        "use_fused_kernels": true,
+        "trust_remote_code": true,
+        "fused_kernel_options": {
+          "impl_backend": "torch"
+        }
+      },
+      "actor": {
+        "strategy": "fsdp2",
+        "ppo_mini_batch_size": 64,
+        "ppo_micro_batch_size": null,
+        "ppo_micro_batch_size_per_gpu": 4,
+        "use_dynamic_bsz": false,
+        "ppo_max_token_len_per_gpu": 32768,
+        "grad_clip": 1.0,
+        "clip_ratio": 0.2,
+        "clip_ratio_low": 0.2,
+        "clip_ratio_high": 0.2,
+        "clip_ratio_c": 3.0,
+        "loss_agg_mode": "token-mean",
+        "entropy_coeff": 0.001,
+        "use_invalid_action_penalty": false,
+        "invalid_action_penalty_coef": 0.1,
+        "use_kl_loss": true,
+        "use_torch_compile": true,
+        "kl_loss_coef": 0.001,
+        "kl_loss_type": "low_var_kl",
+        "ppo_epochs": 1,
+        "shuffle": false,
+        "ulysses_sequence_parallel_size": 1,
+        "policy_loss": {
+          "loss_mode": "vanilla"
+        },
+        "checkpoint": {
+          "contents": [
+            "model",
+            "optimizer",
+            "extra"
+          ]
+        },
+        "optim": {
+          "lr": 1e-06,
+          "lr_warmup_steps": -1,
+          "lr_warmup_steps_ratio": 0.0,
+          "min_lr_ratio": 0.0,
+          "num_cycles": 0.5,
+          "warmup_style": "constant",
+          "total_training_steps": -1,
+          "weight_decay": 0.01
+        },
+        "fsdp_config": {
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "param_offload": true,
+          "optimizer_offload": true,
+          "offload_policy": true,
+          "reshard_after_forward": true,
+          "fsdp_size": -1,
+          "model_dtype": "bfloat16"
+        }
+      },
+      "ref": {
+        "strategy": "fsdp",
+        "fsdp_config": {
+          "param_offload": false,
+          "reshard_after_forward": true,
+          "wrap_policy": {
+            "min_num_params": 0
+          }
+        },
+        "use_torch_compile": true,
+        "log_prob_micro_batch_size": null,
+        "log_prob_micro_batch_size_per_gpu": 4,
+        "log_prob_use_dynamic_bsz": false,
+        "log_prob_max_token_len_per_gpu": 32768,
+        "ulysses_sequence_parallel_size": 1
+      },
+      "rollout": {
+        "name": "vllm",
+        "mode": "sync",
+        "chat_scheduler": null,
+        "temperature": 1.0,
+        "top_k": -1,
+        "top_p": 1,
+        "use_fire_sampling": false,
+        "prompt_length": 32256,
+        "response_length": 512,
+        "dtype": "bfloat16",
+        "gpu_memory_utilization": 0.75,
+        "ignore_eos": false,
+        "enforce_eager": false,
+        "free_cache_engine": false,
+        "load_format": "safetensors",
+        "layered_summon": false,
+        "tensor_model_parallel_size": 1,
+        "max_num_batched_tokens": 32768,
+        "max_model_len": 32768,
+        "max_num_seqs": 32,
+        "log_prob_micro_batch_size": null,
+        "log_prob_micro_batch_size_per_gpu": 4,
+        "log_prob_use_dynamic_bsz": false,
+        "log_prob_max_token_len_per_gpu": 32768,
+        "disable_log_stats": true,
+        "enable_chunked_prefill": true,
+        "do_sample": true,
+        "n": 1,
+        "engine_kwargs": {
+          "vllm": {
+            "swap_space": null,
+            "limit_mm_per_prompt": {
+              "image": 0,
+              "video": 0
+            },
+            "speculative_config": {
+              "method": "ngram",
+              "num_speculative_tokens": 5
+            }
+          },
+          "sglang": {
+            "attention_backend": null
+          }
+        },
+        "val_kwargs": {
+          "top_k": -1,
+          "top_p": 1,
+          "temperature": 1,
+          "n": 1,
+          "do_sample": true
+        },
+        "multi_turn": {
+          "enable": true,
+          "max_turns": null,
+          "tool_config_path": null,
+          "format": "chatml"
+        }
+      }
+    },
+    "critic": {
+      "rollout_n": 1,
+      "strategy": "fsdp",
+      "optim": {
+        "lr": 1e-05,
+        "lr_warmup_steps_ratio": 0.0,
+        "min_lr_ratio": null,
+        "warmup_style": "constant",
+        "total_training_steps": -1,
+        "weight_decay": 0.01
+      },
+      "model": {
+        "path": "~/models/deepseek-llm-7b-chat",
+        "use_shm": false,
+        "tokenizer_path": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "override_config": {},
+        "external_lib": null,
+        "enable_gradient_checkpointing": true,
+        "enable_activation_offload": false,
+        "use_remove_padding": false,
+        "trust_remote_code": true,
+        "fsdp_config": {
+          "param_offload": false,
+          "optimizer_offload": false,
+          "offload_policy": false,
+          "reshard_after_forward": true,
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "fsdp_size": -1
+        },
+        "lora_rank": 0,
+        "lora_alpha": 16,
+        "target_modules": "all-linear"
+      },
+      "ppo_mini_batch_size": 64,
+      "ppo_micro_batch_size": null,
+      "ppo_micro_batch_size_per_gpu": null,
+      "forward_micro_batch_size": null,
+      "forward_micro_batch_size_per_gpu": null,
+      "use_dynamic_bsz": false,
+      "ppo_max_token_len_per_gpu": 32768,
+      "forward_max_token_len_per_gpu": 32768,
+      "ulysses_sequence_parallel_size": 1,
+      "ppo_epochs": 1,
+      "shuffle": false,
+      "grad_clip": 1.0,
+      "cliprange_value": 0.5,
+      "loss_agg_mode": "token-mean",
+      "checkpoint": {
+        "contents": [
+          "model",
+          "optimizer",
+          "extra"
+        ]
+      }
+    },
+    "reward_model": {
+      "enable": false,
+      "strategy": "fsdp",
+      "model": {
+        "input_tokenizer": "/mnt/si0021787ci2/default/models/Qwen3.5-9B",
+        "path": "~/models/FsfairX-LLaMA3-RM-v0.1",
+        "use_shm": false,
+        "external_lib": null,
+        "use_remove_padding": false,
+        "use_fused_kernels": true,
+        "trust_remote_code": false,
+        "fsdp_config": {
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "param_offload": false,
+          "reshard_after_forward": true,
+          "fsdp_size": -1
+        }
+      },
+      "micro_batch_size": null,
+      "micro_batch_size_per_gpu": null,
+      "max_length": null,
+      "ulysses_sequence_parallel_size": 1,
+      "use_dynamic_bsz": false,
+      "forward_max_token_len_per_gpu": 32768,
+      "reward_manager": "episode",
+      "launch_reward_fn_async": false,
+      "sandbox_fusion": {
+        "url": null,
+        "max_concurrent": 64
+      }
+    },
+    "custom_reward_function": {
+      "path": null,
+      "name": "compute_score"
+    },
+    "algorithm": {
+      "gamma": 1.0,
+      "lam": 1.0,
+      "adv_estimator": "deltatrace",
+      "norm_adv_by_std_in_grpo": true,
+      "use_kl_in_reward": false,
+      "kl_penalty": "kl",
+      "kl_ctrl": {
+        "type": "fixed",
+        "kl_coef": 0.001,
+        "horizon": 10000,
+        "target_kl": 0.1
+      },
+      "use_pf_ppo": false,
+      "pf_ppo": {
+        "reweight_method": "pow",
+        "weight_pow": 2.0
+      },
+      "gigpo": {
+        "step_advantage_w": 1.0,
+        "mode": "mean_norm",
+        "enable_similarity": false,
+        "similarity_thresh": 0.95
+      },
+      "filter_groups": {
+        "enable": false,
+        "max_num_gen_batches": 10
+      }
+    },
+    "trainer": {
+      "balance_batch": true,
+      "total_epochs": 30,
+      "total_training_steps": 200,
+      "project_name": "deltatrace_official_environments",
+      "experiment_name": "native-generation-TP1-efficiency-only-20261018-v1",
+      "logger": [
+        "console"
+      ],
+      "log_val_generations": 0,
+      "rollout_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v6-8gpu-200-20261017-v3/textcraft-dt/rollouts",
+      "validation_data_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v6-8gpu-200-20261017-v3/textcraft-dt/validation",
+      "nnodes": 1,
+      "n_gpus_per_node": 8,
+      "save_freq": 5,
+      "resume_mode": "disable",
+      "resume_from_path": null,
+      "val_before_train": false,
+      "val_only": false,
+      "test_freq": -1,
+      "critic_warmup": 0,
+      "default_hdfs_dir": null,
+      "del_local_ckpt_after_load": false,
+      "default_local_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-rollout-TP-efficiency-20261018-v1/TP1-ngram5-state10-v1/unused-checkpoints",
+      "max_actor_ckpt_to_keep": 2,
+      "max_critic_ckpt_to_keep": null,
+      "ray_wait_register_center_timeout": 300,
+      "device": "cuda"
+    },
+    "ray_init": {
+      "num_cpus": 16,
+      "runtime_env": {
+        "worker_process_setup_hook": "metax_fsdp_event_wait.worker_setup",
+        "env_vars": {
+          "DT_FSDP_EVENT_WAIT_RECEIPTS": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/native-rollout-TP-efficiency-20261018-v1/TP1-ngram5-state10-v1/worker-runtime",
+          "VERL_RELEASE_UNUSED_HOST_CACHE": "1",
+          "DT_NATIVE_HOST_CACHE_BATCH": "1",
+          "DT_NATIVE_HOST_CACHE_REPLAY_LAYER": "1",
+          "DT_CREDIT_MODE": "reward_target_exponential_variance_v6",
+          "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False,pinned_use_cuda_host_register:True,pinned_num_register_threads:8"
+        }
+      }
+    },
+    "env": {
+      "env_name": "TextCraft",
+      "seed": 0,
+      "max_steps": 30,
+      "history_length": 2,
+      "resources_per_worker": {
+        "num_cpus": 0.1,
+        "num_gpus": 0
+      },
+      "rollout": {
+        "n": 8
+      },
+      "alfworld": {
+        "eval_dataset": "eval_in_distribution"
+      },
+      "search": {
+        "log_requests": false,
+        "search_url": "http://127.0.0.1:8000/retrieve",
+        "topk": 3,
+        "timeout": 60
+      },
+      "sokoban": {
+        "dim_room": [
+          6,
+          6
+        ],
+        "num_boxes": 1,
+        "search_depth": 30,
+        "mode": "tiny_rgb_array"
+      },
+      "webshop": {
+        "use_small": true,
+        "human_goals": false
+      },
+      "factory": {
+        "_target_": "textcraft_environment_entry.make_textcraft_environments"
+      },
+      "textcraft": {
+        "owner_root": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/official-trajectory-20260930-v4/textcraft-owner",
+        "client": {
+          "task_name": "textcraft",
+          "env_addr": "http://127.0.0.1:36005",
+          "max_retries": 10,
+          "max_rounds": 10,
+          "timeout": 600
+        },
+        "eval_client": {
+          "task_name": "textcraft",
+          "env_addr": "http://127.0.0.1:36005",
+          "max_retries": 10,
+          "max_rounds": 30,
+          "timeout": 500
+        }
+      }
+    }
+  },
+  "input_SHA256": "626cb7bccfddbe931b8eefd06164aa8f99cf09d9b770c86d00493fbf0ffbbe77",
+  "error": "RayTaskError('actor_rollout_init_model', 'Traceback (most recent call last):\\n  File \"python/ray/_raylet.pyx\", line 1722, in ray._raylet.execute_task\\n  File \"python/ray/_raylet.pyx\", line 1665, in ray._raylet.execute_task.function_executor\\n  File \"/opt/conda/lib/python3.12/site-packages/ray/_private/function_manager.py\", line 693, in actor_method_executor\\n    return method(__ray_actor, *args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/opt/conda/lib/python3.12/site-packages/ray/util/tracing/tracing_helper.py\", line 461, in _resume_span\\n    return method(self, *_args, **_kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/single_controller/ray/base.py\", line 645, in func\\n    return getattr(self.worker_dict[key], name)(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/single_controller/base/decorator.py\", line 534, in inner\\n    return func(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/workers/fsdp_workers.py\", line 581, in init_model\\n    self.rollout, self.rollout_sharding_manager = self._build_rollout(trust_remote_code=self.config.model.get(\"trust_remote_code\", False))\\n                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/workers/fsdp_workers.py\", line 445, in _build_rollout\\n    rollout = vllm_rollout_cls(\\n              ^^^^^^^^^^^^^^^^^\\n  File \"/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py\", line 185, in __init__\\n    self.inference_engine = LLM(\\n                            ^^^^\\n  File \"/opt/conda/lib/python3.12/site-packages/vllm/entrypoints/llm.py\", line 334, in __init__\\n    self.llm_engine = LLMEngine.from_engine_args(\\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/opt/conda/lib/python3.12/site-packages/vllm/v1/engine/llm_engine.py\", line 164, in from_engine_args\\n    vllm_config = engine_args.create_engine_config(usage_context)\\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/opt/conda/lib/python3.12/site-packages/vllm/engine/arg_utils.py\", line 1754, in create_engine_config\\n    config = VllmConfig(\\n             ^^^^^^^^^^^\\n  File \"/opt/conda/lib/python3.12/site-packages/pydantic/_internal/_dataclasses.py\", line 121, in __init__\\n    s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)\\npydantic_core._pydantic_core.ValidationError: 1 validation error for VllmConfig\\n  Assertion failed, Mamba cache mode \\'align\\' is currently not compatible with speculative decoding. [type=assertion_error, input_value=ArgsKwargs((), {\\'model_co...timizationLevel.O2: 2>}), input_type=ArgsKwargs]\\n    For further information visit https://errors.pydantic.dev/2.12/v/assertion_error\\n', RayError(\"The original cause of the RayTaskError (<class 'pydantic_core._pydantic_core.ValidationError'>) isn't serializable: cannot pickle 'pydantic_core._pydantic_core.ArgsKwargs' object. Overwriting the cause to a RayError.\"), 'ray::WorkerDict.actor_rollout_init_model', None, None)",
+  "finished": 1792263184.4880195
+}
