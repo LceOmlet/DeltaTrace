@@ -1,0 +1,411 @@
+{
+  "status": "confirmed_global_serialization_due_to_local_resource_patch",
+  "collected_BJT": "2026-10-17T17:02:30.091132+08:00",
+  "introduced_by_local_commit": "b2f1e249 Implement DTPO v6 pre-multiplier variance and native host-memory lifecycle",
+  "owner": "local resource extension; not a requirement of original fixed VERL",
+  "cause": "All native tasks use one exclusive OS flock across the complete DT/actor/critic/save/restore RPC. Independent GPU allocations do not bypass that shared host lock.",
+  "actual_mx_smi": "mx-smi  version: 2.2.12\n\n=================== MetaX System Management Interface Log ===================\nTimestamp                                         : Sat Oct 17 17:02:29 2026\n\nAttached GPUs                                     : 8\n+---------------------------------------------------------------------------------+\n| MX-SMI 2.2.12                      Kernel Mode Driver Version: 3.8.30           |\n| MACA Version: 3.5.3.26             BIOS Version: 1.33.5.0                       |\n|------------------+-----------------+---------------------+----------------------|\n| Board       Name | GPU   Persist-M | Bus-id              | GPU-Util      sGPU-M |\n| Pwr:Usage/Cap    | Temp       Perf | Memory-Usage        | GPU-State            |\n|==================+=================+=====================+======================|\n| 0     MetaX C550 | 0           Off | 0000:18:00.0        | 0%          Disabled |\n| 118W / 450W      | 47C          P9 | 17158/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 1     MetaX C550 | 1           Off | 0000:1b:00.0        | 0%          Disabled |\n| 120W / 450W      | 47C          P9 | 17178/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 2     MetaX C550 | 2           Off | 0000:4b:00.0        | 98%         Disabled |\n| 333W / 450W      | 58C          P9 | 61698/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 3     MetaX C550 | 3           Off | 0000:4e:00.0        | 98%         Disabled |\n| 364W / 450W      | 59C          P9 | 62058/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 4     MetaX C550 | 4           Off | 0000:9a:00.0        | 0%          Disabled |\n| 116W / 450W      | 47C          P9 | 39433/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 5     MetaX C550 | 5           Off | 0000:9c:00.0        | 0%          Disabled |\n| 123W / 450W      | 47C          P9 | 39429/65536 MiB     | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 6     MetaX C550 | 6           Off | 0000:ca:00.0        | 0%          Disabled |\n| 93W / 450W       | 46C          P0 | 862/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n| 7     MetaX C550 | 7           Off | 0000:cc:00.0        | 0%          Disabled |\n| 97W / 450W       | 46C          P0 | 862/65536 MiB       | Available            |\n+------------------+-----------------+---------------------+----------------------+\n\n+---------------------------------------------------------------------------------+\n| Process:                                                                        |\n|  GPU                    PID         Process Name                 GPU Memory     |\n|                                                                  Usage(MiB)     |\n|=================================================================================|\n|  0                  3861049         ray::WorkerDict              16234          |\n|  1                  3863060         ray::WorkerDict              16254          |\n|  2                  3843629         ray::WorkerDict              60642          |\n|  3                  3845945         ray::WorkerDict              61002          |\n|  4                  3874156         ray::WorkerDict              38470          |\n|  5                  3876616         ray::WorkerDict              38466          |\n+---------------------------------------------------------------------------------+\n\nEnd of Log\n",
+  "current_native_lock_identity": {
+    "BJT": "2026-10-17T17:07:59.172162+08:00",
+    "controllers": [
+      {
+        "pid": 3831542,
+        "birth": 1792200731.9,
+        "wchan": "0",
+        "fds": [
+          {
+            "fd": 50,
+            "target": "/tmp/deltatrace-four-formal-host-memory-20261017-v1.lock",
+            "fdinfo": "pos:\t0\nflags:\t02102001\nmnt_id:\t4256\n"
+          }
+        ]
+      },
+      {
+        "pid": 3829657,
+        "birth": 1792200731.05,
+        "wchan": "0",
+        "fds": [
+          {
+            "fd": 50,
+            "target": "/tmp/deltatrace-four-formal-host-memory-20261017-v1.lock",
+            "fdinfo": "pos:\t0\nflags:\t02102001\nmnt_id:\t4256\n"
+          }
+        ]
+      },
+      {
+        "pid": 3831012,
+        "birth": 1792200731.45,
+        "wchan": "0",
+        "fds": [
+          {
+            "fd": 50,
+            "target": "/tmp/deltatrace-four-formal-host-memory-20261017-v1.lock",
+            "fdinfo": "pos:\t0\nflags:\t02102001\nmnt_id:\t4256\nlock:\t1: FLOCK  ADVISORY  WRITE 3831012 00:1cb:472703844 0 EOF\n"
+          }
+        ]
+      }
+    ]
+  },
+  "jobs": [
+    {
+      "task": "TextCraft",
+      "method": "ppo",
+      "driver_pid": 3823147,
+      "driver_birth": 1792200692.49,
+      "workers": [
+        {
+          "pid": 3874156,
+          "phase": "ray::WorkerDict"
+        },
+        {
+          "pid": 3876616,
+          "phase": "ray::WorkerDict"
+        }
+      ],
+      "lease_env": "/tmp/deltatrace-four-formal-host-memory-20261017-v1.lock",
+      "trainer": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-PPO-host-memory-recovery-20261017-v3/verl-owner/verl/trainer/ppo/ray_trainer.py",
+      "lease_source_spans": [
+        {
+          "line": 61,
+          "source": "from verl.utils.seqlen_balancing import get_seqlen_balanced_partitions, log_seqlen_unbalance\nimport verl.utils.torch_functional as verl_F\nfrom verl.utils.native_host_memory import host_memory_lease\nfrom verl.utils.torch_functional import masked_mean\nfrom verl.utils.tracking import ValidationGenerationsLogger\nfrom verl.workers.rollout.async_server import AsyncLLMServerManager\nfrom gigpo import core_gigpo"
+        },
+        {
+          "line": 1046,
+          "source": "\n        # load checkpoint before doing anything\n        with host_memory_lease(\"native_checkpoint_restore\"):\n            self._load_checkpoint()\n\n        # perform validation before training\n        # currently, we only support validation using the reward_function."
+        },
+        {
+          "line": 1276,
+          "source": "                    # update critic\n                    if self.use_critic:\n                        with _timer(\"update_critic\", timing_raw), host_memory_lease(\"update_critic\"):\n                            critic_output = self.critic_wg.update_critic(batch)\n                        critic_output_metrics = reduce_metrics(critic_output.meta_info[\"metrics\"])\n                        metrics.update(critic_output_metrics)\n"
+        },
+        {
+          "line": 1284,
+          "source": "                    if self.config.trainer.critic_warmup <= self.global_steps:\n                        # update actor\n                        with _timer(\"update_actor\", timing_raw), host_memory_lease(\"update_actor\"):\n                            batch.meta_info[\"multi_turn\"] = self.config.actor_rollout_ref.rollout.multi_turn.enable\n                            actor_output = self.actor_rollout_wg.update_actor(batch)\n                        actor_output_metrics = reduce_metrics(actor_output.meta_info[\"metrics\"])\n                        metrics.update(actor_output_metrics)"
+        },
+        {
+          "line": 1315,
+          "source": "\n                    if self.config.trainer.save_freq > 0 and (is_last_step or self.global_steps % self.config.trainer.save_freq == 0):\n                        with _timer(\"save_checkpoint\", timing_raw), host_memory_lease(\"save_checkpoint\"):\n                            self._save_checkpoint()\n\n                # training metrics\n                metrics.update("
+        }
+      ],
+      "latest_completed_phase": {
+        "phase": "update_critic",
+        "wait_seconds": 3332.716980788042,
+        "compute_and_RPC_seconds": 601.2397162914276,
+        "acquired": 1792226092.7160883,
+        "released": 1792226693.9558046
+      },
+      "logs": [
+        {
+          "path": "/tmp/ray/session_2026-10-17_09-32-06_549198_3823147/logs/worker-d631f1c9823c961fad11058b2325d0bd71f4be8da2f8f233ca759b33-01000000-3831542.out",
+          "last_events": [
+            {
+              "line": 319,
+              "phase": "update_actor",
+              "event": "acquired",
+              "pid": 3831542,
+              "collected": 1792214721.9686458,
+              "wait_seconds": 5699.569993818994
+            },
+            {
+              "line": 320,
+              "phase": "update_actor",
+              "event": "released",
+              "pid": 3831542,
+              "collected": 1792214940.6348634
+            },
+            {
+              "line": 327,
+              "phase": "update_critic",
+              "event": "acquired",
+              "pid": 3831542,
+              "collected": 1792217788.6256022,
+              "wait_seconds": 2002.7307858170243
+            },
+            {
+              "line": 328,
+              "phase": "update_critic",
+              "event": "released",
+              "pid": 3831542,
+              "collected": 1792218388.3766625
+            },
+            {
+              "line": 329,
+              "phase": "update_actor",
+              "event": "acquired",
+              "pid": 3831542,
+              "collected": 1792221512.0709448,
+              "wait_seconds": 3123.6939177199965
+            },
+            {
+              "line": 330,
+              "phase": "update_actor",
+              "event": "released",
+              "pid": 3831542,
+              "collected": 1792221836.0347543
+            },
+            {
+              "line": 337,
+              "phase": "update_critic",
+              "event": "acquired",
+              "pid": 3831542,
+              "collected": 1792226092.7160883,
+              "wait_seconds": 3332.716980788042
+            },
+            {
+              "line": 338,
+              "phase": "update_critic",
+              "event": "released",
+              "pid": 3831542,
+              "collected": 1792226693.9558046
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "TextCraft",
+      "method": "dt",
+      "driver_pid": 3823185,
+      "driver_birth": 1792200693.05,
+      "workers": [
+        {
+          "pid": 3861049,
+          "phase": "ray::WorkerDict"
+        },
+        {
+          "pid": 3863060,
+          "phase": "ray::WorkerDict"
+        }
+      ],
+      "lease_env": "/tmp/deltatrace-four-formal-host-memory-20261017-v1.lock",
+      "trainer": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-variance-20261017-v6/verl-owner/verl/trainer/ppo/ray_trainer.py",
+      "lease_source_spans": [
+        {
+          "line": 61,
+          "source": "from verl.utils.seqlen_balancing import get_seqlen_balanced_partitions, log_seqlen_unbalance\nimport verl.utils.torch_functional as verl_F\nfrom verl.utils.native_host_memory import host_memory_lease\nfrom verl.utils.torch_functional import masked_mean\nfrom verl.utils.tracking import ValidationGenerationsLogger\nfrom verl.workers.rollout.async_server import AsyncLLMServerManager\nfrom gigpo import core_gigpo"
+        },
+        {
+          "line": 1050,
+          "source": "\n        # load checkpoint before doing anything\n        with host_memory_lease(\"native_checkpoint_restore\"):\n            self._load_checkpoint()\n\n        # perform validation before training\n        # currently, we only support validation using the reward_function."
+        },
+        {
+          "line": 1246,
+          "source": "                        # DT consumes native rewards after all owner adjustments.\n                        if self.config.algorithm.adv_estimator == AdvantageEstimator.DELTATRACE:\n                            with host_memory_lease(\"DT_advantage\"):\n                                # Native GRPO owns group membership, reward reduction and normalization.\n                                group_view = compute_advantage(\n                                    batch.select(batch_keys=[\"responses\", \"token_level_rewards\", \"response_mask\", \"loss_mask\"],\n                                                 non_tensor_batch_keys=[\"uid\", \"traj_uid\"]),"
+        },
+        {
+          "line": 1292,
+          "source": "                    # update critic\n                    if self.use_critic:\n                        with _timer(\"update_critic\", timing_raw), host_memory_lease(\"update_critic\"):\n                            critic_output = self.critic_wg.update_critic(batch)\n                        critic_output_metrics = reduce_metrics(critic_output.meta_info[\"metrics\"])\n                        metrics.update(critic_output_metrics)\n"
+        },
+        {
+          "line": 1300,
+          "source": "                    if self.config.trainer.critic_warmup <= self.global_steps:\n                        # update actor\n                        with _timer(\"update_actor\", timing_raw), host_memory_lease(\"update_actor\"):\n                            batch.meta_info[\"multi_turn\"] = self.config.actor_rollout_ref.rollout.multi_turn.enable\n                            actor_output = self.actor_rollout_wg.update_actor(batch)\n                        actor_output_metrics = reduce_metrics(actor_output.meta_info[\"metrics\"])\n                        metrics.update(actor_output_metrics)"
+        },
+        {
+          "line": 1331,
+          "source": "\n                    if self.config.trainer.save_freq > 0 and (is_last_step or self.global_steps % self.config.trainer.save_freq == 0):\n                        with _timer(\"save_checkpoint\", timing_raw), host_memory_lease(\"save_checkpoint\"):\n                            self._save_checkpoint()\n\n                # training metrics\n                metrics.update("
+        }
+      ],
+      "latest_completed_phase": {
+        "phase": "update_actor",
+        "wait_seconds": 3434.021701761987,
+        "compute_and_RPC_seconds": 480.71236872673035,
+        "acquired": 1792225612.0036292,
+        "released": 1792226092.715998
+      },
+      "logs": [
+        {
+          "path": "/tmp/ray/session_2026-10-17_09-32-05_827871_3823185/logs/worker-d2f25739701c0551a24101683083b1e116264d57d0b22cef4ef36dda-01000000-3829657.out",
+          "last_events": [
+            {
+              "line": 326,
+              "phase": "DT_advantage",
+              "event": "acquired",
+              "pid": 3829657,
+              "collected": 1792214940.6349583,
+              "wait_seconds": 5583.636290970957
+            },
+            {
+              "line": 328,
+              "phase": "DT_advantage",
+              "event": "released",
+              "pid": 3829657,
+              "collected": 1792215316.4881015
+            },
+            {
+              "line": 329,
+              "phase": "update_actor",
+              "event": "acquired",
+              "pid": 3829657,
+              "collected": 1792217367.5338826,
+              "wait_seconds": 2051.039904311998
+            },
+            {
+              "line": 330,
+              "phase": "update_actor",
+              "event": "released",
+              "pid": 3829657,
+              "collected": 1792217788.6255064
+            },
+            {
+              "line": 337,
+              "phase": "DT_advantage",
+              "event": "acquired",
+              "pid": 3829657,
+              "collected": 1792221836.0348551,
+              "wait_seconds": 2997.014624829055
+            },
+            {
+              "line": 339,
+              "phase": "DT_advantage",
+              "event": "released",
+              "pid": 3829657,
+              "collected": 1792222177.976262
+            },
+            {
+              "line": 340,
+              "phase": "update_actor",
+              "event": "acquired",
+              "pid": 3829657,
+              "collected": 1792225612.0036292,
+              "wait_seconds": 3434.021701761987
+            },
+            {
+              "line": 341,
+              "phase": "update_actor",
+              "event": "released",
+              "pid": 3829657,
+              "collected": 1792226092.715998
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task": "AppWorld",
+      "method": "ppo",
+      "driver_pid": 3823264,
+      "driver_birth": 1792200693.87,
+      "workers": [
+        {
+          "pid": 3843629,
+          "phase": "ray::WorkerDict.actor_rollout_update_actor"
+        },
+        {
+          "pid": 3845945,
+          "phase": "ray::WorkerDict.actor_rollout_update_actor"
+        }
+      ],
+      "lease_env": "/tmp/deltatrace-four-formal-host-memory-20261017-v1.lock",
+      "trainer": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-native-PPO-host-memory-formal-20261017-v4/verl-owner/verl/trainer/ppo/ray_trainer.py",
+      "lease_source_spans": [
+        {
+          "line": 61,
+          "source": "from verl.utils.seqlen_balancing import get_seqlen_balanced_partitions, log_seqlen_unbalance\nimport verl.utils.torch_functional as verl_F\nfrom verl.utils.native_host_memory import host_memory_lease\nfrom verl.utils.torch_functional import masked_mean\nfrom verl.utils.tracking import ValidationGenerationsLogger\nfrom verl.workers.rollout.async_server import AsyncLLMServerManager\nfrom gigpo import core_gigpo"
+        },
+        {
+          "line": 1056,
+          "source": "\n        # load checkpoint before doing anything\n        with host_memory_lease(\"native_checkpoint_restore\"):\n            self._load_checkpoint()\n\n        # perform validation before training\n        # currently, we only support validation using the reward_function."
+        },
+        {
+          "line": 1297,
+          "source": "                    # update critic\n                    if self.use_critic:\n                        with _timer(\"update_critic\", timing_raw), host_memory_lease(\"update_critic\"):\n                            critic_output = self.critic_wg.update_critic(batch)\n                        critic_output_metrics = reduce_metrics(critic_output.meta_info[\"metrics\"])\n                        metrics.update(critic_output_metrics)\n"
+        },
+        {
+          "line": 1305,
+          "source": "                    if self.config.trainer.critic_warmup <= self.global_steps:\n                        # update actor\n                        with _timer(\"update_actor\", timing_raw), host_memory_lease(\"update_actor\"):\n                            batch.meta_info[\"multi_turn\"] = self.config.actor_rollout_ref.rollout.multi_turn.enable\n                            actor_output = self.actor_rollout_wg.update_actor(batch)\n                        actor_output_metrics = reduce_metrics(actor_output.meta_info[\"metrics\"])\n                        metrics.update(actor_output_metrics)"
+        },
+        {
+          "line": 1336,
+          "source": "\n                    if self.config.trainer.save_freq > 0 and (is_last_step or self.global_steps % self.config.trainer.save_freq == 0):\n                        with _timer(\"save_checkpoint\", timing_raw), host_memory_lease(\"save_checkpoint\"):\n                            self._save_checkpoint()\n\n                # training metrics\n                metrics.update("
+        }
+      ],
+      "latest_completed_phase": {
+        "phase": "update_critic",
+        "wait_seconds": 1884.7584484040271,
+        "compute_and_RPC_seconds": 3434.0270879268646,
+        "acquired": 1792222177.976363,
+        "released": 1792225612.0034509
+      },
+      "logs": [
+        {
+          "path": "/tmp/ray/session_2026-10-17_09-32-06_490032_3823264/logs/worker-af1bcf3c2d69cd013bda2f79cd7e0094ab914696b87f14110d13ce3a-01000000-3831012.out",
+          "last_events": [
+            {
+              "line": 292,
+              "phase": "native_checkpoint_restore",
+              "event": "released",
+              "pid": 3831012,
+              "collected": 1792201286.581664
+            },
+            {
+              "line": 624,
+              "phase": "update_critic",
+              "event": "acquired",
+              "pid": 3831012,
+              "collected": 1792209022.398362,
+              "wait_seconds": 3646.281060495996
+            },
+            {
+              "line": 625,
+              "phase": "update_critic",
+              "event": "released",
+              "pid": 3831012,
+              "collected": 1792212816.4298391
+            },
+            {
+              "line": 626,
+              "phase": "update_actor",
+              "event": "acquired",
+              "pid": 3831012,
+              "collected": 1792215316.4882145,
+              "wait_seconds": 2500.057620342006
+            },
+            {
+              "line": 627,
+              "phase": "update_actor",
+              "event": "released",
+              "pid": 3831012,
+              "collected": 1792217367.533721
+            },
+            {
+              "line": 892,
+              "phase": "update_critic",
+              "event": "acquired",
+              "pid": 3831012,
+              "collected": 1792222177.976363,
+              "wait_seconds": 1884.7584484040271
+            },
+            {
+              "line": 893,
+              "phase": "update_critic",
+              "event": "released",
+              "pid": 3831012,
+              "collected": 1792225612.0034509
+            },
+            {
+              "line": 894,
+              "phase": "update_actor",
+              "event": "acquired",
+              "pid": 3831012,
+              "collected": 1792226693.9558985,
+              "wait_seconds": 1081.9519616679754
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "timing_scope": "The existing outer _timer includes flock acquisition wait. Those original phase totals are not pure compute time and cannot alone establish DTPO/PPO kernel efficiency.",
+  "human_decision": "Four resident jobs required. Checkpoint-boundary rotation rejected. Solve actual memory capacity first; AppWorld DTPO has NOT been resubmitted.",
+  "four_resident_32k_safety_verified": false,
+  "old_four_resident_minimum": {
+    "collected": 1792221065.17166,
+    "MemAvailable_GiB": 9.741683959960938,
+    "cgroup_usage_GiB": 401.6347198486328,
+    "XTT_single_pool_GiB": 552.1476440429688
+  },
+  "memory_followup": "Actual native DT post-B4 reserve reclaim demonstrates late cache lifetime. Earlier release at true last consumers is under source investigation, not deployed or validated. Existing original three training processes preserved.",
+  "training_actions_this_observation": 0,
+  "GPU_model_calls": 0,
+  "goal_status": "active",
+  "recorded_BJT": "2026-10-17T17:08:36.532109+08:00"
+}
