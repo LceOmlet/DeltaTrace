@@ -1,0 +1,33 @@
+--- /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py
++++ /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py
+@@ -10,6 +10,7 @@
+ from contextlib import contextmanager
+ from collections.abc import Mapping
+ import torch
++import os
+ from flash_attn import flash_attn_func,flash_attn_varlen_func
+ from transformers.integrations.flash_attention import flash_attention_forward
+ from qwen35_answer_finite import FiniteAnswerOps,categorical_head_logits,selected_target_log_probs
+@@ -380,6 +381,9 @@
+         with torch.no_grad():m=timed('finite_final_norm',lambda:self.boundaries.norm_residual(x[0::2],x[1::2],norm.weight,mnorm,torch.zeros_like(mnorm),norm.eps))
+         if observer is not None:observer.boundary('32',m.detach(),root['final_norm_input'])
+         seed_effect=effect(m,x);del x,mnorm,seed,z
++        release_replay_host=(observer is None and self.offload_replay_mixer
++            and os.environ.get('DT_NATIVE_HOST_CACHE_REPLAY_LAYER')=='1')
++        if release_replay_host:torch._C._host_emptyCache()
+         if row_starts is not None:
+             layout=RightPaddedLengths(list(row_lengths),max(row_lengths),paired_ids.device,
+                 coefficient_starts=coefficient_starts,query_starts=row_starts,
+@@ -510,6 +514,12 @@
+                 # only this local replay cache's consumed tensor storage.
+                 replay_cache.layers[i]=type(replay_cache.layers[i])()
+             if observer is not None:observer.boundary(str(i),m.detach(),root[str(i)])
++            if release_replay_host:
++                # expected consumed this endpoint above; later reverse layers
++                # read only smaller indices. root['0'] survives for signed.
++                del root['final_norm_input' if i==31 else str(i+1)]
++                del kwargs[str(i)]
++                torch._C._host_emptyCache()
+         x=root['0'].to('cuda',non_blocking=self.pin_root_host);signed=_token_effect(m,x).cpu()
+         if row_starts is not None:
+             restored=signed.new_zeros((selection.batch,original_length))
