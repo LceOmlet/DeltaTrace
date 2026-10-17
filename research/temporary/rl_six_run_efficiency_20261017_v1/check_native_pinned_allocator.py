@@ -15,7 +15,7 @@ import torch
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT = ROOT / 'receipts/six-run-native-utilization-20261017-v1'
-DEST = AUDIT / 'installed-native-pinned-allocator-behavior-v1.json'
+DEST = AUDIT / 'installed-native-pinned-allocator-behavior-v2.json'
 
 
 def settings(register):
@@ -51,8 +51,13 @@ def main():
         del old, new
         torch._C._host_emptyCache()
         after = dict(torch.cuda.memory.host_memory_stats())
+        counter_names = ('host_alloc_time.total', 'host_free_time.total', 'num_host_alloc', 'num_host_free')
         record['native_counters_delta'] = {key: after[key]-before[key] for key in
-            ('host_alloc_time.total', 'host_free_time.total', 'num_host_alloc', 'num_host_free')}
+            counter_names if key in before and key in after}
+        record['native_counters_unavailable'] = [key for key in counter_names
+            if key not in before or key not in after]
+        record['counter_caveat'] = ('The official wrapper returns an empty mapping before '
+            'torch CUDA initialization; unavailable counters are not zero.')
         record['native_counter_time_unit'] = 'microseconds'
         assert record['original_block']['pinned'] and record['original_block']['equal']
         assert record['registered_block_with_old_still_live']['pinned']
