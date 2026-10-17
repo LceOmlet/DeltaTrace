@@ -1,0 +1,972 @@
+{
+  "scope": "Owner environment/model-entry config source, not adoption of foreign trainers or inference frameworks",
+  "SkyRL-SQL": {
+    "owner": "NovaSky-AI/SkyRL",
+    "revision": "7d94ccf0eac3439c1731ce32018bf043dd639806",
+    "recipe": "examples\\train\\text_to_sql\\run_skyrl_sql.sh",
+    "recipe_sha256": "d5eefd0a883363304f70076526faa2f559c35e407356ae2d8350b2d51a683895",
+    "generator": {
+      "inference_engine": {
+        "model_dtype": "bfloat16",
+        "fp8_weight_sync_mode": null,
+        "run_engines_locally": true,
+        "num_engines": 2,
+        "backend": "vllm",
+        "weight_sync_backend": "nccl",
+        "weight_transfer_threshold_cuda_ipc_GB": 1.0,
+        "delta_weight_sync": null,
+        "tensor_parallel_size": 4,
+        "pipeline_parallel_size": 1,
+        "expert_parallel_size": 1,
+        "data_parallel_size": 1,
+        "vllm_v1_disable_multiproc": true,
+        "enable_prefix_caching": true,
+        "enable_chunked_prefill": true,
+        "enable_return_routed_experts": false,
+        "enable_return_sample_support_set": false,
+        "max_num_batched_tokens": 8192,
+        "enforce_eager": false,
+        "fully_sharded_loras": false,
+        "enable_ray_prometheus_stats": true,
+        "gpu_memory_utilization": 0.7,
+        "offload_kv_for_weight_sync": false,
+        "use_expandable_segments": false,
+        "max_num_seqs": 1024,
+        "served_model_name": null,
+        "distributed_executor_backend": "ray",
+        "language_model_only": false,
+        "engine_init_kwargs": {},
+        "speculative_config": null,
+        "external_proxy_url": null,
+        "external_server_urls": null,
+        "enable_pd": false,
+        "num_prefill": 0,
+        "prefill_init_kwargs": {},
+        "decode_init_kwargs": {},
+        "router_init_kwargs": {}
+      },
+      "n_samples_per_prompt": 5,
+      "batched": false,
+      "max_turns": 6,
+      "max_input_length": 29000,
+      "chat_template": {
+        "source": "name",
+        "name_or_path": null
+      },
+      "chat_template_kwargs": {},
+      "sampling_params": {
+        "max_generate_length": 3000,
+        "repetition_penalty": 1.0,
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "min_p": 0.0,
+        "top_k": -1,
+        "logprobs": 1,
+        "stop": [
+          "</sql>",
+          "</solution>"
+        ],
+        "additional_kwargs": null
+      },
+      "use_conversation_multi_turn": false,
+      "append_eos_token_after_stop_str_in_multi_turn": true,
+      "eval_sampling_params": {
+        "max_generate_length": 3000,
+        "repetition_penalty": 1.0,
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "min_p": 0.0,
+        "top_k": -1,
+        "logprobs": 1,
+        "stop": [
+          "</sql>",
+          "</solution>"
+        ],
+        "additional_kwargs": null
+      },
+      "eval_n_samples_per_prompt": 1,
+      "zero_reward_on_non_stop": false,
+      "use_cache_salt": true,
+      "apply_overlong_filtering": false,
+      "step_wise_trajectories": false,
+      "vision_language_generator": false,
+      "merge_stepwise_output": false
+    },
+    "trainer": {
+      "placement": {
+        "colocate_all": true,
+        "colocate_policy_ref": true,
+        "policy_num_nodes": 1,
+        "policy_num_gpus_per_node": 8,
+        "critic_num_nodes": 1,
+        "critic_num_gpus_per_node": 1,
+        "ref_num_nodes": 1,
+        "ref_num_gpus_per_node": 8
+      },
+      "use_expandable_segments": true,
+      "sequence_parallel_backend": "ulysses",
+      "strategy": "fsdp",
+      "policy": {
+        "model": {
+          "path": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "lora": {
+            "rank": 0,
+            "alpha": 16,
+            "dropout": 0.0,
+            "lora_sync_path": "/tmp/skyrl_lora_sync",
+            "sync_mode": "disk",
+            "target_modules": "all-linear",
+            "exclude_modules": null,
+            "init_method": "kaiming",
+            "share_expert_adapters": true,
+            "max_loras": 1,
+            "max_cpu_loras": null
+          },
+          "fake_int4_qat": {
+            "enabled": false,
+            "group_size": 32,
+            "symmetric": true,
+            "scale_divisor": 7.5,
+            "q_min": -8.0,
+            "bf16_base_path": null
+          }
+        },
+        "optimizer_config": {
+          "lr": 1e-06,
+          "adam_betas": [
+            0.9,
+            0.999
+          ],
+          "weight_decay": 0.01,
+          "max_grad_norm": 0.5,
+          "offload_after_step": true,
+          "num_warmup_steps": 0,
+          "scheduler": "constant_with_warmup"
+        },
+        "fsdp_config": {
+          "cpu_offload": false,
+          "reshard_after_forward": true,
+          "fsdp_size": -1,
+          "mixed_precision": null,
+          "wrap_policy": {}
+        },
+        "sequence_parallel_size": 1,
+        "use_torch_compile": false,
+        "record_memory": false,
+        "torch_profiler_config": {
+          "enable": false,
+          "ranks": [
+            0
+          ],
+          "save_path": null,
+          "skip_first": 10,
+          "wait": 0,
+          "warmup": 1,
+          "active": 1,
+          "repeat": 1,
+          "activities": [
+            "cpu",
+            "cuda"
+          ],
+          "record_shapes": true,
+          "profile_memory": false,
+          "with_stack": true,
+          "with_flops": false,
+          "with_modules": false,
+          "use_gzip": false,
+          "export_type": "chrome_trace"
+        },
+        "megatron_config": {
+          "tensor_model_parallel_size": 1,
+          "pipeline_model_parallel_size": 1,
+          "context_parallel_size": 1,
+          "expert_model_parallel_size": 1,
+          "expert_tensor_parallel_size": null,
+          "moe_token_dispatcher_type": "alltoall",
+          "moe_router_load_balancing_type": "none",
+          "moe_aux_loss_coeff": 0.0,
+          "moe_grouped_gemm": true,
+          "moe_router_score_function": null,
+          "moe_router_enable_expert_bias": null,
+          "moe_enable_routing_replay": false,
+          "moe_per_layer_logging": false,
+          "moe_router_dtype": "fp32",
+          "ddp_config": {
+            "grad_reduce_in_fp32": true,
+            "overlap_grad_reduce": false,
+            "overlap_param_gather": false,
+            "fp8_param_gather": false,
+            "average_in_collective": true
+          },
+          "hf_export_config": {
+            "distributed_save": false,
+            "save_every_n_ranks": 1
+          },
+          "lora_config": {
+            "lora_type": "lora",
+            "merge_lora": true,
+            "experts_shared_outer_loras": false,
+            "normalize_moe_lora": false
+          },
+          "optimizer_config_kwargs": {
+            "overlap_cpu_optimizer_d2h_h2d": false,
+            "use_precision_aware_optimizer": false,
+            "optimizer_cpu_offload": false,
+            "optimizer_offload_fraction": 0.0
+          },
+          "fp8": null,
+          "fp8_recipe": null,
+          "fp8_param": null,
+          "fp8_amax_compute_algo": null,
+          "transformer_config_kwargs": {
+            "recompute_granularity": "full",
+            "recompute_modules": [
+              "core_attn"
+            ],
+            "recompute_method": "uniform",
+            "recompute_num_layers": 1,
+            "gradient_accumulation_fusion": false
+          },
+          "empty_cuda_cache": true,
+          "model_config_kwargs": {},
+          "dist_ckpt_optim_fully_reshardable": false,
+          "freeze_moe_router": false,
+          "mtp_num_layers": null,
+          "mtp_loss_weight": 0.1,
+          "mtp_loss_chunk_size": 1024,
+          "mtp_loss_topk": null,
+          "async_dist_ckpt_save": false,
+          "async_save_prestage_to_cpu": false
+        },
+        "model_config_kwargs": {},
+        "language_model_only": false,
+        "inference_only_init": false
+      },
+      "ref": {
+        "model": {
+          "path": "Qwen/Qwen2.5-Coder-7B-Instruct",
+          "lora": {
+            "rank": 0,
+            "alpha": 16,
+            "dropout": 0.0,
+            "lora_sync_path": "/tmp/skyrl_lora_sync",
+            "sync_mode": "disk",
+            "target_modules": "all-linear",
+            "exclude_modules": null,
+            "init_method": "kaiming",
+            "share_expert_adapters": true,
+            "max_loras": 1,
+            "max_cpu_loras": null
+          },
+          "fake_int4_qat": {
+            "enabled": false,
+            "group_size": 32,
+            "symmetric": true,
+            "scale_divisor": 7.5,
+            "q_min": -8.0,
+            "bf16_base_path": null
+          }
+        },
+        "sequence_parallel_size": 1,
+        "fsdp_config": {
+          "cpu_offload": true,
+          "reshard_after_forward": true,
+          "fsdp_size": -1,
+          "mixed_precision": null,
+          "wrap_policy": {}
+        },
+        "megatron_config": {
+          "tensor_model_parallel_size": 1,
+          "pipeline_model_parallel_size": 1,
+          "context_parallel_size": 1,
+          "expert_model_parallel_size": 1,
+          "expert_tensor_parallel_size": null,
+          "moe_token_dispatcher_type": "alltoall",
+          "moe_router_load_balancing_type": "none",
+          "moe_aux_loss_coeff": 0.0,
+          "moe_grouped_gemm": true,
+          "moe_router_score_function": null,
+          "moe_router_enable_expert_bias": null,
+          "moe_enable_routing_replay": false,
+          "moe_per_layer_logging": false,
+          "moe_router_dtype": "fp32",
+          "ddp_config": {
+            "grad_reduce_in_fp32": true,
+            "overlap_grad_reduce": false,
+            "overlap_param_gather": false,
+            "fp8_param_gather": false,
+            "average_in_collective": true
+          },
+          "hf_export_config": {
+            "distributed_save": false,
+            "save_every_n_ranks": 1
+          },
+          "lora_config": {
+            "lora_type": "lora",
+            "merge_lora": true,
+            "experts_shared_outer_loras": false,
+            "normalize_moe_lora": false
+          },
+          "optimizer_config_kwargs": {
+            "overlap_cpu_optimizer_d2h_h2d": false,
+            "use_precision_aware_optimizer": false,
+            "optimizer_cpu_offload": false,
+            "optimizer_offload_fraction": 0.0
+          },
+          "fp8": null,
+          "fp8_recipe": null,
+          "fp8_param": null,
+          "fp8_amax_compute_algo": null,
+          "transformer_config_kwargs": {
+            "recompute_granularity": "full",
+            "recompute_modules": [
+              "core_attn"
+            ],
+            "recompute_method": "uniform",
+            "recompute_num_layers": 1,
+            "gradient_accumulation_fusion": false
+          },
+          "empty_cuda_cache": true,
+          "model_config_kwargs": {},
+          "dist_ckpt_optim_fully_reshardable": false,
+          "freeze_moe_router": false,
+          "mtp_num_layers": null,
+          "mtp_loss_weight": 0.1,
+          "mtp_loss_chunk_size": 1024,
+          "mtp_loss_topk": null,
+          "async_dist_ckpt_save": false,
+          "async_save_prestage_to_cpu": false
+        },
+        "model_config_kwargs": {},
+        "language_model_only": false
+      },
+      "critic": {
+        "model": {
+          "path": null,
+          "lora": {
+            "rank": 0,
+            "alpha": 16,
+            "dropout": 0.0,
+            "lora_sync_path": "/tmp/skyrl_lora_sync",
+            "sync_mode": "disk",
+            "target_modules": "all-linear",
+            "exclude_modules": null,
+            "init_method": "kaiming",
+            "share_expert_adapters": true,
+            "max_loras": 1,
+            "max_cpu_loras": null
+          },
+          "fake_int4_qat": {
+            "enabled": false,
+            "group_size": 32,
+            "symmetric": true,
+            "scale_divisor": 7.5,
+            "q_min": -8.0,
+            "bf16_base_path": null
+          }
+        },
+        "optimizer_config": {
+          "lr": 5e-06,
+          "adam_betas": [
+            0.9,
+            0.999
+          ],
+          "weight_decay": 0.01,
+          "max_grad_norm": 1.0,
+          "offload_after_step": true,
+          "num_warmup_steps": 0,
+          "scheduler": "constant_with_warmup"
+        },
+        "fsdp_config": {
+          "cpu_offload": false,
+          "reshard_after_forward": true,
+          "fsdp_size": -1,
+          "mixed_precision": null,
+          "wrap_policy": {}
+        },
+        "sequence_parallel_size": 1,
+        "model_config_kwargs": {}
+      },
+      "algorithm": {
+        "advantage_estimator": "grpo",
+        "kl_ctrl": {
+          "type": "fixed",
+          "kl_target": 0.1,
+          "horizon": 10000
+        },
+        "kl_estimator_type": "k3",
+        "use_kl_in_reward": false,
+        "use_kl_loss": false,
+        "kl_loss_coef": 0.001,
+        "use_entropy_loss": false,
+        "entropy_loss_coef": 0.01,
+        "temperature": null,
+        "advantage_batch_normalize": false,
+        "value_head_prefix": "value_head",
+        "policy_loss_type": "regular",
+        "loss_reduction": "token_mean",
+        "grpo_norm_by_std": true,
+        "zero_variance_filter": false,
+        "zero_variance_filter_tol": 1e-06,
+        "lambd": 1.0,
+        "gamma": 1.0,
+        "eps_clip_low": 0.2,
+        "eps_clip_high": 0.2,
+        "clip_ratio_c": 3.0,
+        "tis_imp_ratio_cap": -1.0,
+        "use_tis": false,
+        "off_policy_correction": {
+          "tis_ratio_type": null,
+          "token_tis_ratio_clip_high": 2.0,
+          "sequence_tis_ratio_clip_high": 5.0,
+          "sequence_mask_metric": null,
+          "geo_mask_high": 1.01,
+          "geo_mask_low": 0.99,
+          "product_mask_high": 2.0,
+          "product_mask_low": 0.5,
+          "outlier_token_is_threshold_low": null,
+          "outlier_token_is_threshold_high": null,
+          "token_mask_is_threshold_low": null,
+          "token_mask_is_threshold_high": null
+        },
+        "enable_sample_support_replay": false,
+        "sapo": {
+          "tau_pos": 1.0,
+          "tau_neg": 1.05
+        },
+        "value_clip": 0.2,
+        "dynamic_sampling": {
+          "type": null,
+          "max_sample_batches": 30,
+          "min_replace_ratio": 0.3
+        },
+        "clip_cov": {
+          "clip_ratio": 0.0002,
+          "clip_cov_lb": 1.0,
+          "clip_cov_ub": 5.0
+        },
+        "kl_cov": {
+          "kl_cov_frac": 0.2,
+          "ppo_kl_coef": 1.0
+        },
+        "cispo": {
+          "cispo_eps_clip_low": 1.0,
+          "cispo_eps_clip_high": 4.0,
+          "cispo_anchor": "old"
+        },
+        "dppo": {
+          "dppo_type": "binary_tv",
+          "delta_low": 0.2,
+          "delta_high": 0.2
+        },
+        "max_seq_len": null
+      },
+      "mtp": {
+        "enabled": false,
+        "num_speculative_tokens": 1,
+        "loss_weight": 0.1
+      },
+      "fully_async": {
+        "enabled": false,
+        "max_staleness_steps": 4,
+        "num_parallel_generation_workers": 768,
+        "sample_full_batch": false,
+        "clear_kv_cache_on_weight_sync": false,
+        "simulate_training": false,
+        "simulate_training_step_seconds": 30.0,
+        "simulate_weight_sync_seconds": 0.0
+      },
+      "gradient_checkpointing": true,
+      "gradient_checkpointing_use_reentrant": false,
+      "seed": 42,
+      "resume_mode": "latest",
+      "resume_path": null,
+      "log_path": "/tmp/skyrl-logs",
+      "ckpt_path": "/c/Users/Administrator/ckpts/skyrl_sql_7B_ckpt",
+      "max_ckpts_to_keep": -1,
+      "ckpt_interval": 60,
+      "hf_save_interval": 30,
+      "export_path": "C:\\Users\\Administrator/exports/",
+      "bf16": true,
+      "epochs": 30,
+      "max_training_steps": null,
+      "update_epochs_per_batch": 1,
+      "train_batch_size": 256,
+      "policy_mini_batch_size": 256,
+      "critic_mini_batch_size": 256,
+      "micro_train_batch_size_per_gpu": 1,
+      "micro_forward_batch_size_per_gpu": 8,
+      "max_tokens_per_microbatch": -1,
+      "recompute_old_logprobs_per_minibatch": true,
+      "update_ref_every_epoch": false,
+      "remove_microbatch_padding": true,
+      "eval_batch_size": 1024,
+      "eval_before_train": true,
+      "eval_interval": 5,
+      "max_prompt_length": 6000,
+      "flash_attn": true,
+      "disable_fast_tokenizer": false,
+      "project_name": "skyrlsql",
+      "run_name": "skyrlsql_repro",
+      "logger": "wandb",
+      "enable_ray_gpu_monitor": true,
+      "tags": null,
+      "dump_data_batch": true,
+      "dump_eval_results": true,
+      "print_example_interval": 1,
+      "num_logger_eval_samples": -1,
+      "num_logger_train_samples": -1,
+      "log_example_interval": -1,
+      "logprobs_chunk_size": 1024,
+      "vocab_entropy_chunk_size": 0,
+      "vocab_entropy_chunk_memory_mb": 512,
+      "fused_lm_head_logprob": false,
+      "fused_lm_head_logprob_backend": "torch"
+    },
+    "environment": {
+      "env_class": "text2sql",
+      "skyrl_gym": {
+        "max_env_workers": 32,
+        "text2sql": {
+          "db_path": "/c/Users/Administrator/data/sql/db_files/data"
+        },
+        "llm_as_a_judge": {
+          "model": "gpt-4o-mini",
+          "base_url": null
+        },
+        "search": {
+          "log_requests": false,
+          "search_url": "http://127.0.0.1:8000/retrieve",
+          "topk": 3,
+          "timeout": 30
+        }
+      }
+    },
+    "sampling": {
+      "min_tokens": 1,
+      "skip_special_tokens": true,
+      "include_stop_str_in_output": true,
+      "max_tokens": 3000,
+      "temperature": 0.6,
+      "top_p": 0.95,
+      "top_k": -1,
+      "min_p": 0.0,
+      "logprobs": 1,
+      "stop": [
+        "</sql>",
+        "</solution>"
+      ]
+    },
+    "eval_sampling": {
+      "min_tokens": 1,
+      "skip_special_tokens": true,
+      "include_stop_str_in_output": true,
+      "max_tokens": 3000,
+      "temperature": 1.0,
+      "top_p": 1.0,
+      "top_k": -1,
+      "min_p": 0.0,
+      "logprobs": 1,
+      "stop": [
+        "</sql>",
+        "</solution>"
+      ]
+    }
+  },
+  "TextCraft": {
+    "owner": "WooooDyy/AgentGym-RL",
+    "revision": "82402a99c62a293735a3f412fb8ac9a600673bc0",
+    "train": {
+      "data": {
+        "tokenizer": null,
+        "train_file": "AgentItemId/textcraft_train.json",
+        "val_files": "~/data/rlhf/gsm8k/test.parquet",
+        "prompt_key": "item_id",
+        "max_prompt_length": 512,
+        "max_response_length": 10240,
+        "train_batch_size": 32,
+        "val_batch_size": null,
+        "return_raw_input_ids": false,
+        "return_raw_chat": true,
+        "shuffle": true
+      },
+      "actor_rollout_ref": {
+        "hybrid_engine": true,
+        "model": {
+          "path": "models/Qwen2.5-7B-Instruct",
+          "external_lib": null,
+          "override_config": {},
+          "enable_gradient_checkpointing": true,
+          "use_remove_padding": false
+        },
+        "actor": {
+          "strategy": "fsdp",
+          "ppo_mini_batch_size": 8,
+          "ppo_micro_batch_size": null,
+          "ppo_micro_batch_size_per_gpu": 1,
+          "use_dynamic_bsz": false,
+          "ppo_max_token_len_per_gpu": 16384,
+          "grad_clip": 1.0,
+          "clip_ratio": 0.2,
+          "entropy_coeff": 0.001,
+          "use_kl_loss": true,
+          "kl_loss_coef": 0.001,
+          "kl_loss_type": "low_var_kl",
+          "ppo_epochs": 2,
+          "shuffle": false,
+          "ulysses_sequence_parallel_size": 1,
+          "optim": {
+            "lr": 1e-06,
+            "lr_warmup_steps_ratio": 0.0,
+            "min_lr_ratio": null,
+            "warmup_style": "constant",
+            "total_training_steps": -1
+          },
+          "fsdp_config": {
+            "wrap_policy": {
+              "min_num_params": 0
+            },
+            "param_offload": false,
+            "grad_offload": false,
+            "optimizer_offload": false,
+            "fsdp_size": -1
+          }
+        },
+        "ref": {
+          "fsdp_config": {
+            "param_offload": false,
+            "wrap_policy": {
+              "min_num_params": 0
+            }
+          },
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 1,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 16384,
+          "ulysses_sequence_parallel_size": 1
+        },
+        "agentgym": {
+          "task_name": "textcraft",
+          "env_addr": "http://127.0.0.1:36005",
+          "max_retries": 10,
+          "max_rounds": 10,
+          "timeout": 600
+        },
+        "rollout": {
+          "name": "vllm",
+          "temperature": 1.0,
+          "top_k": -1,
+          "top_p": 1,
+          "prompt_length": 512,
+          "response_length": 10240,
+          "dtype": "bfloat16",
+          "gpu_memory_utilization": 0.7,
+          "ignore_eos": false,
+          "enforce_eager": true,
+          "free_cache_engine": true,
+          "load_format": "dummy_dtensor",
+          "tensor_model_parallel_size": 1,
+          "max_num_batched_tokens": 8192,
+          "max_model_len": 32768,
+          "max_num_seqs": 1024,
+          "max_tokens": 512,
+          "log_prob_micro_batch_size": null,
+          "log_prob_micro_batch_size_per_gpu": 1,
+          "log_prob_use_dynamic_bsz": false,
+          "log_prob_max_token_len_per_gpu": 16384,
+          "disable_log_stats": true,
+          "enable_chunked_prefill": true,
+          "do_sample": true,
+          "n": 8,
+          "send_interval": 1,
+          "rollout_log_dir": "saves/test/executer_logs"
+        }
+      },
+      "critic": {
+        "rollout_n": 8,
+        "strategy": "fsdp",
+        "optim": {
+          "lr": 1e-05,
+          "lr_warmup_steps_ratio": 0.0,
+          "min_lr_ratio": null,
+          "warmup_style": "constant",
+          "total_training_steps": -1
+        },
+        "model": {
+          "path": "~/models/deepseek-llm-7b-chat",
+          "tokenizer_path": "models/Qwen2.5-7B-Instruct",
+          "override_config": {},
+          "external_lib": null,
+          "enable_gradient_checkpointing": true,
+          "use_remove_padding": false,
+          "fsdp_config": {
+            "param_offload": false,
+            "grad_offload": false,
+            "optimizer_offload": false,
+            "wrap_policy": {
+              "min_num_params": 0
+            },
+            "fsdp_size": -1
+          }
+        },
+        "ppo_mini_batch_size": 8,
+        "ppo_micro_batch_size": null,
+        "ppo_micro_batch_size_per_gpu": null,
+        "forward_micro_batch_size": null,
+        "forward_micro_batch_size_per_gpu": null,
+        "use_dynamic_bsz": false,
+        "ppo_max_token_len_per_gpu": 32768,
+        "forward_max_token_len_per_gpu": 32768,
+        "ulysses_sequence_parallel_size": 1,
+        "ppo_epochs": 2,
+        "shuffle": false,
+        "grad_clip": 1.0,
+        "cliprange_value": 0.5
+      },
+      "reward_model": {
+        "enable": false,
+        "strategy": "fsdp",
+        "model": {
+          "input_tokenizer": "models/Qwen2.5-7B-Instruct",
+          "path": "~/models/FsfairX-LLaMA3-RM-v0.1",
+          "external_lib": null,
+          "use_remove_padding": false,
+          "fsdp_config": {
+            "min_num_params": 0,
+            "param_offload": false,
+            "fsdp_size": -1
+          }
+        },
+        "micro_batch_size": null,
+        "micro_batch_size_per_gpu": null,
+        "max_length": null,
+        "ulysses_sequence_parallel_size": 1,
+        "use_dynamic_bsz": false,
+        "forward_max_token_len_per_gpu": 32768,
+        "reward_manager": null,
+        "launch_reward_fn_async": false,
+        "sandbox_fusion": {
+          "url": null,
+          "max_concurrent": 64
+        }
+      },
+      "custom_reward_function": {
+        "path": null,
+        "name": null
+      },
+      "algorithm": {
+        "gamma": 1.0,
+        "lam": 1.0,
+        "adv_estimator": "grpo",
+        "kl_penalty": "kl",
+        "rounds_ctrl": {
+          "type": "fixed",
+          "rounds": 30,
+          "steps_scaling_inter": 100
+        },
+        "kl_ctrl": {
+          "type": "fixed",
+          "kl_coef": 0.001
+        }
+      },
+      "trainer": {
+        "total_epochs": 30,
+        "total_training_steps": null,
+        "project_name": "xxx",
+        "experiment_name": "test",
+        "logger": [
+          "console",
+          "wandb"
+        ],
+        "val_generations_to_log_to_wandb": 0,
+        "nnodes": 1,
+        "n_gpus_per_node": 8,
+        "save_freq": 25,
+        "resume_mode": "auto",
+        "resume_from_path": false,
+        "test_freq": -1,
+        "critic_warmup": 0,
+        "default_hdfs_dir": null,
+        "remove_previous_ckpt_in_save": false,
+        "del_local_ckpt_after_load": false,
+        "default_local_dir": "saves/test",
+        "storage_mode": "local"
+      }
+    },
+    "train_recipe": {
+      "path": "examples\\train\\AgentGym-RL\\textcraft_train.sh",
+      "sha256": "31e7474e4b80516f398e3637ce775c29e343775b29302f768e7c1e9b1034cac5"
+    },
+    "eval": {
+      "trainer": {
+        "nnodes": 1,
+        "n_gpus_per_node": 8
+      },
+      "data": {
+        "path": "AgentEval/textcraft",
+        "max_prompt_length": 750,
+        "max_response_length": 14098,
+        "prompt_key": "item_id",
+        "n_samples": 1,
+        "output_path": null,
+        "batch_size": 32
+      },
+      "agentgym": {
+        "task_name": "textcraft",
+        "env_addr": "http://127.0.0.1:36005",
+        "max_retries": 10,
+        "max_rounds": 30,
+        "timeout": 500
+      },
+      "model": {
+        "path": "global_step_150/actor/huggingface",
+        "external_lib": null
+      },
+      "rollout": {
+        "name": "vllm",
+        "temperature": 1,
+        "top_k": -1,
+        "top_p": 1,
+        "prompt_length": 750,
+        "response_length": 14098,
+        "dtype": "bfloat16",
+        "gpu_memory_utilization": 0.95,
+        "ignore_eos": false,
+        "enforce_eager": true,
+        "free_cache_engine": true,
+        "load_format": "dummy_dtensor",
+        "tensor_model_parallel_size": 1,
+        "max_num_batched_tokens": 8192,
+        "max_model_len": 32768,
+        "max_num_seqs": 1024,
+        "log_prob_micro_batch_size": null,
+        "log_prob_micro_batch_size_per_gpu": 1,
+        "log_prob_use_dynamic_bsz": false,
+        "log_prob_max_token_len_per_gpu": 16384,
+        "max_tokens": 512,
+        "disable_log_stats": true,
+        "enable_chunked_prefill": true,
+        "do_sample": true,
+        "n": 1,
+        "send_interval": 1,
+        "rollout_log_dir": "executer_logs"
+      },
+      "actor": {
+        "strategy": "fsdp",
+        "ppo_mini_batch_size": 16,
+        "ppo_micro_batch_size": null,
+        "ppo_micro_batch_size_per_gpu": 1,
+        "use_dynamic_bsz": false,
+        "ppo_max_token_len_per_gpu": 16384,
+        "grad_clip": 1.0,
+        "clip_ratio": 0.2,
+        "entropy_coeff": 0.001,
+        "use_kl_loss": null,
+        "kl_loss_coef": 0.001,
+        "kl_loss_type": "low_var_kl",
+        "ppo_epochs": 1,
+        "shuffle": false,
+        "ulysses_sequence_parallel_size": 1,
+        "optim": {
+          "lr": 1e-06,
+          "lr_warmup_steps_ratio": 0.0,
+          "min_lr_ratio": null,
+          "warmup_style": "constant",
+          "total_training_steps": -1
+        },
+        "fsdp_config": {
+          "wrap_policy": {
+            "min_num_params": 0
+          },
+          "param_offload": false,
+          "grad_offload": false,
+          "optimizer_offload": false,
+          "fsdp_size": -1
+        }
+      }
+    },
+    "eval_recipe": {
+      "path": "examples\\eval\\textcraft_eval.sh",
+      "sha256": "7bdb8a6eab5499adb7abff7d9d3cff0611889bc6790b5a294792c125dc804ef2"
+    }
+  },
+  "AppWorld": {
+    "training_environment": {
+      "appworld_config": {
+        "agent": {
+          "_target_": "phi_agents.agent.minimal_vllm_react_agent.MinimalReactAgent",
+          "max_character_prompt_len": 20000,
+          "max_character_msg_len": 4000,
+          "min_truncated_block_idx": 5,
+          "max_allowed_appworld_output": 3000,
+          "max_seq_len_tokens": 32000,
+          "appworld_style_truncation": false,
+          "truncate_at_newline_or_whitespace": true,
+          "recaption": false,
+          "search_method": "none",
+          "mode": "train"
+        },
+        "experiment_name": null,
+        "env": {
+          "max_interactions": 40,
+          "raise_on_unsafe_syntax": false,
+          "sparse_reward": false,
+          "no_code_found_penalty": 0.0,
+          "execution_failed_penalty": 0.0
+        }
+      },
+      "_target_": "phi_agents.rl.appworld_scenario_runner.AppWorldScenarioRunner"
+    },
+    "training_task_sampler": {
+      "_target_": "phi_agents.rl.appworld_scenario_runner.AppWorldScenarioSampler",
+      "dataset_name": "train_difficulty_1_and_train_difficulty_2",
+      "seed": null,
+      "task_id": null
+    },
+    "evaluation_environment": {
+      "appworld_config": {
+        "agent": {
+          "_target_": "phi_agents.agent.minimal_vllm_react_agent.MinimalReactAgent",
+          "max_character_prompt_len": 20000,
+          "max_character_msg_len": 4000,
+          "min_truncated_block_idx": 5,
+          "max_allowed_appworld_output": 3000,
+          "max_seq_len_tokens": 32768,
+          "appworld_style_truncation": false,
+          "truncate_at_newline_or_whitespace": true,
+          "recaption": false,
+          "search_method": "none",
+          "mode": "eval"
+        },
+        "experiment_name": null,
+        "env": {
+          "max_interactions": 40,
+          "raise_on_unsafe_syntax": false,
+          "sparse_reward": true,
+          "no_code_found_penalty": 0.0,
+          "execution_failed_penalty": 0.0
+        }
+      },
+      "_target_": "phi_agents.rl.appworld_scenario_runner.AppWorldScenarioRunner"
+    },
+    "evaluation_task_sampler": {
+      "_target_": "phi_agents.rl.appworld_scenario_runner.AppWorldScenarioSampler",
+      "dataset_name": "dev",
+      "seed": null,
+      "task_id": null
+    },
+    "generation_boundary_reference": {
+      "max_model_len": 32768,
+      "client": {
+        "_target_": "phi_agents.rl.llm.VLLMQwen25",
+        "max_new_tokens": 1500,
+        "top_p": null,
+        "top_k": null,
+        "min_p": null,
+        "frequency_penalty": null
+      },
+      "training_temperature": 1.0,
+      "evaluation_temperature": 0.0
+    }
+  }
+}

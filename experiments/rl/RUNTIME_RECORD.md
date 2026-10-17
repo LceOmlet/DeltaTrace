@@ -1,3 +1,21 @@
+## 2026-10-18T01:20:26.191793+08:00 首组9/200；发现driver逐回合全八卡屏障，原生DP本地owner候选CPU逐值4项通过但尚未部署
+
+原控制器453157/1792249756.70、driver453162/1792249757.08保持，原parser读TextCraft DTPOv6完成9/200、下一生成，其余5项queued；原完整共享checkpoint5核验保持。当前代码/超参/预算/释放策略未改，候选源码和CPU测试在独立receipts/textcraft-native-dp-owner-20261018-v1，不进入当前launch/PYTHONPATH。CPU服务测试时间段单独保留，不用于干净吞吐对照。
+
+直接效率证据：TextCraft作者04148278的完整episode loop原本在各DP rollout worker本地执行；当前f52a408e适配在全局driver执行这个循环，每turn在EngineTransport第143行等完整八卡RPC返回后才继续全部环境step。原生原日志第8轮round25全局活跃97时，已看到只有部分worker仍generate、其余已返回；原标签Active agents per gpu在这个注入driver中是全局数，不伪称每卡97。此前whole-rollout scope正确，不能把这个新跨rank回合屏障混同为每turn权重重同步。原新只读0943ea03已实核8引擎均TP1/内部DP1、external_launcher_dp=False、dp_group=None，manager TP1，具备独立推进前提；不凭静态模型支持猜测。
+
+独立候选仅把原episode owner放回各DP rank；仍用原VERL generate_sequences/DP pad-chunk-concat，并让原worker默认生成分支AST保持不变。官方AgentGym loop/解析/奖励/DT/原actor与core未重写；旧episode helper原方法体仅改名而AST逐项相同。v6直接target artifact原样返回，legacy源索引按原task_rounds还原全局命名空间；原trajectory_credit在direct-target分支只用这些原artifact，不另造Q/V或奖励。
+
+真实AgentGym HTTP/解析/loop+脚本模型回复的4个CPU接口用例通过（150.117秒）：32组×8、特殊token、8组评估及2组不足8填充，所有原token/mask/奖励/target及索引逐值一致，原v6路由同一artifact对象。模型回复只是传输fixture，不冒称数值、32k容量、GPU速度或正式迭代验收。第一版测试/source已冻结CPU-execution-v1，候选worker a10a9314/episode211ec05b/helper82b98d26。还需将原close向本地owner缓存转发并完成真正八卡原生生成测速，未开始GPU候选进程、未停止或重启正式训练；不会以一次更新奖励测试代替效率验收。源/CPU原始输出与XML及限制在rl_textcraft_native_dp_owner_20261018_v1/receipts，六组最终200与完整保存/图仍未完成，goal active。
+
+## 2026-10-18T00:49:51.196826+08:00 六组v3首组7/200；排查生成重复生命周期，未据静态假设改动训练
+
+原TaskRunner完成7/200，最新reward0.539/entropy0.658/首rank裁前分片grad0.006/参考KL三位0.000/含工具返回响应3370.438/工具17.977；原gen436.043/DT128.667/actor133.927/整轮768.169秒。当前瞬时worker标题ray::WorkerDict、下一生成尚未由该标题明确，保留原phase而不把空闲当健康更新；第7轮原完成日志才是进展证据。其余5组仍queued，原完整共享checkpoint5通过保持。50秒等待前后均核对控制器453157/1792249756.70、driver453162/1792249757.08实际存活，stderr无新错误。原宿主样本MemAvailable639.803GiB/cgroup377.051/900GiB、OOM计数仍4；非最坏32k容量保证。
+
+只读核对实际候选collector8e4e3372的native_rollout_scope装饰、scope98bc4d3d begin/try/finally/end、worker198f509c的已开启scope使用nullcontext，以及原manager364e6945。现有完整rollout上下文已包含TextCraft分支，没有演示缺少外层scope而逐turn同步权重的缺陷，故不修改生命周期。原metadata client仅读取8rank：base_sync_done全部True，读取发生在rollout之后DT/update边界，context flags全部False、scheduler6，不能将这个正常关闭状态当作生成期间的次数证明。薄reader a2696ab2、原client23659d15，0 hook/model/DT/optimizer/sync/config调用；可选Ray metrics exporter警告保留，原查询已实际返回，不把它当训练退出或重装理由。
+
+AppWorld未启动，仅核对准备源57f75523/e6cfec8d：原max_num_seqs32是单engine上限，transport汇聚所有已有pending、原pad/chunk8、原ActorPool分配与无序完成、原LOOP取消/场景调度保持，没有自造全局32上限或计时等待。源码不是实际AppWorld并发、容量或速度证明，不因猜测改变官方配置。详细来源/SHA、实际边界/限制和7轮日志在receipts/rollout-scope-audit-and-native-progress7-v1.json；当前图仍00:37:40的6点快照，小时任务按原入口继续刷新。无新正式方法/调参/部署/重启；六组200与最终checkpoint200未完成，goal active。
+
 ## 2026-10-18T00:39:12.185764+08:00 六组v3首组6/200；原生生成trace确认每卡32请求批量decode，八rank观察均已还原
 
 同一控制器/driver453157/453162及出生保持，原TaskRunner第340行完成6/200，正在下一轮生成；其余五项仍排队，原完整checkpoint5已验收。第6轮reward0.574、entropy0.654、首rank裁前分片grad0.006、参考KL三位0.000、含工具返回响应3384.586、工具16.973；gen438.299/old38.261/ref33.329/DT155.895/actor138.614/整轮804.818秒。仍为原v6/官方组内乘子与指数u分别标准化、8卡/B4/32k/原学习工作量，无新超参或数值/释放策略部署。

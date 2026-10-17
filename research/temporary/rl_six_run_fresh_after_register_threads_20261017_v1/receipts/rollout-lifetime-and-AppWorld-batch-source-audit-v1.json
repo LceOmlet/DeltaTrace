@@ -1,0 +1,63 @@
+{
+  "collected": 1792255612.3696487,
+  "status": "readonly_actual_scope_and_prepared_AppWorld_batching_audited",
+  "sources": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/agent_system/multi_turn_rollout/rollout_loop.py",
+      "SHA256": "8e4e3372f790bff1245e7ef1c3388982786e500a375a19a6e340cc44ec0535ed",
+      "evidence": "multi_turn_loop decorated with native_rollout_scope; env owner branch is inside decorated function"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/owner_rollout_scope.py",
+      "SHA256": "98bc4d3dd89904e07666633353fa10d2cb494441a559dff41078bc797907942d",
+      "evidence": "begin once, original full multi-turn loop, end in finally"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/workers/fsdp_workers.py",
+      "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+      "evidence": "generate uses nullcontext when _owner_rollout_context_open; original preprocess/generate/postprocess kept"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/workers/sharding_manager/fsdp_vllm.py",
+      "SHA256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
+      "evidence": "original owner weight synchronization/RNG/sleep lifetime"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-eight-gpu-sequential-20261017-v1/entry/loop_owner_rollout.py",
+      "SHA256": "57f755236a5f0ed2f5a3eb232afa0d3c85526583f4b8ddc55d27a98dded0a683",
+      "evidence": "prepared AppWorld: drain all already queued original requests, pad/chunk by DP8, native ActorPool availability and unordered completion; no global32 cap"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/appworld-eight-gpu-sequential-20261017-v1/entry/loop_owner_worker.py",
+      "SHA256": "e6cfec8d533ae6e6c0ea50a07c80eb4ef5954f1befc134207e123efee238df4f",
+      "evidence": "prepared AppWorld: original LOOP worker owns group scheduling/cancellation; official task sampler and save/restore retained"
+    }
+  ],
+  "actual_eight_rank_scope_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/six-run-fresh-after-register-threads-20261017-v1/native-rollout-context-scope-20261018-v1.json",
+  "actual_base_sync_done_all8": true,
+  "actual_context_flags_all8": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "actual_scheduler_epochs": [
+    6,
+    6,
+    6,
+    6,
+    6,
+    6,
+    6,
+    6
+  ],
+  "context_read_scope": "After rollout, during DT/update; closed flags here do not establish in-generation state or per-turn entry counts. No forced manager entry/exit.",
+  "source_conclusion": "Existing whole-rollout context already encloses TextCraft; no demonstrated missing-scope defect. Do not patch on that hypothesis.",
+  "AppWorld_scope": "Prepared only; native max_num_seqs32 is per engine. The transport drains pending requests then native pad/chunk by8; no new global32 cap or timer. Runtime request counts and capacity still require actual AppWorld execution.",
+  "additional_model_or_DT_or_generation_or_optimizer_or_config_calls": 0,
+  "training_changes": 0
+}
