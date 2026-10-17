@@ -1,3 +1,11 @@
+## 2026-10-18T05:44:10.491019+08:00 新六组首组完成12/200；原生来源图与八卡物理阶段记录刷新
+
+同一controller2004205/1792263400.01及driver2004329/1792263400.35继续，无暂停或重启。原TaskRunner line383确认第12轮：训练回报0.617、entropy0.661、首返回rank裁剪前分片grad0.006、KL控制台0.000（非精确零）、含工具返回的响应3395.270、原交互16.855；生成/DT/actor/整轮441.852/125.909/143.718/786.497秒。1–12完整step来源齐全，较前图增加2轮；其余五组合queued，不混旧曲线。原共享完整marker仍10，八rank checkpoint10核验保持，下一原生保存15；既有55140只读等待器继续，不制造额外检查点。
+
+原物理采样按阶段刷新：八卡生成样本均值48.76–50.87%、DT48.80–55.57%、actor75.75–79.35%。HBM生成现有49个严格匹配样本/卡，均值536495–555884原MBytes/s；不可将最早仅2个生成样本的局部视图推广成全程低带宽。上述均为匹配窗口点/速率样本，不是时长加权全阶段均值、峰值比例或新的缺陷/已满载证明。只读观察MemAvailable636.82GiB、oom_kill4未增；不作32k最坏容量外推。原报告未修改副本及SHA在formal-native-iteration12-and-bandwidth.json，0新增模型/反向/optimizer/保存/恢复或训练配置改动。
+
+实际训练代码仍09e9f19293e6829cbb16126d5e2d8c0fe07e40cb。两任务原PNG/SVG/CSV/来源快照在TextCraft20261018-054149与AppWorld20261018-054153；共同窗口0，展示已有完整历史且排队缺失不填0。六组200/最终原生checkpoint200及最终图未完成，goal保持active。后续Git仅记录进度，不宣称训练部署版本变化。
+
 ## 2026-10-18T05:20:04.143038+08:00 新六组首组完成10/200；原生共享checkpoint10八rank状态只读核验通过
 
 原标记latest_checkpointed_iteration.txt=10，checkpoint位于/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v6-8gpu-200-20261018-v5/checkpoints/global_step_10。复用reader91d73825与原owner f65b6538；八actor rank各923模型项/496 optimizer项可读，scheduler均10、全部optimizer step均40，符合10轮×每轮4更新。CPU/CUDA/NumPy/Python训练RNG、各rank rollout gen_random_states及原data.pt数据游标键均齐全；data SHA256=d670d80727032375d73807167d27af5ea1db9b49bfbf3135db9037424e8bd1df。0额外模型/DT/optimizer/save/训练restore调用。此为原生完成标记及保存状态可读性/计数核验，不称新恢复逐值试验或全模型字节SHA校验；AppWorld尚未启动，不宣称已验证其sampler。核验原回执与SHA在formal-native-checkpoint10-and-progress.json。
