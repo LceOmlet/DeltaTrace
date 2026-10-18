@@ -1,3 +1,11 @@
+## 2026-10-18T11:45:27.732829+08:00 新六组首组40/200；原生共享checkpoint40八rank状态核验通过
+
+同一controller2004205/1792263400.01及driver2004329/1792263400.35继续第41轮生成，其余五组queued。原TaskRunner line585确认step40：训练回报0.699、entropy0.604、首返回rank裁剪前分片grad0.006、KL日志0.001、含工具返回响应2489.914、原交互14.520；生成/DT/actor/保存/整轮390.052/115.547/125.602/48.785/745.216秒。原1–40完整step来源齐全。小时图先到39轮（112907/112913，较前35轮增4），随后新图114226/114242到40轮，较上一成功39轮图再增1；三次快照合计增5，不称严格60分钟窗口。其余方法缺失不填0，共同窗口仍0，旧调优曲线不拼接。
+
+原latest_checkpointed_iteration.txt=40；reader91d73825/owner f65b6538核验八actor rank各923模型项/496 optimizer项可读、scheduler均40、optimizer步数均160（40×4更新）、训练CPU/CUDA/NumPy/Python RNG及rollout RNG齐全，data.pt游标可读，SHA256=18ee9227508032ffae3e080b855321451dd017188ca093a3323c890a8ee07bf1。原回执SHA256=df701eaddac014c10a841ac86996fec153c10239b0e8c74145b540e1137cda14。0额外模型/DT/optimizer/save/训练restore，不称全模型字节SHA、恢复逐值或AppWorld sampler验收。74405已exit0，新39490只读等待原生checkpoint45，观察超时不重启训练。
+
+宿主/proc/vmstat全局oom_kill在11:22:58及11:42:29两个直接观测点均4，该区间未增加；cgroup累计计数亦4，不仅以cgroup未满判断global OOM。当前自然生成MemAvailable634.27GiB，不外推最坏32k容量。物理利用率及HBM/PCIe/卡间带宽仍用原owner，未修改副本、采样窗口/SHA见formal-native-checkpoint40-and-progress.json；不外推为峰值算力比例或时长加权全阶段均值。实际训练源仍09e9f19293e6829cbb16126d5e2d8c0fe07e40cb，本次仅核对保存状态、作图及记录，未改方法、超参或部署。六组200/最终checkpoint200与最终图未完成，goal保持active。
+
 ## 2026-10-18T10:42:20.789006+08:00 新六组首组35/200；原生共享checkpoint35八rank状态核验通过
 
 同一controller2004205/1792263400.01及driver2004329/1792263400.35继续第36轮生成，其余五组queued。原TaskRunner line549确认step35：训练回报0.719、entropy0.593、首返回rank裁剪前分片grad0.009、KL日志0.001、含工具返回响应2679.660、原交互13.789；生成/DT/actor/保存/整轮409.768/124.776/128.385/48.885/778.025秒。原1–35完整step来源齐全。小时图先到34轮（102651/102657，较前30轮增4），随后新图104024/104039到35轮，较上一成功34轮图再增1；这三次快照合计增5，不将其误称严格60分钟窗口。其余方法缺失不填0，共同窗口仍0，旧调优曲线不拼接。
