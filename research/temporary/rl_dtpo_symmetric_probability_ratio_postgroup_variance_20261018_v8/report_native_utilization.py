@@ -6,5 +6,5 @@ source=ROOT/'receipts/six-run-fresh-validated-efficiency-20261018-v1/source/repo
 assert hashlib.sha256(source.read_bytes()).hexdigest()=='d87376e903e5827025efb33d464b18d8df78dd31c4fa68cb438489a10595706d'
 code=source.read_text().replace('six-run-fresh-validated-efficiency-20261018-v1','dtpo-symmetric-probability-ratio-postgroup-variance-20261018-v8')
 code=code.replace('eight-gpu-sequential-20261018-v5','eight-gpu-symmetric-probability-ratio-postgroup-variance-20261018-v8')
-code=code.replace('-8gpu-200-20261018-v5','-8gpu-200-20261018-v7')
+code=code.replace('-8gpu-200-20261018-v5','-8gpu-200-20261018-v8')
 exec(compile(code,str(source),'exec'),globals())

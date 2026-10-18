@@ -1,4 +1,4 @@
-"""Use the accepted no-duplicate launch owner with the v7 queue identity."""
+"""Use the accepted no-duplicate launch owner with the v8 queue identity."""
 import hashlib
 from pathlib import Path
 ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')

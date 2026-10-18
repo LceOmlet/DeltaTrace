@@ -1,4 +1,4 @@
-"""Reuse the accepted eight-rank read-only import RPC for the current v7 run."""
+"""Reuse the accepted eight-rank read-only import RPC for the current v8 run."""
 import hashlib
 import os
 from pathlib import Path
