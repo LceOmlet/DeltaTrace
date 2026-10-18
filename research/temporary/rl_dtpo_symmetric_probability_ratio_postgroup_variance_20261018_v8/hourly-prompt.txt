@@ -1,0 +1,29 @@
+每小时在本线程刷新 TextCraft、AppWorld 各自 DTPO v8/PPO/GRPO 三算法对比图并回显六组真实进度。先读最新人类消息及 D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/{PLAN.md,RUNTIME_RECORD.md,current_runtime.json,REMOTE_ENVIRONMENT.md}。用户已明确恢复 v8 小时绘图。旧 v7 已停止；本小时任务仅现有日志/状态读取和绘图，不启停、恢复、重启训练，不改方法/超参、不运行新诊断、不启动SQL、不查询credit、不重装、不清缓存、不打印凭据。旧梯度根因及旧v7 goal不因本次恢复而重启；六组训练由既有原生控制器执行。
+
+直接运行：
+C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_dtpo_symmetric_probability_ratio_postgroup_variance_20261018_v8/plot_both_tasks.py
+入口 SHA256=066fba6a3166dc2d07c69ecabc4461959ebfba559e67865f986a0c02b511441f。复用原 collect/read_job_logs/parse_logs(c20559e3)及六面板 renderer(f6ed1ff3)，只适配v8身份、图例、全局范数标题及CSV口径，不写另一解析器/logger；CUDA_VISIBLE_DEVICES为空。
+
+ROOT=/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922。
+总队列事实 ROOT/receipts/dtpo-symmetric-probability-ratio-postgroup-variance-20261018-v8/{six-combination-manifest.json,controller-job.json,selected-native-resources.json,CPU-behavior-verification.json,superseded-v7-stopped.json,prelaunch-source-resolution.json}。
+两个任务段 ROOT/receipts/{textcraft,appworld}-eight-gpu-symmetric-probability-ratio-postgroup-variance-20261018-v8/{campaign-prepared.json,campaign-state.json}；未启动时state可没有。
+顺序与正式run：
+1. TextCraft DTPO v8：runs/textcraft-dtpo-symmetric-probability-ratio-postgroup-variance-v8-8gpu-200-20261018-v8。
+2. TextCraft 原PPO：runs/textcraft-ppo-8gpu-200-20261018-v8。
+3. TextCraft 原GRPO：runs/textcraft-grpo-8gpu-200-20261018-v8。
+4. AppWorld DTPO v8：runs/appworld-dtpo-symmetric-probability-ratio-postgroup-variance-v8-8gpu-200-20261018-v8。
+5. AppWorld 原PPO：runs/appworld-ppo-8gpu-200-20261018-v8。
+6. AppWorld 原GRPO：runs/appworld-grpo-8gpu-200-20261018-v8。
+六组均基础权重/0轮开始、各独占物理GPU0–7、200完整迭代；原生exit0、日志1..200及八rank完整共享checkpoint200齐全后交接，失败不跳过。初始controller3555138/出生1792318963.04，TextCraft DTPO driver3555236/出生1792318963.42；此后以最新正式manifest、launch/source.json、完成runtime override及PID出生为准。方法提交12cd52e16e944c6e9ea7fdcd9a336c098b186d9f，执行源8790a1b79cd5c22dca38935eed86f1cf7df64c0d；记录提交不冒称部署源。未启动明确queued，初始化和存活不称完整健康更新。
+
+v8保持原逐奖励事件EOS d及u=tanh(d/2)，先乘原官方已归一化组优势g/既定多事件b_k并汇总，再对最终保留policy token上的A0调用原VERL masked_var，用同一std(g·u)尺度缩放Q/V/A；不减均值、不在乘g前缩放u。PPO/GRPO方法、原backward/clip/optimizer和DT计算保持，43项CPU行为与同梯度1/2/8 rank原生范数接口检查已通过，本小时不重跑。已验收DT runner6a112224/corefc2f992b及TP1默认图/host-register8/MRoPE优化保持。actor只改记录，实际新actor SHAacd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d；不得继续写原3a65为当前文件SHA。TextCraft32组×8/global64/epochs1/4次actor更新/save5；AppWorld作者40组×6/global32/epochs2/原取消、残批、test5、loop_sampler/共享save2；32k/B4/LoRA8/16/seed/采样/LR/keep2保持。所有历史v1–v7、调优、未接受DP/TP2/ngram及诊断数据不拼接。共享检查点在/mnt/si0021787ci2/default/lzq/deltatrace_backups/{textcraft,appworld}-8gpu-20261017下各新run目录。
+
+严格SSH31146/HostKeyAlias32036，复用research/temporary/rl_upstream_alignment_20260929/stage_environment_entry.py和C:/Users/Administrator/.codex/private/metax_exec.py；source原环境入口后合并实际launch环境，直接原VENV_PYTHON，保留MACA_PATH/LD_LIBRARY_PATH/PYTHONPATH，不解析系统Python。不恢复旧全套硬件检查或大备份。
+
+每任务保存三算法不同颜色/线型/legend六面板：原环境训练回报、策略熵、actor/grad_norm、原KL、平均响应段长度（含工具返回）、平均工具调用数（原任务交互计数）。自动纵轴不强制0起点；缺失不填0、不插值、不平滑。训练回报不混组乘子/独立评估；KL日志0.000不称精确零。
+关键口径：v8三算法actor/grad_norm均为原DTensor.full_tensor物化的全局裁剪前范数，actor/grad_norm_local另存原首返回rank分片值，两项均用9位有效数字的原ConsoleLogger记录。全局图标题与CSV norm_scope必须一致，不把global当local；不将旧两卡首rank分片0.02–0.04与新八卡global直接比较，不乘sqrt(world_size)伪造历史global。每轮数值仍是原框架对该轮optimizer返回值的原聚合，不改成最大值或最后一次。
+分别保存algorithm-comparison-common-window.png/svg、algorithm-comparison-full.png/svg、metrics-with-sources.csv（原路径/行号及norm_scope）、source-snapshot.json、plot-receipt.json至F:/DeltaTraceBackups/plots/{textcraft,appworld}-eight-gpu-symmetric-probability-ratio-postgroup-variance-20261018-v8/<北京时间快照>。
+每次回显采集时间、六组完成/200及同run较上一成功快照增量、实际phase/queued、最新六指标简表和实际绝对图片链接。梯度列明确global，local仅另列核查不混用。共同窗口为空明确说明并内联各任务完整历史PNG；非空内联共同窗口PNG，附完整PNG/SVG和CSV。新run从0不是旧完成数倒退。无新迭代也刷新来源快照；采集失败说明具体原因与最后成功图时间，不冒充新数据、不修改训练绕过。
+
+可引用已有物理/宿主观察和原日志阶段耗时，区分生成/环境、DT、old/ref/critic前向、actor/critic更新、checkpoint；不同有效token量不冒称算子加速，占卡不称充分利用，原MFU不支持Qwen3.5而输出0不解释为零算力。阶段归约可复用ROOT/receipts/dtpo-symmetric-probability-ratio-postgroup-variance-20261018-v8/source/report_native_utilization.py，沿原1e502763/e6f3b171与既有mx-smi/宿主日志；CUDA_VISIBLE_DEVICES为空，只读已有数据，不新增profiling。只合并八rank同phase且原相邻时间观察有效的样本；mixed/初始化/missing bracket分开，带宽没记录就明确缺失。
+六组均200、最终八rank共享完整原生checkpoint200核验且两任务最终图保存展示后暂停本小时任务；此前保持。

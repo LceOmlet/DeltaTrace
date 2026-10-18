@@ -1,10 +1,10 @@
-## 2026-10-18T18:26:50.868047+08:00 DTPO v8：std(g·u) 与统一全局范数记录
+## 2026-10-18T18:42:19.494008+08:00 DTPO v8：std(g·u) 与统一全局范数记录
 
 方法提交12cd52e1，正式执行源8790a1b79cd5c22dca38935eed86f1cf7df64c0d，上游VERL 20bd331b。逐事件原EOS d→tanh(d/2)，先乘原官方已归一化g并汇总，再按原完整训练批次保留policy mask调用官方masked_var，用一个共同尺度缩放Q/V/A，不减均值、不预先缩放u。原PPO/GRPO方法、backward/clip/optimizer计算及已验收DT/资源效率路径保持；三算法都只把范数日志改为原DTensor.full_tensor全局裁剪前范数，另存actor/grad_norm_local。原ConsoleLogger仅这两个键用9位有效数字；原解析器支持科学计数法。旧两卡/八卡首rank分片历史不补估为全局，不与新全局曲线直接比较。
 
 43项CPU行为检查通过；同一整数FP64梯度的原clip_grad_norm_返回值，经DTensor.full_tensor物化后在2/8 rank与单进程完全一致。此处零容差仅验证同一精确可表示平方和的记录接口，不是模型数值容差或质量测试。六组按各自实际父源隔离，PPO的critic/offload与所有原计算owner保持；各任务原生Hydra配置逐section核对工作量一致，32k/B4/LoRA8/16、200轮及TextCraft save5/AppWorld save2保持。原v7 controller和driver已由原stop owner退出，无非zombie存活，日志与原完整检查点保留。
 
-新controller 3555138/1792318963.04，首组driver 3555236/1792318963.42。实际八rank初始绑定符合v8/DP8，当前原日志完成0/200；未完成迭代不能称健康更新。原生自动顺序TextCraft DTPO v8→PPO→GRPO→AppWorld DTPO v8→PPO→GRPO，均从基础权重/0轮独占GPU0–7；仅完整exit0、1..200日志和八rank共享checkpoint200后交接，失败不跳过。实际来源、配置、PID出生、后续自然更新及图像路径见results_dtpo_symmetric_probability_ratio_postgroup_variance_20261018_v8.json。小时任务状态PAUSED，旧v7 goal仍暂停，不假报已完成。
+新controller 3555138/1792318963.04，首组driver 3555236/1792318963.42。实际八rank初始绑定符合v8/DP8，当前原日志完成1/200；未完成迭代不能称健康更新。第1轮原日志全局裁剪前范数0.0177209538，首返回rank分片范数0.00578215602，分别保存不混比。首次自然更新后的只读RPC确认八rank实际counterfactual/readout绑定正确、scheduler均1、optimizer条目均496；未追加模型或optimizer调用。原生自动顺序TextCraft DTPO v8→PPO→GRPO→AppWorld DTPO v8→PPO→GRPO，均从基础权重/0轮独占GPU0–7；仅完整exit0、1..200日志和八rank共享checkpoint200后交接，失败不跳过。实际来源、配置、PID出生、后续自然更新及图像路径见results_dtpo_symmetric_probability_ratio_postgroup_variance_20261018_v8.json。小时任务状态ACTIVE，旧v7 goal仍暂停，不假报已完成。
 
 ## 2026-10-18T17:46:16.700341+08:00 对称概率比 DTPO v7：首个八rank原生共享检查点已核验
 

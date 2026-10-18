@@ -56,8 +56,9 @@ if after.exists():
     record['actual_optimizer_entries']=[r['actor_optimizer_entries'] for r in value['results']]
     values=summary['jobs'][0]['last_metric']['values']
     assert 'actor/grad_norm' in values and 'actor/grad_norm_local' in values
-    record['first_observed_grad_norm_global']=values['actor/grad_norm']
-    record['first_observed_grad_norm_local']=values['actor/grad_norm_local']
+    record['latest_observed_grad_norm_iteration']=summary['jobs'][0]['last_metric']['step']
+    record['latest_observed_grad_norm_global']=values['actor/grad_norm']
+    record['latest_observed_grad_norm_local']=values['actor/grad_norm_local']
 result_path=Path('experiments/rl/results_dtpo_symmetric_probability_ratio_postgroup_variance_20261018_v8.json')
 result_path.write_text(json.dumps(record,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
 key='20261018_symmetric_probability_ratio_postgroup_variance_v8_current'
@@ -67,13 +68,19 @@ def update_json(text):
     return json.dumps({key:record,**old},indent=2,ensure_ascii=False)+'\n'
 runtime.write_text(update_json(runtime.read_text(encoding='utf-8')),encoding='utf-8')
 completed=summary['jobs'][0]['completed_iterations']
+native_note=''
+if after.exists():
+    native_note=(f"第{record['latest_observed_grad_norm_iteration']}轮原日志全局裁剪前范数"
+        f"{record['latest_observed_grad_norm_global']}，首返回rank分片范数"
+        f"{record['latest_observed_grad_norm_local']}，分别保存不混比。首次自然更新后的只读RPC确认"
+        "八rank实际counterfactual/readout绑定正确、scheduler均1、optimizer条目均496；未追加模型或optimizer调用。")
 header=f'''## {now} DTPO v8：std(g·u) 与统一全局范数记录
 
 方法提交12cd52e1，正式执行源{summary['source_commit']}，上游VERL 20bd331b。逐事件原EOS d→tanh(d/2)，先乘原官方已归一化g并汇总，再按原完整训练批次保留policy mask调用官方masked_var，用一个共同尺度缩放Q/V/A，不减均值、不预先缩放u。原PPO/GRPO方法、backward/clip/optimizer计算及已验收DT/资源效率路径保持；三算法都只把范数日志改为原DTensor.full_tensor全局裁剪前范数，另存actor/grad_norm_local。原ConsoleLogger仅这两个键用9位有效数字；原解析器支持科学计数法。旧两卡/八卡首rank分片历史不补估为全局，不与新全局曲线直接比较。
 
 43项CPU行为检查通过；同一整数FP64梯度的原clip_grad_norm_返回值，经DTensor.full_tensor物化后在2/8 rank与单进程完全一致。此处零容差仅验证同一精确可表示平方和的记录接口，不是模型数值容差或质量测试。六组按各自实际父源隔离，PPO的critic/offload与所有原计算owner保持；各任务原生Hydra配置逐section核对工作量一致，32k/B4/LoRA8/16、200轮及TextCraft save5/AppWorld save2保持。原v7 controller和driver已由原stop owner退出，无非zombie存活，日志与原完整检查点保留。
 
-新controller {summary['controller']['pid']}/{summary['controller']['birth']}，首组driver {summary['jobs'][0]['pid']}/{summary['jobs'][0]['birth']}。实际八rank初始绑定符合v8/DP8，当前原日志完成{completed}/200；未完成迭代不能称健康更新。原生自动顺序TextCraft DTPO v8→PPO→GRPO→AppWorld DTPO v8→PPO→GRPO，均从基础权重/0轮独占GPU0–7；仅完整exit0、1..200日志和八rank共享checkpoint200后交接，失败不跳过。实际来源、配置、PID出生、后续自然更新及图像路径见results_dtpo_symmetric_probability_ratio_postgroup_variance_20261018_v8.json。小时任务状态{automation['status']}，旧v7 goal仍暂停，不假报已完成。
+新controller {summary['controller']['pid']}/{summary['controller']['birth']}，首组driver {summary['jobs'][0]['pid']}/{summary['jobs'][0]['birth']}。实际八rank初始绑定符合v8/DP8，当前原日志完成{completed}/200；未完成迭代不能称健康更新。{native_note}原生自动顺序TextCraft DTPO v8→PPO→GRPO→AppWorld DTPO v8→PPO→GRPO，均从基础权重/0轮独占GPU0–7；仅完整exit0、1..200日志和八rank共享checkpoint200后交接，失败不跳过。实际来源、配置、PID出生、后续自然更新及图像路径见results_dtpo_symmetric_probability_ratio_postgroup_variance_20261018_v8.json。小时任务状态{automation['status']}，旧v7 goal仍暂停，不假报已完成。
 
 '''
 history=Path('experiments/rl/RUNTIME_RECORD.md')
