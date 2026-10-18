@@ -31,6 +31,7 @@ def reward_event_token_credit(
     discounts: torch.Tensor | None = None,
     self_target_mask: torch.Tensor | None = None,
     linear_attribution: bool = False,
+    symmetric_probability_ratio: bool = False,
 ) -> DTTokenCredit:
     """Compose sampled terminal/process rewards into individual token advantages.
 
@@ -61,11 +62,19 @@ def reward_event_token_credit(
     Exact ratios give the factual-minus-counterfactual reward expectation.
     This equals PPO Q-V when the counterfactual endpoint has the PLAN V
     semantics; conservation alone does not establish that alignment.
-    A terminal reward is one event. No cross-token normalization,
-    probability-difference substitution, clipping, or learned baseline occurs.
+    With symmetric_probability_ratio=True (v7), each event instead gives
+    Q=r*sigmoid(d), V=r*sigmoid(-d), A=r*tanh(d/2). This directly computes
+    the symmetric probability difference from the existing DT log ratio;
+    it requires no additional samples and no credit normalization. It is a
+    different expected signal under factual sampling, not the exponential
+    importance estimator above. The same self-target/mask rules still apply.
+    A terminal reward is one event. No cross-token normalization, clipping,
+    or learned baseline occurs.
     """
     if log_ratios.ndim != 3 or not log_ratios.is_floating_point():
         raise ValueError("log_ratios must be floating [batch, events, tokens]")
+    if linear_attribution and symmetric_probability_ratio:
+        raise ValueError("linear and symmetric credit transforms are mutually exclusive")
     batch, events, tokens = log_ratios.shape
     if rewards.shape != (batch, events) or not rewards.is_floating_point():
         raise ValueError("rewards must be floating [batch, events]")
@@ -108,7 +117,12 @@ def reward_event_token_credit(
         weighted_reward = weighted_reward * torch.where(active, discounts.to(dtype), 0.0)
 
     # Stable near d=0: sampled importance correction, not R*(p_action-p_policy).
-    if linear_attribution:
+    event_q = weighted_reward
+    if symmetric_probability_ratio:
+        event_q = weighted_reward * torch.sigmoid(d)
+        event_baselines = weighted_reward * torch.sigmoid(-d)
+        event_advantages = weighted_reward * torch.tanh(d * 0.5)
+    elif linear_attribution:
         # v4 receives a normalized finite allocation, not a log probability ratio.
         event_advantages = weighted_reward * d
         event_baselines = weighted_reward - event_advantages
@@ -116,10 +130,11 @@ def reward_event_token_credit(
         event_advantages = weighted_reward * (-torch.expm1(-d))
         event_baselines = weighted_reward * torch.exp(-d)
     if self_target_mask is not None:
+        event_q = torch.where(self_target_mask, weighted_reward, event_q)
         event_advantages = torch.where(self_target_mask, weighted_reward, event_advantages)
         event_baselines = torch.where(self_target_mask, 0.0, event_baselines)
     advantages = event_advantages.sum(dim=1)
-    q_estimates = weighted_reward.sum(dim=1)
+    q_estimates = event_q.sum(dim=1)
     v_estimates = event_baselines.sum(dim=1)
     if not all(bool(torch.isfinite(value).all()) for value in (advantages, q_estimates, v_estimates)):
         raise FloatingPointError("reward-event estimate overflow; no silent ratio clamp is applied")

@@ -391,6 +391,7 @@ class DirectActionTargetReadout:
         self.weighted_target_credit = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
         self.reward_target_exponential = os.environ.get('DT_CREDIT_MODE') in (
             'reward_target_exponential_v5', 'reward_target_exponential_variance_v6')
+        self.symmetric_probability_ratio = os.environ.get('DT_CREDIT_MODE') == 'reward_target_symmetric_probability_ratio_v7'
         self.minibatch_size = minibatch_size
         self.packed_answer_targets = packed_answer_targets
         # A joint target can contain predictors before a later source span.
@@ -560,6 +561,7 @@ class DirectActionTargetReadout:
                 item['future_event_mask'][None, None, :], item['policy'][None, :],
                 self_target_mask=item['target'][None, None, :],
                 linear_attribution=self.weighted_target_credit,
+                symmetric_probability_ratio=self.symmetric_probability_ratio,
             )
             result = dict(dt_token_advantages=credit.advantages[0],
                           dt_q_estimates=credit.q_estimates[0], dt_v_estimates=credit.v_estimates[0])
@@ -575,6 +577,13 @@ class DirectActionTargetReadout:
             report.update(target_semantics='reward_settlement_action_spans',
                           credit_transform='linear_finite_allocation',
                           output_seed='c_k / native_span_EOS_logp_difference')
+        elif self.symmetric_probability_ratio:
+            report.update(target_semantics='reward_settlement_action_spans',
+                          credit_transform='per_event_symmetric_probability_ratio_then_credit_sum',
+                          output_seed='original_unscaled_native_span_logp',
+                          coefficient_kind='stable_target_credit; native_TextCraft_uses_official_GRPO',
+                          source_credit_normalization=None,
+                          credit_variance_normalization=False)
         elif self.reward_target_exponential:
             report.update(target_semantics='reward_settlement_action_spans',
                           credit_transform='per_event_exponential_then_credit_sum',

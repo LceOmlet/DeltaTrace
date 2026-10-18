@@ -707,13 +707,19 @@ RAY_ADV_INSERT_VARIANCE_AFTER_MULTIPLIER_PREVIOUS = RAY_ADV_INSERT_NO_WHITEN_PRE
     '        advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)\n',
     1,
 )
-RAY_ADV_INSERT = RAY_ADV_INSERT_VARIANCE_AFTER_MULTIPLIER_PREVIOUS.replace(
+RAY_ADV_INSERT_VARIANCE_BEFORE_MULTIPLIER_PREVIOUS = RAY_ADV_INSERT_VARIANCE_AFTER_MULTIPLIER_PREVIOUS.replace(
     '        # v3: official masked variance, with no subtraction of the mean.\n'
     '        advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)\n',
     '        import os\n'
     '        # v6 already scales unit exponential credit before its GRPO multiplier.\n'
     '        if os.environ.get("DT_CREDIT_MODE") != "reward_target_exponential_variance_v6":\n'
     '            advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)\n',
+    1,
+)
+RAY_ADV_INSERT = RAY_ADV_INSERT_VARIANCE_BEFORE_MULTIPLIER_PREVIOUS.replace(
+    '        if os.environ.get("DT_CREDIT_MODE") != "reward_target_exponential_variance_v6":\n',
+    '        # v7 intentionally leaves symmetric credit unnormalized, before and after g.\n'
+    '        if os.environ.get("DT_CREDIT_MODE") not in ("reward_target_exponential_variance_v6", "reward_target_symmetric_probability_ratio_v7"):\n',
     1,
 )
 RAY_WHITEN_IMPORT = "import verl.utils.torch_functional as verl_F\n"
@@ -731,6 +737,7 @@ def patch_dt_advantage_preprocessing(trainer_text: str) -> str:
     for previous in (RAY_ADV_INSERT_PREVIOUS, RAY_ADV_INSERT_RAW_PREVIOUS,
                      RAY_ADV_INSERT_WHITEN_PREVIOUS, RAY_ADV_INSERT_NO_WHITEN_PREVIOUS,
                      RAY_ADV_INSERT_VARIANCE_AFTER_MULTIPLIER_PREVIOUS,
+                     RAY_ADV_INSERT_VARIANCE_BEFORE_MULTIPLIER_PREVIOUS,
                      RAY_ADV_INSERT_STALE):
         if previous in trainer_text:
             trainer_text = trainer_text.replace(previous, RAY_ADV_INSERT, 1)
