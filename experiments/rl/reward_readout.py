@@ -391,7 +391,7 @@ class DirectActionTargetReadout:
         self.weighted_target_credit = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
         self.reward_target_exponential = os.environ.get('DT_CREDIT_MODE') in (
             'reward_target_exponential_v5', 'reward_target_exponential_variance_v6')
-        self.symmetric_probability_ratio = os.environ.get('DT_CREDIT_MODE') == 'reward_target_symmetric_probability_ratio_v7'
+        self.symmetric_probability_ratio = os.environ.get('DT_CREDIT_MODE') in ('reward_target_symmetric_probability_ratio_v7', 'reward_target_symmetric_probability_ratio_postgroup_variance_v8')
         self.minibatch_size = minibatch_size
         self.packed_answer_targets = packed_answer_targets
         # A joint target can contain predictors before a later source span.

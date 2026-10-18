@@ -716,10 +716,25 @@ RAY_ADV_INSERT_VARIANCE_BEFORE_MULTIPLIER_PREVIOUS = RAY_ADV_INSERT_VARIANCE_AFT
     '            advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)\n',
     1,
 )
-RAY_ADV_INSERT = RAY_ADV_INSERT_VARIANCE_BEFORE_MULTIPLIER_PREVIOUS.replace(
+RAY_ADV_INSERT_SYMMETRIC_UNNORMALIZED_PREVIOUS = RAY_ADV_INSERT_VARIANCE_BEFORE_MULTIPLIER_PREVIOUS.replace(
     '        if os.environ.get("DT_CREDIT_MODE") != "reward_target_exponential_variance_v6":\n',
     '        # v7 intentionally leaves symmetric credit unnormalized, before and after g.\n'
     '        if os.environ.get("DT_CREDIT_MODE") not in ("reward_target_exponential_variance_v6", "reward_target_symmetric_probability_ratio_v7"):\n',
+    1,
+)
+RAY_ADV_INSERT = RAY_ADV_INSERT_SYMMETRIC_UNNORMALIZED_PREVIOUS.replace(
+    '        # v7 intentionally leaves symmetric credit unnormalized, before and after g.\n',
+    '        # v8 scales the final signed, post-group/event-sum Q/V/A together.\n'
+    '        if os.environ.get("DT_CREDIT_MODE") == "reward_target_symmetric_probability_ratio_postgroup_variance_v8":\n'
+    '            scale = torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)\n'
+    '            for name in ("dt_token_advantages", "dt_q_estimates", "dt_v_estimates"):\n'
+    '                data.batch[name] = torch.where(response_mask, data.batch[name] * scale, 0.0)\n'
+    '            advantages = data.batch["dt_token_advantages"]\n'
+    '        # Earlier accepted modes retain their original normalization.\n',
+    1,
+).replace(
+    '("reward_target_exponential_variance_v6", "reward_target_symmetric_probability_ratio_v7"):',
+    '("reward_target_exponential_variance_v6", "reward_target_symmetric_probability_ratio_v7", "reward_target_symmetric_probability_ratio_postgroup_variance_v8"):',
     1,
 )
 RAY_WHITEN_IMPORT = "import verl.utils.torch_functional as verl_F\n"
@@ -738,6 +753,7 @@ def patch_dt_advantage_preprocessing(trainer_text: str) -> str:
                      RAY_ADV_INSERT_WHITEN_PREVIOUS, RAY_ADV_INSERT_NO_WHITEN_PREVIOUS,
                      RAY_ADV_INSERT_VARIANCE_AFTER_MULTIPLIER_PREVIOUS,
                      RAY_ADV_INSERT_VARIANCE_BEFORE_MULTIPLIER_PREVIOUS,
+                     RAY_ADV_INSERT_SYMMETRIC_UNNORMALIZED_PREVIOUS,
                      RAY_ADV_INSERT_STALE):
         if previous in trainer_text:
             trainer_text = trainer_text.replace(previous, RAY_ADV_INSERT, 1)

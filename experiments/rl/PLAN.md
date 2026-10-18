@@ -1,4 +1,9 @@
-**2026-10-18 用户批准 DTPO symmetric-probability-ratio v7，并持续完成六组正式实验。**
+**2026-10-18 用户批准 DTPO symmetric-probability-ratio post-group-variance v8，并要求多卡/双卡梯度记录口径一致。**
+本条替代下文 v7 的“信用不做方差缩放”。保留逐真实奖励事件的原 EOS d、u=tanh(d/2)、官方已归一化组优势 g 及多事件同尺度 b_k；先在原 token 位置汇总未缩放的 Q0/V0/A0（单事件 source A0=g*u），再在原完整训练批次参与 PPO 的保留 policy token 上调用固定 VERL 原 masked_var，s=sqrt(masked_var(A0,mask)+1e-8)。最终 Q=Q0/s、V=V0/s、A=A0/s；同一尺度只用一次，不减均值，不在乘 g 前归一化 u，不按 span 分别归一化。原观察/padding/future mask、自 target、带符号/抵消事件及原 DP row 权重保持；g=0 的已知零项仍可跳过 DT。多事件使用先逐事件对称变换再汇总后的 A0 统计，不先合并 d 或重复分配信用。
+继续使用原固定 VERL 的 masked_var、actor/core/PPO/clip/optimizer 和已验收 DT/资源优化；不使用 masked_whiten(shift_mean=False) 中隐含的减均值再加回步骤，不新增常数倍以追赶某个梯度范数。原32k/B4/LoRA8/16、两任务采样/学习工作量、200迭代、save5/save2及keep2保持。v7异常版本停止并保留日志与原完整检查点；v8以独立身份从基础权重和0轮开始，不拼接旧曲线。
+用户要求修正梯度记录口径：新正式任务的 actor/grad_norm 记录原 optimizer step 返回的裁剪前全局范数，DTensor 使用其原 full_tensor 接口物化后记录，普通Tensor保持原值；另保留 actor/grad_norm_local 原分片值。此项只作用于记录，原裁剪/反向/更新数学不改；PPO、GRPO使用同一记录规则。使用对应原生接口验证多rank记录与单进程同一梯度的范数一致，而非新跑质量验证。历史两卡/八卡仅有首rank分片值的记录不补估全局，不乘sqrt(world_size)冒充实测；图表和CSV必须明确区分两种口径。
+
+**2026-10-18 历史批准 DTPO symmetric-probability-ratio v7，并持续完成六组正式实验。**
 本条替代 v6 的指数信用及其乘组优势前的仅方差缩放。使用同一原始 EOS 有限传播 d=log(p/p0)，逐真实奖励事件计算 u=tanh(d/2)=(p-p0)/(p+p0)，直接乘官方已归一化 GRPO 组相对优势 g（多事件使用已有同尺度分解 b_k）并按原 token 位置汇总；不引入混合采样、额外模型/环境调用，不额外乘2，不在信用乘子之前或之后做均值/方差归一化，也不加 source u 分母。官方 g 的组内归一化本身保持。
 对应同一对称分母的逐事件记录为 Q_ik=b_k*sigmoid(d_ik)、V_ik=b_k*sigmoid(-d_ik)、A_ik=b_k*tanh(d_ik/2)，再逐项求和；原 discounts 一致作用于三项。使用原生 torch.tanh/sigmoid 稳定计算，不先求可能溢出的 exp。相同事件的 self-target 仍 Q=b_k/V=0/A=b_k，原观察/padding/future mask、真实奖励结算 target（含结算0）、多片段单事件、原逐事件展平/DP/scatter 保持。b_k=0 的项已知为0，可沿原 v5 原生路径跳过对应 DT 请求；因不再估计整批信用方差，不需要 v6 的单位信用额外计算。正负/抵消事件分别变换再相加，不将多个 d 合并后变换。
 此为用户批准的有界对称信用实验；沿用实际事实 rollout，不声称继承原重要性比的精确期望策略梯度等价证明，也不以原始信用有界推断训练质量或梯度已稳定。保留每 token Q/V/A 接口与原固定 VERL actor/core/PPO 目标和归约，PPO/GRPO 方法不改。

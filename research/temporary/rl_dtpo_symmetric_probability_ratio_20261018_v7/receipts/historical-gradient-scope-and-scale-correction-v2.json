@@ -1,0 +1,89 @@
+{
+  "recorded_at": "2026-10-18T18:05:39.365211+08:00",
+  "scope": "Correction of historical gradient comparison and normalization direction; historical sources only. Current goal and hourly automation stay paused.",
+  "source": {
+    "path": "research\\temporary\\rl_dtpo_symmetric_probability_ratio_20261018_v7\\receipts\\historical-version-native-log-metrics-v1.json",
+    "SHA256": "6fcaae7f02bfbbbf853e292f47ad26571df96d41ed6358ac6ddc67ea993c48e1"
+  },
+  "observations": [
+    {
+      "identity": "textcraft-dt-reward-target-exponential-20261016-v5",
+      "run_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-reward-target-exponential-20261016-v5/textcraft-dt",
+      "completed": 79,
+      "first5_grad_norms": [
+        0.024,
+        0.019,
+        0.023,
+        0.02,
+        0.014
+      ],
+      "first5_grad_median": 0.02
+    },
+    {
+      "identity": "textcraft-dt-reward-target-exponential-variance-20261017-v6",
+      "run_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dt-reward-target-exponential-variance-20261017-v6/textcraft-dt",
+      "completed": 5,
+      "first5_grad_norms": [
+        0.013,
+        0.014,
+        0.013,
+        0.013,
+        0.01
+      ],
+      "first5_grad_median": 0.013,
+      "Q_abs_max_range": [
+        31.815,
+        36.219
+      ],
+      "native_scale_lower_bound_all_observed_iterations": 12.854343434343434,
+      "native_scale_bound_scope": "Q=g/s_u on original masked native policy positions, one TextCraft reward event; |g|<2.475 for official eight-trajectory binary rewards. The .0005 subtraction is console rounding uncertainty, not a new tolerance."
+    },
+    {
+      "identity": "textcraft-eight-gpu-sequential-20261018-v5",
+      "run_dir": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v6-8gpu-200-20261018-v5/textcraft-dt",
+      "completed": 64,
+      "first5_grad_norms": [
+        0.006,
+        0.007,
+        0.007,
+        0.007,
+        0.005
+      ],
+      "first5_grad_median": 0.007,
+      "Q_abs_max_range": [
+        21.813,
+        40.317
+      ],
+      "native_scale_lower_bound_all_observed_iterations": 8.813131313131313,
+      "native_scale_bound_scope": "Q=g/s_u on original masked native policy positions, one TextCraft reward event; |g|<2.475 for official eight-trajectory binary rewards. The .0005 subtraction is console rounding uncertainty, not a new tolerance."
+    }
+  ],
+  "norm_scope": {
+    "original": "First-returned rank local pre-clip DTensor shard norm, not full gradient norm.",
+    "same_global_gradient_uniform_shard_prediction_8_over_2": 0.5,
+    "limitation": "Historical simultaneous all-rank v6 norms were not stored in examined receipts; do not convert this prediction into measured global equivalence.",
+    "official_update_weight": "Global64/B4 has16 original microbatches: 2GPU uses8 accumulation per rank and2-way mean; 8GPU uses2 accumulation and8-way mean. Both original total weighting1/16."
+  },
+  "normalization": {
+    "v5": "A5=g*u/s5, s5=sqrt(original masked_var(g*u)+1e-8)",
+    "v6": "A6=g*u/s6, s6=sqrt(original masked_var(u)+1e-8)",
+    "same_input_exact_scale_ratio": "A6/A5=s5/s6 for nonzero entries, same native masks and original row weights.",
+    "direction": "Relative to v5, v6 shrinks if s6>s5. Neither official group normalization of g nor separate normalization of u guarantees variance(g*u)=1. Absolute 1/s6 and relative s5/s6 are different quantities.",
+    "v6_population": "Pre-multiplier unit-credit statistics include original zero-g trajectories; v5 final g*u has zero entries there.",
+    "missing_evidence": "Exact retained-batch s5 and s6 on the same historical input were not saved in the examined v6 receipts. Do not claim the complete observed gradient difference has been decomposed."
+  },
+  "corrections": [
+    "Comparing raw two-GPU and eight-GPU shard norms is not an experiment measuring reduction of total gradient.",
+    "A smaller v6 gradient than v5 does not prove the absolute v6 normalizer is below1; native Q logs instead bound it above1 across these observed iterations.",
+    "The previous recommendation to restore normalization was a proposal, not a verified repair; no implementation follows from this analysis."
+  ],
+  "source_owner_hashes": {
+    "actor": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c",
+    "core": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+    "v6_trainer": "d25ab00aa7779dc3933a06cf008d47224ab3b6aeebf3e5a4291e2ed910819417"
+  },
+  "model_calls": 0,
+  "backward_calls": 0,
+  "optimizer_updates": 0,
+  "training_or_goal_mutations": 0
+}
