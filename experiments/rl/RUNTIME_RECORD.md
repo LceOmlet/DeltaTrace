@@ -1,3 +1,7 @@
+## 2026-10-18T19:10:43.781666+08:00 TextCraft v8 与历史 PPO/GRPO 同图
+
+用户明确要求实际绘图比较，而非文字比较其他DTPO版本。复用原历史对照owner78d3d75a、原parser c20559e3和六面板renderer f6ed1ff3，将当前v8八卡与历史两卡PPO/GRPO置于同图；原全局学习负载逐字段核对保持。仅另建plot/grad_norm_global显示字段，历史首rank分片乘√2并明确标为均衡分片假设估算，v8使用全局实测；原actor/grad_norm不覆盖，CSV保留原值、换算因子、norm_scope、日志路径/行号，其他指标不变。当前图曲线完成数{'dt': 3, 'ppo': 105, 'grpo': 191}、共同窗口3；历史105/191轮不当作本次新八卡队列进度。统一小时入口已ACTIVE，先保存原六组正式图，再生成该历史对照图。未改训练、模型、方法或超参。路径及校验见experiments/rl/results_textcraft_v8_historical_control_plot_20261018_v1.json。
+
 ## 2026-10-18T18:42:19.494008+08:00 DTPO v8：std(g·u) 与统一全局范数记录
 
 方法提交12cd52e1，正式执行源8790a1b79cd5c22dca38935eed86f1cf7df64c0d，上游VERL 20bd331b。逐事件原EOS d→tanh(d/2)，先乘原官方已归一化g并汇总，再按原完整训练批次保留policy mask调用官方masked_var，用一个共同尺度缩放Q/V/A，不减均值、不预先缩放u。原PPO/GRPO方法、backward/clip/optimizer计算及已验收DT/资源效率路径保持；三算法都只把范数日志改为原DTensor.full_tensor全局裁剪前范数，另存actor/grad_norm_local。原ConsoleLogger仅这两个键用9位有效数字；原解析器支持科学计数法。旧两卡/八卡首rank分片历史不补估为全局，不与新全局曲线直接比较。
