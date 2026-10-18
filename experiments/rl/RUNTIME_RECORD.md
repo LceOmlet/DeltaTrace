@@ -1,3 +1,11 @@
+## 2026-10-18T13:40:01.158943+08:00 新六组首组50/200；原生共享checkpoint50八rank状态核验通过
+
+同一controller2004205/1792263400.01及driver2004329/1792263400.35继续第51轮生成，其余五组queued。原TaskRunner line657确认step50：训练回报0.793、entropy0.596、首返回rank裁剪前分片grad0.006、KL日志0.004、含工具返回响应2128.316、原交互12.117；生成/DT/actor/保存/整轮386.228/121.722/121.692/48.062/741.001秒。原1–50完整step来源齐全。小时图先到49轮（132713/132720，较前45轮增4），随后新图133705/133714到50轮，较上一成功49轮图再增1；合计增5，不称严格60分钟窗口。其余方法缺失不填0，共同窗口仍0，旧调优曲线不拼接。
+
+原latest_checkpointed_iteration.txt=50；reader91d73825/owner f65b6538核验八actor rank各923模型项/496 optimizer项可读、scheduler均50、optimizer步数均200（50轮×4更新，并非训练完成200轮）、训练CPU/CUDA/NumPy/Python RNG及rollout RNG齐全，data.pt游标可读，SHA256=31f73f7eca6c6ff99bddb3ef77b25a929a1113598b5dd9ea01a7de2ca978fb16。原回执SHA256=76230cee6b21e2e703193d966c13f745d44b63b7c55b0c55d45b9f37a8e3444d。0额外模型/DT/optimizer/save/训练restore，不称全模型字节SHA、恢复逐值或AppWorld sampler验收。25597已exit0，新89631只读等待原生checkpoint55，观察超时不重启训练。
+
+宿主/proc/vmstat全局oom_kill在12:40:58及13:37:08两个直接观测点均4，该区间未增加；cgroup累计计数亦4，不仅以cgroup未满判断global OOM。当前自然生成MemAvailable633.87GiB，不外推最坏32k容量。物理利用率及HBM/PCIe/卡间带宽仍用原owner，未修改副本、采样窗口/SHA见formal-native-checkpoint50-and-progress.json；生成各卡样本均值49.02–50.63%、DT50.16–55.79%、actor73.20–74.74%，不外推峰值算力比例或时长加权全阶段均值。实际训练源仍09e9f19293e6829cbb16126d5e2d8c0fe07e40cb，本次仅核对保存状态、作图及记录，未改方法、超参或部署。六组200/最终checkpoint200与最终图未完成，goal保持active。
+
 ## 2026-10-18T12:43:11.990152+08:00 新六组首组45/200；原生共享checkpoint45八rank状态核验通过
 
 同一controller2004205/1792263400.01及driver2004329/1792263400.35继续第46轮生成，其余五组queued。原TaskRunner line621确认step45：训练回报0.762、entropy0.567、首返回rank裁剪前分片grad0.004、KL日志0.003、含工具返回响应2390.133、原交互13.566；生成/DT/actor/保存/整轮395.735/107.747/123.870/49.141/741.004秒。原1–45完整step来源齐全。小时图先到44轮（122823/122829，较前40轮增4），随后新图124055/124102到45轮，较上一成功44轮图再增1；三次快照合计增5，不称严格60分钟窗口。其余方法缺失不填0，共同窗口仍0，旧调优曲线不拼接。
