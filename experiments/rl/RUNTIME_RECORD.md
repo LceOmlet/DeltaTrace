@@ -1,3 +1,11 @@
+## 2026-10-18T16:39:10.616288+08:00 对称概率比 DTPO v7 已提交；八卡六组从零自动队列已启动
+
+用户批准的纯 DT 对称概率比 v7 已按唯一 PLAN 实现并推送，方法提交673b337fa1c78bf4772290966189e80a2b568d8e，上游 VERL 20bd331bdbc9026a5668e11362178e10ab7400c8。原 d→tanh(d/2)，取消信用乘组优势前后的均值/方差缩放，官方 GRPO 组内归一化保持；原多事件、观察/未来/self mask、DT计算、actor/core/采样和资源效率版本保持，无新增采样。41项CPU检查通过；32k CPU张量覆盖不冒称新GPU容量或质量验收。候选完整绑定与配置见本版本source-prepared及six-combination-manifest。
+
+旧v6 controller2004205/1792263400.01及driver2004329/1792263400.35已依原stop owner退出，确认无非zombie存活；旧日志/检查点保留，不拼接。新controller2854542/1792312285.09，首组TextCraft DTPO driver2854659/1792312285.4；八个实际worker均v7/DP8，初始optimizer条目和scheduler均0。当前原日志完成0/200；初始化与进程存活不称已完成健康更新。初始绑定中lazy DT尚未导入，是否已自然执行及后续绑定以results_dtpo_symmetric_probability_ratio_20261018_v7.json实际回执为准。
+
+顺序TextCraft DTPO对称v7→原PPO→原GRPO→AppWorld DTPO对称v7→原PPO→原GRPO；六组均基础权重、独占0–7、200完整迭代。六份原生Hydra配置通过任务内工作量核对，TextCraft32×8/global64/epochs1/4更新/save5，AppWorld40×6/global32/epochs2/原残批/test5/共享save2保持；原32k/B4/LoRA8/16、seed/LR/采样/keep2保持。复用原f71ff4d8队列，仅原生exit0、日志1..200及八rank完整checkpoint200齐全后切换，失败不跳过。hourly textcraft已ACTIVE切换v7两任务三算法同图，缺失不补0，初始两任务共同窗口均空。goal保持active，六组最终训练、共享完整checkpoint200和两任务最终图完成前不标完成。
+
 ## 2026-10-18T13:40:01.158943+08:00 新六组首组50/200；原生共享checkpoint50八rank状态核验通过
 
 同一controller2004205/1792263400.01及driver2004329/1792263400.35继续第51轮生成，其余五组queued。原TaskRunner line657确认step50：训练回报0.793、entropy0.596、首返回rank裁剪前分片grad0.006、KL日志0.004、含工具返回响应2128.316、原交互12.117；生成/DT/actor/保存/整轮386.228/121.722/121.692/48.062/741.001秒。原1–50完整step来源齐全。小时图先到49轮（132713/132720，较前45轮增4），随后新图133705/133714到50轮，较上一成功49轮图再增1；合计增5，不称严格60分钟窗口。其余方法缺失不填0，共同窗口仍0，旧调优曲线不拼接。
