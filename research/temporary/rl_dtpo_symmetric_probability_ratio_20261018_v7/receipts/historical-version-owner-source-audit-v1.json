@@ -1,0 +1,300 @@
+{
+  "jobs": [
+    {
+      "identity": "textcraft-dt-formal-native-graph-fresh-20261012-v1-1791793609",
+      "source_commit": "0b12b2020f2ece724b17e4e3179aa664df2bd737",
+      "mode": null,
+      "sources": {
+        "verl/workers/actor/dp_actor.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl/trainer/ppo/core_algos.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-checkpoint-rollout-rng-20261012-v1/verl-owner/verl/trainer/ppo/ray_trainer.py",
+          "SHA256": "7366557b482e604d66f47bdc4841ea147ffaac7c80538fa000544bb4e92eb619",
+          "credit_lines": [
+            {
+              "line": 364,
+              "text": "for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+            },
+            {
+              "line": 373,
+              "text": "advantages = verl_F.masked_whiten(data.batch[\"dt_token_advantages\"], response_mask)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "identity": "new-dtpo-group-no-whiten-20261014",
+      "source_commit": "de8b6b2720f98c243fc3cfbfd27f14a8501e692d",
+      "mode": null,
+      "sources": {
+        "verl/workers/actor/dp_actor.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-no-whiten-20261014-v1/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl/trainer/ppo/core_algos.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-no-whiten-20261014-v1/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-no-whiten-20261014-v1/verl-owner/verl/trainer/ppo/ray_trainer.py",
+          "SHA256": "63b0d623380bab3173eaf2c7148bddf21b557827625bd5eff25c5b4faa05daa4",
+          "credit_lines": [
+            {
+              "line": 364,
+              "text": "for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+            },
+            {
+              "line": 373,
+              "text": "advantages = data.batch[\"dt_token_advantages\"]"
+            },
+            {
+              "line": 1250,
+              "text": "batch.batch[\"dt_grpo_multipliers\"] = group_view.batch[\"advantages\"].gather(1, first_policy).squeeze(1)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "identity": "textcraft-dt-grpo-multiplier-variance-only-20261014-v3",
+      "source_commit": "e05e23cb1bc1cccade732ad192ce15b7e9dc6a1e",
+      "mode": null,
+      "sources": {
+        "verl/workers/actor/dp_actor.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl/trainer/ppo/core_algos.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-grpo-multiplier-variance-only-20261014-v3/verl-owner/verl/trainer/ppo/ray_trainer.py",
+          "SHA256": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943",
+          "credit_lines": [
+            {
+              "line": 364,
+              "text": "for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+            },
+            {
+              "line": 373,
+              "text": "advantages = data.batch[\"dt_token_advantages\"]"
+            },
+            {
+              "line": 375,
+              "text": "advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)"
+            },
+            {
+              "line": 1252,
+              "text": "batch.batch[\"dt_grpo_multipliers\"] = group_view.batch[\"advantages\"].gather(1, first_policy).squeeze(1)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "identity": "textcraft-dt-weighted-reward-targets-20261015-v4",
+      "source_commit": "804d2f67c9a98a90705b91ca840587e2f6312b36",
+      "mode": "weighted_reward_target_finite_v4",
+      "sources": {
+        "verl/workers/actor/dp_actor.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-weighted-reward-targets-20261015-v4/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl/trainer/ppo/core_algos.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-weighted-reward-targets-20261015-v4/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-weighted-reward-targets-20261015-v4/verl-owner/verl/trainer/ppo/ray_trainer.py",
+          "SHA256": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943",
+          "credit_lines": [
+            {
+              "line": 364,
+              "text": "for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+            },
+            {
+              "line": 373,
+              "text": "advantages = data.batch[\"dt_token_advantages\"]"
+            },
+            {
+              "line": 375,
+              "text": "advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)"
+            },
+            {
+              "line": 1252,
+              "text": "batch.batch[\"dt_grpo_multipliers\"] = group_view.batch[\"advantages\"].gather(1, first_policy).squeeze(1)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "identity": "textcraft-dt-reward-target-exponential-20261016-v5",
+      "source_commit": "4545c55807e7d002287717b6a4254f9b083dd5fc",
+      "mode": "reward_target_exponential_v5",
+      "sources": {
+        "verl/workers/actor/dp_actor.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl/trainer/ppo/core_algos.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-20261016-v5/verl-owner/verl/trainer/ppo/ray_trainer.py",
+          "SHA256": "b4b0187ef747d1ffb91dbfb8d1b8f914f93d01d90ff58d24e386f2cb1b7eb943",
+          "credit_lines": [
+            {
+              "line": 364,
+              "text": "for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+            },
+            {
+              "line": 373,
+              "text": "advantages = data.batch[\"dt_token_advantages\"]"
+            },
+            {
+              "line": 375,
+              "text": "advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)"
+            },
+            {
+              "line": 1252,
+              "text": "batch.batch[\"dt_grpo_multipliers\"] = group_view.batch[\"advantages\"].gather(1, first_policy).squeeze(1)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "identity": "textcraft-dt-reward-target-exponential-variance-20261017-v6",
+      "source_commit": "f6dfea9f3b396a476624d2c3e8b0720d1749abd9",
+      "mode": "reward_target_exponential_variance_v6",
+      "sources": {
+        "verl/workers/actor/dp_actor.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-variance-20261017-v6/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl/trainer/ppo/core_algos.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-variance-20261017-v6/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-reward-target-exponential-variance-20261017-v6/verl-owner/verl/trainer/ppo/ray_trainer.py",
+          "SHA256": "d25ab00aa7779dc3933a06cf008d47224ab3b6aeebf3e5a4291e2ed910819417",
+          "credit_lines": [
+            {
+              "line": 365,
+              "text": "for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+            },
+            {
+              "line": 374,
+              "text": "advantages = data.batch[\"dt_token_advantages\"]"
+            },
+            {
+              "line": 377,
+              "text": "if os.environ.get(\"DT_CREDIT_MODE\") != \"reward_target_exponential_variance_v6\":"
+            },
+            {
+              "line": 378,
+              "text": "advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)"
+            },
+            {
+              "line": 1257,
+              "text": "batch.batch[\"dt_grpo_multipliers\"] = group_view.batch[\"advantages\"].gather(1, first_policy).squeeze(1)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "identity": "textcraft-eight-gpu-sequential-20261018-v5",
+      "source_commit": "09e9f192",
+      "mode": "reward_target_exponential_variance_v6",
+      "sources": {
+        "verl/workers/actor/dp_actor.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl/trainer/ppo/core_algos.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-eight-gpu-sequential-20261017-v1/verl-owner/verl/trainer/ppo/ray_trainer.py",
+          "SHA256": "d25ab00aa7779dc3933a06cf008d47224ab3b6aeebf3e5a4291e2ed910819417",
+          "credit_lines": [
+            {
+              "line": 365,
+              "text": "for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+            },
+            {
+              "line": 374,
+              "text": "advantages = data.batch[\"dt_token_advantages\"]"
+            },
+            {
+              "line": 377,
+              "text": "if os.environ.get(\"DT_CREDIT_MODE\") != \"reward_target_exponential_variance_v6\":"
+            },
+            {
+              "line": 378,
+              "text": "advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)"
+            },
+            {
+              "line": 1257,
+              "text": "batch.batch[\"dt_grpo_multipliers\"] = group_view.batch[\"advantages\"].gather(1, first_policy).squeeze(1)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "identity": "textcraft-eight-gpu-symmetric-probability-ratio-20261018-v7",
+      "source_commit": "673b337fa1c78bf4772290966189e80a2b568d8e",
+      "mode": "reward_target_symmetric_probability_ratio_v7",
+      "sources": {
+        "verl/workers/actor/dp_actor.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dtpo-symmetric-probability-ratio-20261018-v7/verl-owner/verl/workers/actor/dp_actor.py",
+          "SHA256": "3a65e173300be82a7a9e056a96227c4f746eabc3be778ef41c8d50138d52ce6c"
+        },
+        "verl/trainer/ppo/core_algos.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dtpo-symmetric-probability-ratio-20261018-v7/verl-owner/verl/trainer/ppo/core_algos.py",
+          "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299"
+        },
+        "verl/trainer/ppo/ray_trainer.py": {
+          "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dtpo-symmetric-probability-ratio-20261018-v7/verl-owner/verl/trainer/ppo/ray_trainer.py",
+          "SHA256": "4923d220a7276a8f6f30254a432b36a21c9b8a3519623a0cafe0196b38f33f8f",
+          "credit_lines": [
+            {
+              "line": 365,
+              "text": "for name in (\"dt_token_advantages\", \"dt_q_estimates\", \"dt_v_estimates\"):"
+            },
+            {
+              "line": 374,
+              "text": "advantages = data.batch[\"dt_token_advantages\"]"
+            },
+            {
+              "line": 378,
+              "text": "if os.environ.get(\"DT_CREDIT_MODE\") not in (\"reward_target_exponential_variance_v6\", \"reward_target_symmetric_probability_ratio_v7\"):"
+            },
+            {
+              "line": 379,
+              "text": "advantages = advantages * torch.rsqrt(verl_F.masked_var(advantages, response_mask) + 1e-8)"
+            },
+            {
+              "line": 1258,
+              "text": "batch.batch[\"dt_grpo_multipliers\"] = group_view.batch[\"advantages\"].gather(1, first_policy).squeeze(1)"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
