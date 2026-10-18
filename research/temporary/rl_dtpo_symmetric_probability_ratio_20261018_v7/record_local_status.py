@@ -49,13 +49,21 @@ for phase,name in (('after_DT','textcraft-actual-worker-imports-after-DT.json'),
     path=RECEIPTS/name
     if path.exists():
         value=json.loads(path.read_bytes())
+        assert len(value['results'])==8
+        assert all(r['DT_CREDIT_MODE']=='reward_target_symmetric_probability_ratio_v7' and r['DP_world_size']==8 for r in value['results'])
+        assert not any(m.get('matches_prepared_source') is False for r in value['results'] for m in r['modules'].values())
         record['actual_'+phase+'_receipt']=str(path).replace('\\','/')
         record['actual_'+phase+'_scheduler_epochs']=[r['actor_scheduler_epoch'] for r in value['results']]
+        record['actual_'+phase+'_optimizer_entries']=[r['actor_optimizer_entries'] for r in value['results']]
         if phase=='after_DT':
             assert all(r['modules']['counterfactual'].get('matches_prepared_source') for r in value['results'])
             record['first_natural_DT_imports_verified']=True
         if phase=='after_update':
+            assert all(r['actor_scheduler_epoch']>=1 and r['actor_optimizer_entries']>0 for r in value['results'])
             record['first_formal_complete_iteration_verified']=summary['jobs'][0]['completed_iterations']>=1
+owner_path=RECEIPTS/'native-verification-owners.json'
+if owner_path.exists():
+    record['native_checkpoint_metadata_verification_owner']=json.loads(owner_path.read_bytes())
 result_path=Path('experiments/rl/results_dtpo_symmetric_probability_ratio_20261018_v7.json')
 result_path.write_text(json.dumps(record,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 
@@ -81,11 +89,21 @@ runtime.write_bytes(update_json(runtime.read_bytes().decode('utf-8')).encode('ut
 head_runtime=subprocess.check_output(['git','show','HEAD:'+runtime.as_posix()]).decode('utf-8')
 
 completed=summary['jobs'][0]['completed_iterations']
-header=f'''## {now} 对称概率比 DTPO v7 已提交；八卡六组从零自动队列已启动
+milestone='首轮自然DT和原生更新已完成' if record['first_formal_complete_iteration_verified'] else '八卡六组从零自动队列已启动'
+progress_note=''
+if record['first_formal_complete_iteration_verified']:
+    metric=summary['jobs'][0]['last_metric']
+    values=metric['values']
+    phases=sorted({r['phase'] for r in summary['jobs'][0]['workers']})
+    checkpoint=summary['jobs'][0].get('checkpoint_step')
+    progress_note=f"自然DT结束及首次更新后两份只读RPC回执均覆盖八rank，实际counterfactual/reward_readout来源符合v7；首次更新后各rank scheduler=1、optimizer条目496。原TaskRunner完整指标来源为{metric['sources']}，当前环境训练回报{values['episode/reward/mean']}、熵{values['actor/entropy_loss']}、梯度范数日志{values['actor/grad_norm']:.3f}、KL日志{values['actor/kl_loss']:.3f}，后两者三位小数不表示精确零；单轮总耗时{values['timing_s/step']}秒。本次采集worker阶段{phases}，原保存标记{checkpoint}。未追加DT/model/optimizer诊断调用，也不以首轮结果宣称质量改进；原save5保持。"
+header=f'''## {now} 对称概率比 DTPO v7：{milestone}
 
 用户批准的纯 DT 对称概率比 v7 已按唯一 PLAN 实现并推送，方法提交673b337fa1c78bf4772290966189e80a2b568d8e，上游 VERL 20bd331bdbc9026a5668e11362178e10ab7400c8。原 d→tanh(d/2)，取消信用乘组优势前后的均值/方差缩放，官方 GRPO 组内归一化保持；原多事件、观察/未来/self mask、DT计算、actor/core/采样和资源效率版本保持，无新增采样。41项CPU检查通过；32k CPU张量覆盖不冒称新GPU容量或质量验收。候选完整绑定与配置见本版本source-prepared及six-combination-manifest。
 
 旧v6 controller2004205/1792263400.01及driver2004329/1792263400.35已依原stop owner退出，确认无非zombie存活；旧日志/检查点保留，不拼接。新controller2854542/1792312285.09，首组TextCraft DTPO driver2854659/1792312285.4；八个实际worker均v7/DP8，初始optimizer条目和scheduler均0。当前原日志完成{completed}/200；初始化与进程存活不称已完成健康更新。初始绑定中lazy DT尚未导入，是否已自然执行及后续绑定以results_dtpo_symmetric_probability_ratio_20261018_v7.json实际回执为准。
+
+{progress_note}
 
 顺序TextCraft DTPO对称v7→原PPO→原GRPO→AppWorld DTPO对称v7→原PPO→原GRPO；六组均基础权重、独占0–7、200完整迭代。六份原生Hydra配置通过任务内工作量核对，TextCraft32×8/global64/epochs1/4更新/save5，AppWorld40×6/global32/epochs2/原残批/test5/共享save2保持；原32k/B4/LoRA8/16、seed/LR/采样/keep2保持。复用原f71ff4d8队列，仅原生exit0、日志1..200及八rank完整checkpoint200齐全后切换，失败不跳过。hourly textcraft已ACTIVE切换v7两任务三算法同图，缺失不补0，初始两任务共同窗口均空。goal保持active，六组最终训练、共享完整checkpoint200和两任务最终图完成前不标完成。
 
