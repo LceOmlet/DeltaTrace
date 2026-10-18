@@ -1,3 +1,11 @@
+## 2026-10-18T10:42:20.789006+08:00 新六组首组35/200；原生共享checkpoint35八rank状态核验通过
+
+同一controller2004205/1792263400.01及driver2004329/1792263400.35继续第36轮生成，其余五组queued。原TaskRunner line549确认step35：训练回报0.719、entropy0.593、首返回rank裁剪前分片grad0.009、KL日志0.001、含工具返回响应2679.660、原交互13.789；生成/DT/actor/保存/整轮409.768/124.776/128.385/48.885/778.025秒。原1–35完整step来源齐全。小时图先到34轮（102651/102657，较前30轮增4），随后新图104024/104039到35轮，较上一成功34轮图再增1；这三次快照合计增5，不将其误称严格60分钟窗口。其余方法缺失不填0，共同窗口仍0，旧调优曲线不拼接。
+
+原latest_checkpointed_iteration.txt=35；reader91d73825/owner f65b6538核验八actor rank各923模型项/496 optimizer项可读、scheduler均35、optimizer步数均140（35×4更新）、训练CPU/CUDA/NumPy/Python RNG及rollout RNG齐全，data.pt游标可读，SHA256=4909bab0bcdef09d203ef251c03930eaedf0422779c800436638247a9b056184。原回执SHA256=c5f8f0bd308dd1023d6f347079b52ffca2b059a7a9bdc73e1b06a4c7d7c9a31c。0额外模型/DT/optimizer/save/训练restore，不称全模型字节SHA、恢复逐值或AppWorld sampler验收。68735已exit0，新74405只读等待原生checkpoint40，观察超时不重启训练。
+
+物理利用率与HBM/PCIe/卡间带宽仍用原owner，未修改副本、采样窗口/SHA及点采样范围见formal-native-checkpoint35-and-progress.json；不作为峰值算力比例、全阶段时长加权均值或满载证明。当前自然生成MemAvailable634.49GiB、oom_kill4未增，不外推最坏32k容量。实际训练源仍09e9f19293e6829cbb16126d5e2d8c0fe07e40cb，本次仅核对已保存状态、作图和记录，未改方法、超参或部署。六组200/最终checkpoint200与最终图未完成，goal保持active。
+
 ## 2026-10-18T09:53:57.855868+08:00 新六组首30轮原生计时核对（仅已有日志）
 
 原snapshot093721的1–30轮平均793.082秒，生成/环境434.494秒，占原step计时总和54.8%；DT138.126秒17.4%，actor138.489秒17.5%。old/ref合计约9.1%；原save5在5/10/15/20/25/30出现，六次平均48.360秒。原step计时范围内列出子阶段之和与整轮残差0.006–0.019秒、均值0.009533秒；该三位小数日志核对不证明step计时之外的时间，也不能拆分生成内部GPU/环境/host等待或代表峰值算力利用率。自然轨迹长度不同，不作为同输入加速或跨算法结论。逐轮原日志路径/行号及计算口径见native-first30-stage-cost-accounting.json。0新模型/optimizer/保存/恢复/训练改动，继续现有六组200轮队列，goal保持active。
