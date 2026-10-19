@@ -1,3 +1,13 @@
+2026-10-19T15:29:39.453050+08:00 回读补充：新v4原metadata RPC已在全部八rank完成，实际DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP=2、CACHE_BATCH=1、REPLAY_LAYER=0、DP8；已导入模块均匹配准备绑定，lazy未导入项仍不称验收。原actor optimizer为空/scheduler0符合从基础权重0轮启动，0新增model/DT/optimizer调用。实际回执/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/runtime-overrides/actual-worker-imports-v9-negative2-eight-GPU-initial-v1.json，SHA256=f9775d9d5ea680791b8d8b03d9cb2503e27f8cf2b455df6cb78a9d329fbf9e19。原日志已进入Rounds1/30，当前完整迭代仍0/200，不能据初始化和绑定宣称八卡稳定吞吐/容量通过。
+
+## 2026-10-19T15:27:42.932344+08:00 v9负clip2执行v4已按原B4释放重新提交八卡队列，首轮尚未完成
+
+执行源cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea已推送并锁定；方法源f26b3b37cb3b88e64978e7a472ae4244670a39f3保持。原生控制器2503202/出生1792394518.8、TextCraft DTPO driver2503287/出生1792394519.29均已实际存活。新run=textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4，逐事件u[-2,1]、原乘g后仅方差缩放；CACHE_BATCH=1、REPLAY_LAYER=0、VERL_RELEASE_UNUSED_HOST_CACHE=1和原6a112224 DT核已从实际run/source.json回读。其余五组原顺序queued；六组各从基础权重0轮、八卡200轮、save5/save2/keep2保持。当前0/200，八worker初始化中；原只读metadata客户端2518925/1792394643.12已排队等待初始化结束，不把提交/存活/双rank历史验收称完整健康训练。
+
+资源0的失败v3已封存且没有跳过组合；本次恢复已运行的原B4回收边界，没有继续部署跨B4保留缓存。正式首轮与后续峰值内存仍需实际核验。原全局dmon/宿主观察器1761473/1761475/1761482延续原流，后续按新v4身份归约，不把旧v3失败区间混入。严格SSH/原VENV、官方TextCraft服务36005及原环境缓存保持。
+
+小时自动任务textcraft回读ACTIVE，已切换执行v4。15:23:30/34两任务正式图与15:23:38 TextCraft历史对照图实际保存到F:/DeltaTraceBackups/plots下对应v4目录，当前新六组均0、共同窗口空；历史PPO105/GRPO191仅为独立历史对照。小时任务另可在首轮完整后调用audit_first_iteration.py，只读原c20559e3日志/原readout核对阶段和、实际DT工作量及整轮耗时，不增加模型/DT/optimizer/环境/profiling调用。首次效率核对尚未发生，不宣称Util已修好。完整实际源、PID出生、配置/既有证明及新状态见results_dtpo_v9_negative_clip2_20261019_v4.json。
+
 ## 2026-10-19T15:20:08.518097+08:00 v9负clip2执行v3失败并撤回RPC跨B4保留；执行v4恢复原B4回收，六组待重提交
 
 负clip2方法保持f26b3b37（u逐事件[-2,1]、乘g后原masked_var、Q/V/A不变）。执行v3/670a9f59的首轮实际八卡在第5个DT批次mcHostAlloc_v0返回mcErrorMemoryAllocation，栈落在CPU pin_memory capture的empty_strided；原生exit1、0完整迭代、0 optimizer更新、无完整checkpoint，原控制器按约定阻止后续组合，没有跳过。两rank各B4/32768数值与状态验收通过不等于八rank多形状累计缓存安全。本次错误不能称GPU显存不足或global OOM kill已被证明。

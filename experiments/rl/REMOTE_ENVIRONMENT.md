@@ -1,3 +1,7 @@
+## 2026-10-19T15:27:42.932344+08:00 当前负clip2正式执行v4：原B4边界，八卡首轮待完成
+
+当前控制器2503202/1792394518.8与driver2503287/1792394519.29已实际提交存活，源cdd8ea40、方法f26b3b37。DT仍hostalloc False、CACHE_BATCH=1、REPLAY_LAYER=0及RPC末尾释放；PPO/GRPO原配置保持。source.json已核对，8worker初始化/实际导入RPC待完成，0/200不称健康训练。失败v3跨B4保留0已撤回并封存，无optimizer进度丢失。原VENV_PYTHON/严格SSH/服务36005/持久缓存保持，无新环境安装、下载或清缓存。之后按正式manifest与完成runtime override读取身份，详见RUNTIME_RECORD最新记录。
+
 ## 2026-10-19T15:20:08.518097+08:00 负clip2执行v3的宿主pinned分配错误与v4资源回退
 
 执行v3的8worker已原生退出，首轮DT末批mcHostAlloc失败，0完整迭代/0 optimizer；未证明global OOM kill。缓存跨B4保留0已撤回，当前执行v4准备恢复原CACHE_BATCH=1、REPLAY_LAYER=0、原RPC结束释放及DT hostalloc False；PPO/GRPO保留原host-register8。方法clip[-2,1]、32k/B4/LoRA/官方工作量不变。此前双rank32k只证明对应每rank数值/容量，不证明八卡多批次峰值；后续完整训练需实际核验。新队列receipt为dtpo-v9-negative-clip2-postgroup-variance-20261019-v4，仍复用严格SSH、原VENV、TextCraft官方36005服务和既有缓存，无安装/下载/清缓存。当前准备阶段不冒称运行；以最新RUNTIME_RECORD/正式source为准。

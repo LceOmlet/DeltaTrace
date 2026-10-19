@@ -19,6 +19,13 @@ code=code.replace("('previous_v6_eight_GPU_first_iteration','textcraft-eight-gpu
     "('previous_clip1_B4_release_first_iteration','textcraft-eight-gpu-v9-clip-u-20261019-v2')")
 code=code.replace('efficiency_equivalent_to_previous_eight_GPU_first_iteration=False',
     'efficiency_equivalent_to_previous_eight_GPU_first_iteration=None')
+anchor="assert len(readouts)==8, 'Audit exactly the first natural eight-rank DT call'"
+assert code.count(anchor)==1
+code=code.replace(anchor,"""first_by_worker_log={}
+for readout in readouts:first_by_worker_log.setdefault(readout['path'],readout)
+readouts=list(first_by_worker_log.values())
+raw=[r for r in raw if r['path'] in first_by_worker_log and r['line']<=first_by_worker_log[r['path']]['line']]
+"""+anchor)
 code=code.replace('Previous v6/v8 are separate methods/runs.',
     'Previous clip1/v8 are separate methods/runs; compare actual event rows and tokens.')
 code=code.replace('results_dtpo_v9_first_iteration_efficiency_20261019_v2.json',
