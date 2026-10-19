@@ -39469,8 +39469,8 @@
     "failure_result": "experiments/rl/results_dtpo_v9_negative2_failed_RPC_retention_20261019_v3.json"
   },
   "20261019_DTPO_v9_negative_clip2_six_GPU_v4_current": {
-    "recorded_at": "2026-10-19T22:32:43.504863+08:00",
-    "status": "native_26_complete_FA_resource_verified_not_selected_long_native_flag_prepared",
+    "recorded_at": "2026-10-19T22:53:45.619528+08:00",
+    "status": "native_28_complete_long_resource_guard_skipped_production_unchanged",
     "method_source_commit": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
     "execution_source_commit": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
     "formal_training_submitted": true,
@@ -39500,7 +39500,7 @@
     ],
     "DT_NATIVE_HOST_CACHE_BATCH": "1",
     "VERL_RELEASE_UNUSED_HOST_CACHE": "1",
-    "completed_iterations": 26,
+    "completed_iterations": 28,
     "native_actual_imports_pending": false,
     "eight_rank_steady_training_verified": true,
     "result": "experiments/rl/results_dtpo_v9_negative_clip2_20261019_v4.json",
@@ -39513,7 +39513,7 @@
       "ranks": 8,
       "imported_modules_match_prepared": true
     },
-    "phase": "ray::WorkerDict.actor_rollout_update_actor",
+    "phase": "ray::WorkerDict.actor_rollout_compute_log_prob",
     "latest_natural_iteration_observation": {
       "status": "first_native_complete_iteration_verified_second_actor_update_running",
       "collected_at_beijing": "2026-10-19T16:02:44.733675+08:00",
@@ -39730,191 +39730,294 @@
       "goal_status": "active"
     },
     "latest_progress": {
-      "collected": 1792420100.5606313,
+      "collected": 1792421446.067147,
+      "source_collected": 1792421445.76944,
       "handles": [
         {
           "pid": 2503202,
-          "actual_birth": 1792394518.8,
+          "birth": 1792394518.8,
           "matches": true,
-          "status": "running"
+          "status": "sleeping"
         },
         {
           "pid": 2503287,
-          "actual_birth": 1792394519.29,
+          "birth": 1792394519.29,
           "matches": true,
           "status": "sleeping"
         }
       ],
-      "source_collected": null,
-      "phase": "ray::WorkerDict.actor_rollout_update_actor",
-      "pid_alive": true,
-      "completed": 26,
+      "completed": 28,
       "latest_metric": {
-        "critic/score/mean": 0.602,
-        "actor/entropy_loss": 0.63,
-        "actor/grad_norm": 0.0276245871,
-        "actor/grad_norm_local": 0.00890310027,
-        "actor/kl_loss": 0.001,
-        "response_length/mean": 3484.426,
-        "num_turns/mean": null,
-        "timing_s/gen": 446.015,
-        "timing_s/compute_dt_token_advantages": null,
-        "timing_s/update_actor": 174.63,
-        "timing_s/step": 978.702,
-        "timing_s/compute_ref_log_prob": null
+        "step": 28,
+        "values": {
+          "global_seqlen/min": 92014.0,
+          "global_seqlen/max": 162644.0,
+          "global_seqlen/minmax_diff": 70630.0,
+          "global_seqlen/balanced_min": 112999.0,
+          "global_seqlen/balanced_max": 113003.0,
+          "global_seqlen/mean": 113001.125,
+          "actor/entropy_loss": 0.629,
+          "actor/kl_loss": 0.001,
+          "actor/kl_coef": 0.001,
+          "actor/pg_loss": -0.13,
+          "actor/pg_clipfrac": 0.0,
+          "actor/ppo_kl": -0.0,
+          "actor/pg_clipfrac_lower": 0.0,
+          "actor/grad_norm": 0.036345643,
+          "actor/grad_norm_local": 0.0117847668,
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 60.028,
+          "perf/max_memory_reserved_gb": 63.555,
+          "perf/cpu_memory_used_gb": 589.081,
+          "actor/lr": 0.0,
+          "training/global_step": 28.0,
+          "training/epoch": 2.0,
+          "critic/score/mean": 0.652,
+          "critic/score/max": 1.0,
+          "critic/score/min": 0.0,
+          "critic/rewards/mean": 0.652,
+          "critic/rewards/max": 1.0,
+          "critic/rewards/min": 0.0,
+          "critic/advantages/mean": 0.049,
+          "critic/advantages/max": 43.196,
+          "critic/advantages/min": -28.278,
+          "critic/returns/mean": -6.808,
+          "critic/returns/max": 43.196,
+          "critic/returns/min": -43.196,
+          "response_length/mean": 3216.285,
+          "response_length/max": 10240.0,
+          "response_length/min": 170.0,
+          "response_length/clip_ratio": 0.047,
+          "prompt_length/mean": 315.0,
+          "prompt_length/max": 315.0,
+          "prompt_length/min": 315.0,
+          "prompt_length/clip_ratio": 0.0,
+          "episode/reward/mean": 0.652,
+          "episode/reward/max": 1.0,
+          "episode/reward/min": 0.0,
+          "episode/length/mean": 15.703,
+          "episode/length/max": 30.0,
+          "episode/length/min": 2.0,
+          "episode/tool_call_count/mean": 15.703,
+          "timing_s/gen": 431.612,
+          "timing_s/reward": 0.0,
+          "timing_s/old_log_prob": 38.571,
+          "timing_s/ref": 33.658,
+          "timing_s/adv": 154.838,
+          "timing_s/update_actor": 164.219,
+          "timing_s/dump_rollout_generations": 0.458,
+          "timing_s/step": 823.363,
+          "timing_per_token_ms/adv": 0.171,
+          "timing_per_token_ms/ref": 0.037,
+          "timing_per_token_ms/gen": 0.524,
+          "timing_per_token_ms/update_actor": 0.182,
+          "perf/total_num_tokens": 904009.0,
+          "perf/time_per_step": 823.363,
+          "perf/throughput": 137.243
+        },
+        "sources": [
+          {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-97077ecb858da019ecbd0949e9bf3f33e533308647cf551c46323c9e-01000000-2507756.out",
+            "line": 499
+          }
+        ]
       },
+      "phase": "ray::WorkerDict.actor_rollout_compute_log_prob",
+      "workers": [
+        {
+          "pid": 2511533,
+          "birth": 1792394584.3,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514712,
+          "birth": 1792394612.52,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514714,
+          "birth": 1792394612.52,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514715,
+          "birth": 1792394612.53,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514716,
+          "birth": 1792394612.54,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514717,
+          "birth": 1792394612.55,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514718,
+          "birth": 1792394612.55,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514719,
+          "birth": 1792394612.56,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        }
+      ],
       "checkpoint": {
         "step": 25,
         "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25",
-        "files": [
+        "required_files": [
           {
-            "path": "data.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/data.pt",
             "bytes": 1499
           },
           {
-            "path": "actor/model_world_size_8_rank_4.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_0.pt",
             "bytes": 2249963627
           },
           {
-            "path": "actor/optim_world_size_8_rank_4.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_0.pt",
             "bytes": 22174308
           },
           {
-            "path": "actor/generation_config.json",
-            "bytes": 116
-          },
-          {
-            "path": "actor/extra_state_world_size_8_rank_6.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_0.pt",
             "bytes": 15353
           },
           {
-            "path": "actor/model_world_size_8_rank_3.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_1.pt",
             "bytes": 2249963627
           },
           {
-            "path": "actor/optim_world_size_8_rank_3.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_1.pt",
             "bytes": 22174308
           },
           {
-            "path": "actor/extra_state_world_size_8_rank_1.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_1.pt",
             "bytes": 15353
           },
           {
-            "path": "actor/processor_config.json",
-            "bytes": 1191
-          },
-          {
-            "path": "actor/model_world_size_8_rank_1.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_2.pt",
             "bytes": 2249963627
           },
           {
-            "path": "actor/optim_world_size_8_rank_1.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_2.pt",
             "bytes": 22174308
           },
           {
-            "path": "actor/extra_state_world_size_8_rank_3.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_2.pt",
             "bytes": 15353
           },
           {
-            "path": "actor/chat_template.jinja",
-            "bytes": 7756
-          },
-          {
-            "path": "actor/model_world_size_8_rank_6.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_3.pt",
             "bytes": 2249963627
           },
           {
-            "path": "actor/optim_world_size_8_rank_6.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_3.pt",
             "bytes": 22174308
           },
           {
-            "path": "actor/tokenizer_config.json",
-            "bytes": 1165
-          },
-          {
-            "path": "actor/extra_state_world_size_8_rank_4.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_3.pt",
             "bytes": 15353
           },
           {
-            "path": "actor/model_world_size_8_rank_2.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_4.pt",
             "bytes": 2249963627
           },
           {
-            "path": "actor/optim_world_size_8_rank_2.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_4.pt",
             "bytes": 22174308
           },
           {
-            "path": "actor/extra_state_world_size_8_rank_0.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_4.pt",
             "bytes": 15353
           },
           {
-            "path": "actor/model_world_size_8_rank_5.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_5.pt",
             "bytes": 2249963627
           },
           {
-            "path": "actor/optim_world_size_8_rank_5.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_5.pt",
             "bytes": 22174308
           },
           {
-            "path": "actor/extra_state_world_size_8_rank_7.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_5.pt",
             "bytes": 15353
           },
           {
-            "path": "actor/model_world_size_8_rank_7.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_6.pt",
             "bytes": 2249963627
           },
           {
-            "path": "actor/optim_world_size_8_rank_7.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_6.pt",
             "bytes": 22174308
           },
           {
-            "path": "actor/extra_state_world_size_8_rank_5.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_6.pt",
             "bytes": 15353
           },
           {
-            "path": "actor/tokenizer.json",
-            "bytes": 19989325
-          },
-          {
-            "path": "actor/model_world_size_8_rank_0.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_7.pt",
             "bytes": 2249963627
           },
           {
-            "path": "actor/optim_world_size_8_rank_0.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_7.pt",
             "bytes": 22174308
           },
           {
-            "path": "actor/config.json",
-            "bytes": 1930
-          },
-          {
-            "path": "actor/extra_state_world_size_8_rank_2.pt",
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_7.pt",
             "bytes": 15353
           }
         ]
       },
-      "FA_pair_status": "completed",
-      "job_keys": [
-        "task",
-        "environment_task",
-        "method",
-        "gpu",
-        "devices",
-        "run_dir",
-        "budget",
-        "pid",
-        "pid_alive",
-        "observed_process_created_unix",
-        "ray_session",
-        "phase_label",
-        "exit_code",
-        "checkpoint_step",
-        "metrics",
-        "phases",
-        "records",
-        "errors"
+      "fresh_queue_progress": [
+        {
+          "task": "TextCraft",
+          "algorithm": "DTPO v9 negative2",
+          "completed": 28,
+          "budget": 200,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "task": "TextCraft",
+          "algorithm": "PPO",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        },
+        {
+          "task": "TextCraft",
+          "algorithm": "GRPO",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        },
+        {
+          "task": "AppWorld",
+          "algorithm": "DTPO v9 negative2",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        },
+        {
+          "task": "AppWorld",
+          "algorithm": "PPO",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        },
+        {
+          "task": "AppWorld",
+          "algorithm": "GRPO",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        }
       ],
-      "state_status": "running_native_job"
+      "actual_execution_source": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+      "method_source": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
+      "goal_status": "active"
     },
     "latest_main_cost_priority_observation": {
       "collected_at": 1792398690.8786576,
@@ -40384,87 +40487,294 @@
       "limitation": "Length proxy is not utilization, wasted FLOPs, wall time or a speedup claim; no original request completion timestamps."
     },
     "latest_native_progress_since_plot": {
-      "collected_at_beijing": "2026-10-19T21:37:23.591544+08:00",
-      "completed_iterations": 23,
-      "phase": "ray::WorkerDict.actor_rollout_generate_sequences",
-      "latest_native_metric": {
-        "step": 23,
+      "collected": 1792421446.067147,
+      "source_collected": 1792421445.76944,
+      "handles": [
+        {
+          "pid": 2503202,
+          "birth": 1792394518.8,
+          "matches": true,
+          "status": "sleeping"
+        },
+        {
+          "pid": 2503287,
+          "birth": 1792394519.29,
+          "matches": true,
+          "status": "sleeping"
+        }
+      ],
+      "completed": 28,
+      "latest_metric": {
+        "step": 28,
         "values": {
-          "global_seqlen/min": 34377.0,
-          "global_seqlen/max": 136901.0,
-          "global_seqlen/minmax_diff": 102524.0,
-          "global_seqlen/balanced_min": 96286.0,
-          "global_seqlen/balanced_max": 96289.0,
-          "global_seqlen/mean": 96287.625,
-          "actor/entropy_loss": 0.605,
+          "global_seqlen/min": 92014.0,
+          "global_seqlen/max": 162644.0,
+          "global_seqlen/minmax_diff": 70630.0,
+          "global_seqlen/balanced_min": 112999.0,
+          "global_seqlen/balanced_max": 113003.0,
+          "global_seqlen/mean": 113001.125,
+          "actor/entropy_loss": 0.629,
           "actor/kl_loss": 0.001,
           "actor/kl_coef": 0.001,
-          "actor/pg_loss": -0.09,
+          "actor/pg_loss": -0.13,
           "actor/pg_clipfrac": 0.0,
           "actor/ppo_kl": -0.0,
           "actor/pg_clipfrac_lower": 0.0,
-          "actor/grad_norm": 0.0263904086,
-          "actor/grad_norm_local": 0.00871550385,
+          "actor/grad_norm": 0.036345643,
+          "actor/grad_norm_local": 0.0117847668,
           "perf/mfu/actor": 0.0,
-          "perf/max_memory_allocated_gb": 66.835,
-          "perf/max_memory_reserved_gb": 72.693,
-          "perf/cpu_memory_used_gb": 595.066,
+          "perf/max_memory_allocated_gb": 60.028,
+          "perf/max_memory_reserved_gb": 63.555,
+          "perf/cpu_memory_used_gb": 589.081,
           "actor/lr": 0.0,
-          "training/global_step": 23.0,
+          "training/global_step": 28.0,
           "training/epoch": 2.0,
-          "critic/score/mean": 0.684,
+          "critic/score/mean": 0.652,
           "critic/score/max": 1.0,
           "critic/score/min": 0.0,
-          "critic/rewards/mean": 0.684,
+          "critic/rewards/mean": 0.652,
           "critic/rewards/max": 1.0,
           "critic/rewards/min": 0.0,
-          "critic/advantages/mean": 0.057,
-          "critic/advantages/max": 42.763,
-          "critic/advantages/min": -27.995,
-          "critic/returns/mean": -5.983,
-          "critic/returns/max": 42.763,
-          "critic/returns/min": -42.763,
-          "response_length/mean": 2693.988,
+          "critic/advantages/mean": 0.049,
+          "critic/advantages/max": 43.196,
+          "critic/advantages/min": -28.278,
+          "critic/returns/mean": -6.808,
+          "critic/returns/max": 43.196,
+          "critic/returns/min": -43.196,
+          "response_length/mean": 3216.285,
           "response_length/max": 10240.0,
-          "response_length/min": 195.0,
-          "response_length/clip_ratio": 0.027,
+          "response_length/min": 170.0,
+          "response_length/clip_ratio": 0.047,
           "prompt_length/mean": 315.0,
           "prompt_length/max": 315.0,
           "prompt_length/min": 315.0,
           "prompt_length/clip_ratio": 0.0,
-          "episode/reward/mean": 0.684,
+          "episode/reward/mean": 0.652,
           "episode/reward/max": 1.0,
           "episode/reward/min": 0.0,
-          "episode/length/mean": 13.922,
+          "episode/length/mean": 15.703,
           "episode/length/max": 30.0,
           "episode/length/min": 2.0,
-          "episode/tool_call_count/mean": 13.922,
-          "timing_s/gen": 413.51,
+          "episode/tool_call_count/mean": 15.703,
+          "timing_s/gen": 431.612,
           "timing_s/reward": 0.0,
-          "timing_s/old_log_prob": 37.324,
-          "timing_s/ref": 32.486,
-          "timing_s/adv": 150.928,
-          "timing_s/update_actor": 162.605,
+          "timing_s/old_log_prob": 38.571,
+          "timing_s/ref": 33.658,
+          "timing_s/adv": 154.838,
+          "timing_s/update_actor": 164.219,
           "timing_s/dump_rollout_generations": 0.458,
-          "timing_s/step": 797.32,
-          "timing_per_token_ms/adv": 0.196,
-          "timing_per_token_ms/ref": 0.042,
-          "timing_per_token_ms/gen": 0.6,
-          "timing_per_token_ms/update_actor": 0.211,
-          "perf/total_num_tokens": 770301.0,
-          "perf/time_per_step": 797.32,
-          "perf/throughput": 120.764
+          "timing_s/step": 823.363,
+          "timing_per_token_ms/adv": 0.171,
+          "timing_per_token_ms/ref": 0.037,
+          "timing_per_token_ms/gen": 0.524,
+          "timing_per_token_ms/update_actor": 0.182,
+          "perf/total_num_tokens": 904009.0,
+          "perf/time_per_step": 823.363,
+          "perf/throughput": 137.243
         },
         "sources": [
           {
             "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-97077ecb858da019ecbd0949e9bf3f33e533308647cf551c46323c9e-01000000-2507756.out",
-            "line": 463
+            "line": 499
           }
         ]
       },
-      "checkpoint_step": 20,
-      "plot_latest_completed": 21,
-      "plot_not_claimed_to_include23": true
+      "phase": "ray::WorkerDict.actor_rollout_compute_log_prob",
+      "workers": [
+        {
+          "pid": 2511533,
+          "birth": 1792394584.3,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514712,
+          "birth": 1792394612.52,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514714,
+          "birth": 1792394612.52,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514715,
+          "birth": 1792394612.53,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514716,
+          "birth": 1792394612.54,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514717,
+          "birth": 1792394612.55,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514718,
+          "birth": 1792394612.55,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "pid": 2514719,
+          "birth": 1792394612.56,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        }
+      ],
+      "checkpoint": {
+        "step": 25,
+        "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25",
+        "required_files": [
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/data.pt",
+            "bytes": 1499
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_0.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_0.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_0.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_1.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_1.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_1.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_2.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_2.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_2.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_3.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_3.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_3.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_4.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_4.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_4.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_5.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_5.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_5.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_6.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_6.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_6.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/model_world_size_8_rank_7.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/optim_world_size_8_rank_7.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25/actor/extra_state_world_size_8_rank_7.pt",
+            "bytes": 15353
+          }
+        ]
+      },
+      "fresh_queue_progress": [
+        {
+          "task": "TextCraft",
+          "algorithm": "DTPO v9 negative2",
+          "completed": 28,
+          "budget": 200,
+          "phase": "ray::WorkerDict.actor_rollout_compute_log_prob"
+        },
+        {
+          "task": "TextCraft",
+          "algorithm": "PPO",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        },
+        {
+          "task": "TextCraft",
+          "algorithm": "GRPO",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        },
+        {
+          "task": "AppWorld",
+          "algorithm": "DTPO v9 negative2",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        },
+        {
+          "task": "AppWorld",
+          "algorithm": "PPO",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        },
+        {
+          "task": "AppWorld",
+          "algorithm": "GRPO",
+          "completed": 0,
+          "budget": 200,
+          "phase": "queued"
+        }
+      ],
+      "actual_execution_source": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+      "method_source": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
+      "goal_status": "active"
     },
     "root_pageable_natural_counter_observation": {
       "status": "completed_40_native_B4_eight_scopes_restored",
@@ -40785,47 +41095,260 @@
       ]
     },
     "native_long_GPU_resident_preparation": {
-      "status": "prepared_original_owner_flag_validation_not_submitted",
-      "collected": 1792420316.8321931,
-      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/source/check_existing_DT_long_gpu_resident_pair.py",
-      "source_SHA256": "a339ff751ae8f18120d6e50e22ed4d7bd6e91ecfb78aefb6474f863c63a02404",
-      "observer_compiles": true,
-      "metadata_client_not_executed": true,
-      "prior_FA_scopes_restored": 8,
-      "original_runner_SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
-      "math_source_changes": 0,
-      "production_deployment": false,
-      "width_guard": [
-        2049,
-        12288
-      ],
-      "memory_guard_scope": "Conservative optional-validation selection using actual free physical memory; not an eight-rank32k capacity certificate.",
-      "maximum_additional_DT_calls_per_rank": 2,
+      "status": "completed_guarded_readout_candidate_not_executed",
+      "recorded_at": "2026-10-19T22:52:30.815418+08:00",
       "actual_execution_source": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
       "method_source": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
-      "prior_FA_verification": "experiments/rl/results_dtpo_v9_negative2_FA_capture_warm_control_20261019_v4.json",
-      "native_checkpoint25": {
-        "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25",
-        "required_nonempty_files": 25
+      "validation_source_commit": "fd311b9cf14ca0c6b1fb6019be03835d4663858f",
+      "raw_report": {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/existing-DT-long-GPU-resident-resource-pair-results.json",
+        "SHA256": "6cc577fc366814b6eb8ff1a7a5e322771807ff257a21072d9326c511c8dbc78e"
       },
-      "source_bindings": {
-        "check_existing_DT_long_gpu_resident_pair.py": "a339ff751ae8f18120d6e50e22ed4d7bd6e91ecfb78aefb6474f863c63a02404",
-        "collect_existing_DT_long_gpu_resident_pair.py": "07105b9364da1427cf763964f414a6d8676b1cdcc5dcd6005fd99cb040286a7a",
-        "summarize_root_resource_production.py": "5f1590614edf6d823e6d48335a6c2641facf65a5b5b8e9dcf2ca50d1c8aae221",
-        "summarize_small_gpu_resource_production.py": "5262b53c438cf9975d420fba38b00a48828544e4e23a69bf8fe0737ed582bb1a"
-      }
+      "readout_iteration": 28,
+      "native_B4_calls": 48,
+      "restored_rank_scopes": 8,
+      "additional_DT_calls": 0,
+      "additional_optimizer_calls": 0,
+      "additional_environment_calls": 0,
+      "guard_collectives_per_rank": {
+        "5": 6,
+        "2": 6,
+        "7": 6,
+        "0": 6,
+        "1": 6,
+        "4": 6,
+        "6": 6,
+        "3": 6
+      },
+      "largest_natural_B4_guards": [
+        {
+          "rank": 5,
+          "shape": [
+            8,
+            8600
+          ],
+          "guard": {
+            "width": 8600,
+            "attempted": true,
+            "free_bytes": 43550588928,
+            "total_bytes": 68283269120,
+            "baseline_peak": 63127263744,
+            "current_allocated": 49273989632,
+            "workspace_bound": 13853274112,
+            "extra_resident_capture_bound": 27053260800,
+            "required_with_margin": 43054018560,
+            "hidden_size": 4096,
+            "attention_width": 4096
+          },
+          "source": {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-5306c1858db03e698de039eee6d2d9cc49a79caf37ceb2b7062f5ad8-01000000-2514717.out",
+            "line": 504
+          }
+        },
+        {
+          "rank": 2,
+          "shape": [
+            8,
+            7936
+          ],
+          "guard": {
+            "width": 7936,
+            "attempted": true,
+            "free_bytes": 44958310400,
+            "total_bytes": 68283269120,
+            "baseline_peak": 62242456064,
+            "current_allocated": 49273863680,
+            "workspace_bound": 12968592384,
+            "extra_resident_capture_bound": 24964497408,
+            "required_with_margin": 40080573440,
+            "hidden_size": 4096,
+            "attention_width": 4096
+          },
+          "source": {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-6971eee1f771bd9b414323f38cac3e6e70e9f983d81a02067891708f-01000000-2514714.out",
+            "line": 504
+          }
+        },
+        {
+          "rank": 7,
+          "shape": [
+            8,
+            10257
+          ],
+          "guard": {
+            "width": 10257,
+            "attempted": true,
+            "free_bytes": 40774639616,
+            "total_bytes": 68283269120,
+            "baseline_peak": 65639751168,
+            "current_allocated": 49274309632,
+            "workspace_bound": 16365441536,
+            "extra_resident_capture_bound": 32265732096,
+            "required_with_margin": 50778657280,
+            "hidden_size": 4096,
+            "attention_width": 4096
+          },
+          "source": {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-791ca972fb6e6cdfed33a8fa4393de92b7f5504aefbf3d1ffbdd1cef-01000000-2514719.out",
+            "line": 504
+          }
+        },
+        {
+          "rank": 0,
+          "shape": [
+            8,
+            7168
+          ],
+          "guard": {
+            "width": 7168,
+            "attempted": true,
+            "free_bytes": 45904117760,
+            "total_bytes": 68283269120,
+            "baseline_peak": 61078369280,
+            "current_allocated": 49273713664,
+            "workspace_bound": 11804655616,
+            "extra_resident_capture_bound": 22548578304,
+            "required_with_margin": 36500717568,
+            "hidden_size": 4096,
+            "attention_width": 4096
+          },
+          "source": {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-b5e43b98d20d25caae6ec7423f9d267057898bfd70d878c52a5ec308-01000000-2511533.out",
+            "line": 618
+          }
+        },
+        {
+          "rank": 1,
+          "shape": [
+            8,
+            7153
+          ],
+          "guard": {
+            "width": 7153,
+            "attempted": true,
+            "free_bytes": 46113832960,
+            "total_bytes": 68283269120,
+            "baseline_peak": 60930722304,
+            "current_allocated": 49273712128,
+            "workspace_bound": 11657010176,
+            "extra_resident_capture_bound": 22501392384,
+            "required_with_margin": 36305886208,
+            "hidden_size": 4096,
+            "attention_width": 4096
+          },
+          "source": {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-cddaaa2b3fbfa196f4b2e44fd84545681a6a5b5ca4c3b6d80d3b4152-01000000-2514712.out",
+            "line": 504
+          }
+        },
+        {
+          "rank": 4,
+          "shape": [
+            8,
+            6514
+          ],
+          "guard": {
+            "width": 6514,
+            "attempted": true,
+            "free_bytes": 46659084288,
+            "total_bytes": 68283269120,
+            "baseline_peak": 60088917504,
+            "current_allocated": 49273589760,
+            "workspace_bound": 10815327744,
+            "extra_resident_capture_bound": 20491272192,
+            "required_with_margin": 33454083584,
+            "hidden_size": 4096,
+            "attention_width": 4096
+          },
+          "source": {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-cfa29368c86c962692eaefa190452fe2f37b6aae418783278faaf71c-01000000-2514716.out",
+            "line": 504
+          }
+        },
+        {
+          "rank": 6,
+          "shape": [
+            8,
+            9514
+          ],
+          "guard": {
+            "width": 9514,
+            "attempted": true,
+            "free_bytes": 41529618432,
+            "total_bytes": 68283269120,
+            "baseline_peak": 64637167616,
+            "current_allocated": 49274168832,
+            "workspace_bound": 15362998784,
+            "extra_resident_capture_bound": 29928456192,
+            "required_with_margin": 47438938624,
+            "hidden_size": 4096,
+            "attention_width": 4096
+          },
+          "source": {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-f3eb50535bded8621d739064541bba13ad47e0d95af831936b709c97-01000000-2514718.out",
+            "line": 504
+          }
+        },
+        {
+          "rank": 3,
+          "shape": [
+            8,
+            6935
+          ],
+          "guard": {
+            "width": 6935,
+            "attempted": true,
+            "free_bytes": 46260625408,
+            "total_bytes": 68283269120,
+            "baseline_peak": 60730579968,
+            "current_allocated": 49273670144,
+            "workspace_bound": 11456909824,
+            "extra_resident_capture_bound": 21815623680,
+            "required_with_margin": 35420017152,
+            "hidden_size": 4096,
+            "attention_width": 4096
+          },
+          "source": {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-faf233282f029e4cf707d703de1ba63f30bd8d240abf239fbb581a5b-01000000-2514715.out",
+            "line": 504
+          }
+        }
+      ],
+      "ranks_not_passing_conservative_memory_guard": [
+        7,
+        6
+      ],
+      "production_deployed": false,
+      "capacity_pass_claimed": false,
+      "OOM_observed": false,
+      "training_iteration_excluded_from_efficiency": [
+        28
+      ],
+      "scope": "One original natural readout. Six native B4s per rank were observed; the largest common candidate was skipped by the conservative physical-free/workspace/capture estimate. A guard skip is not proof that the mode would OOM or that capacity passed. Original training results and resource settings were preserved.",
+      "handles": [
+        {
+          "pid": 2503202,
+          "birth": 1792394518.8,
+          "matches": true
+        },
+        {
+          "pid": 2503287,
+          "birth": 1792394519.29,
+          "matches": true
+        }
+      ]
     },
     "latest_refreshed_plots": {
       "TextCraft_formal": {
-        "directory": "F:/DeltaTraceBackups/plots/textcraft-eight-gpu-v9-negative-clip2-20261019-v4/20261019-222640",
+        "directory": "F:/DeltaTraceBackups/plots/textcraft-eight-gpu-v9-negative-clip2-20261019-v4/20261019-224532",
         "completed": {
-          "dt": 26,
+          "dt": 28,
           "ppo": 0,
           "grpo": 0
         }
       },
       "AppWorld_formal": {
-        "directory": "F:/DeltaTraceBackups/plots/appworld-eight-gpu-v9-negative-clip2-20261019-v4/20261019-222644",
+        "directory": "F:/DeltaTraceBackups/plots/appworld-eight-gpu-v9-negative-clip2-20261019-v4/20261019-224536",
         "completed": {
           "dt": 0,
           "ppo": 0,
@@ -40833,15 +41356,332 @@
         }
       },
       "TextCraft_historical_controls": {
-        "directory": "F:/DeltaTraceBackups/plots/textcraft-v9-negative-clip2-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v4/20261019-222648",
+        "directory": "F:/DeltaTraceBackups/plots/textcraft-v9-negative-clip2-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v4/20261019-224540",
         "completed": {
-          "dt": 26,
+          "dt": 28,
           "ppo": 105,
           "grpo": 191
         },
-        "common_window": 26,
+        "common_window": 28,
         "old_control_norm": "equal-shard energy assumption local*sqrt2 estimate; DT measured global"
       }
+    },
+    "loaded_native_DT_resource_config": {
+      "collected": 1792421284.8643868,
+      "binding": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/runtime-overrides/actual-worker-imports-native-resource-config-readonly-v1.json",
+      "completed": true,
+      "results": [
+        {
+          "rank": 5,
+          "pid": 2514717,
+          "birth": 1792394612.55,
+          "scheduler": 28,
+          "config": {
+            "gdn_head_batch_size": 8,
+            "gdn_gpu_capture_names": [
+              "h",
+              "w",
+              "v_new",
+              "A"
+            ],
+            "copy_replay_captures": false,
+            "offload_replay_mixer": true,
+            "pin_root_host": false,
+            "pin_replay_host": true,
+            "defer_diagnostics": true,
+            "fa_coefficient_suffix": true,
+            "gdn_coefficient_suffix": true,
+            "compact_gdn_captures": true
+          }
+        },
+        {
+          "rank": 7,
+          "pid": 2514719,
+          "birth": 1792394612.56,
+          "scheduler": 28,
+          "config": {
+            "gdn_head_batch_size": 8,
+            "gdn_gpu_capture_names": [
+              "h",
+              "w",
+              "v_new",
+              "A"
+            ],
+            "copy_replay_captures": false,
+            "offload_replay_mixer": true,
+            "pin_root_host": false,
+            "pin_replay_host": true,
+            "defer_diagnostics": true,
+            "fa_coefficient_suffix": true,
+            "gdn_coefficient_suffix": true,
+            "compact_gdn_captures": true
+          }
+        },
+        {
+          "rank": 6,
+          "pid": 2514718,
+          "birth": 1792394612.55,
+          "scheduler": 28,
+          "config": {
+            "gdn_head_batch_size": 8,
+            "gdn_gpu_capture_names": [
+              "h",
+              "w",
+              "v_new",
+              "A"
+            ],
+            "copy_replay_captures": false,
+            "offload_replay_mixer": true,
+            "pin_root_host": false,
+            "pin_replay_host": true,
+            "defer_diagnostics": true,
+            "fa_coefficient_suffix": true,
+            "gdn_coefficient_suffix": true,
+            "compact_gdn_captures": true
+          }
+        },
+        {
+          "rank": 4,
+          "pid": 2514716,
+          "birth": 1792394612.54,
+          "scheduler": 28,
+          "config": {
+            "gdn_head_batch_size": 8,
+            "gdn_gpu_capture_names": [
+              "h",
+              "w",
+              "v_new",
+              "A"
+            ],
+            "copy_replay_captures": false,
+            "offload_replay_mixer": true,
+            "pin_root_host": false,
+            "pin_replay_host": true,
+            "defer_diagnostics": true,
+            "fa_coefficient_suffix": true,
+            "gdn_coefficient_suffix": true,
+            "compact_gdn_captures": true
+          }
+        },
+        {
+          "rank": 1,
+          "pid": 2514712,
+          "birth": 1792394612.52,
+          "scheduler": 28,
+          "config": {
+            "gdn_head_batch_size": 8,
+            "gdn_gpu_capture_names": [
+              "h",
+              "w",
+              "v_new",
+              "A"
+            ],
+            "copy_replay_captures": false,
+            "offload_replay_mixer": true,
+            "pin_root_host": false,
+            "pin_replay_host": true,
+            "defer_diagnostics": true,
+            "fa_coefficient_suffix": true,
+            "gdn_coefficient_suffix": true,
+            "compact_gdn_captures": true
+          }
+        },
+        {
+          "rank": 3,
+          "pid": 2514715,
+          "birth": 1792394612.53,
+          "scheduler": 28,
+          "config": {
+            "gdn_head_batch_size": 8,
+            "gdn_gpu_capture_names": [
+              "h",
+              "w",
+              "v_new",
+              "A"
+            ],
+            "copy_replay_captures": false,
+            "offload_replay_mixer": true,
+            "pin_root_host": false,
+            "pin_replay_host": true,
+            "defer_diagnostics": true,
+            "fa_coefficient_suffix": true,
+            "gdn_coefficient_suffix": true,
+            "compact_gdn_captures": true
+          }
+        },
+        {
+          "rank": 2,
+          "pid": 2514714,
+          "birth": 1792394612.52,
+          "scheduler": 28,
+          "config": {
+            "gdn_head_batch_size": 8,
+            "gdn_gpu_capture_names": [
+              "h",
+              "w",
+              "v_new",
+              "A"
+            ],
+            "copy_replay_captures": false,
+            "offload_replay_mixer": true,
+            "pin_root_host": false,
+            "pin_replay_host": true,
+            "defer_diagnostics": true,
+            "fa_coefficient_suffix": true,
+            "gdn_coefficient_suffix": true,
+            "compact_gdn_captures": true
+          }
+        },
+        {
+          "rank": 0,
+          "pid": 2511533,
+          "birth": 1792394584.3,
+          "scheduler": 28,
+          "config": {
+            "gdn_head_batch_size": 8,
+            "gdn_gpu_capture_names": [
+              "h",
+              "w",
+              "v_new",
+              "A"
+            ],
+            "copy_replay_captures": false,
+            "offload_replay_mixer": true,
+            "pin_root_host": false,
+            "pin_replay_host": true,
+            "defer_diagnostics": true,
+            "fa_coefficient_suffix": true,
+            "gdn_coefficient_suffix": true,
+            "compact_gdn_captures": true
+          }
+        }
+      ],
+      "status": "completed_read_only_loaded_resource_config",
+      "model_calls": 0,
+      "resource_changes": 0,
+      "source": {
+        "path": "research/temporary/rl_dtpo_v9_negative_clip2_20261019_v1/observe_native_DT_resource_config.py",
+        "SHA256": "898668d2581f0f444ba371f8de4cfc667fd3566fc525e9503f7f5b93c049d846"
+      }
+    },
+    "latest_clean_generation_DT_GPU_Util": {
+      "collected": 1792420486.2554135,
+      "report": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/small-GPU-resource-production-1792420483/production-window-receipt.json",
+      "groups": [
+        {
+          "identity": [
+            "phase_boundary_or_missing_bracket"
+          ],
+          "card_samples": 1760,
+          "mean_GPU_Util_percent": 49.11079545454545
+        },
+        {
+          "identity": [
+            "TextCraft",
+            "dt",
+            "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+            "ray::WorkerDict.actor_rollout_update_actor"
+          ],
+          "card_samples": 1184,
+          "mean_GPU_Util_percent": 65.89949324324324
+        },
+        {
+          "identity": [
+            "TextCraft",
+            "dt",
+            "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+            "ray::WorkerDict.actor_rollout_generate_sequences"
+          ],
+          "card_samples": 560,
+          "mean_GPU_Util_percent": 50.683928571428574
+        },
+        {
+          "identity": [
+            "partial_or_mixed_worker_phase",
+            "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4"
+          ],
+          "card_samples": 584,
+          "mean_GPU_Util_percent": 42.12671232876713
+        },
+        {
+          "identity": [
+            "TextCraft",
+            "dt",
+            "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+            "ray::WorkerDict.actor_rollout_compute_log_prob"
+          ],
+          "card_samples": 80,
+          "mean_GPU_Util_percent": 75.1625
+        },
+        {
+          "identity": [
+            "TextCraft",
+            "dt",
+            "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+            "ray::WorkerDict.actor_rollout_compute_ref_log_prob"
+          ],
+          "card_samples": 80,
+          "mean_GPU_Util_percent": 74.4
+        },
+        {
+          "identity": [
+            "TextCraft",
+            "dt",
+            "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+            "ray::WorkerDict.actor_rollout_compute_dt_token_advantages"
+          ],
+          "card_samples": 552,
+          "mean_GPU_Util_percent": 46.68659420289855
+        }
+      ],
+      "window": {
+        "condition": "all",
+        "lower_unix": 1792419236.8595665,
+        "upper_unix": 1792420448.099686,
+        "first_received": 1792419237.6645036,
+        "last_received": 1792420446.29718
+      },
+      "selection": [
+        {
+          "policy": "after_all_validation_scopes_restored",
+          "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/existing-DT-FA-capture-resource-pair-results.json",
+          "lower": 1792419236.8595665
+        },
+        {
+          "policy": "before_pending_validation_submission",
+          "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/long-GPU-resident-pair-job.json",
+          "upper": 1792420448.099686
+        }
+      ],
+      "excluded": [
+        7,
+        8,
+        11,
+        13,
+        19,
+        21,
+        26
+      ],
+      "latest_completed": 27,
+      "phase": "ray::WorkerDict",
+      "validation_client": {
+        "pid": 1093390,
+        "missing": true
+      },
+      "scope": "Observed clean production interval after all FA scopes restored and before long-GPU validation submission; no new sampling or model calls; different inputs prevent a causal operator speedup claim.",
+      "model_calls": 0,
+      "training_changes": 0,
+      "original_utilization_reducer_SHA256": "e6f3b17198f34ca0b5946637dcbd3ee4920bb08b9783bbc374ffe85bb14199e3"
+    },
+    "last_goal_turn_classification": {
+      "classification": "progress",
+      "evidence": [
+        "New original iterations27/28 completed and checkpoint25 retained",
+        "Bounded FA A-B-A results archived and pushedfd311b9c; candidate not deployed",
+        "Long native flag readout48 B4/8rank completed; guarded candidate not executed, original methods restored",
+        "Eight-rank read-only resource configuration verified",
+        "Both task plots and historical-control comparison saved at22:45"
+      ]
     }
   }
 }

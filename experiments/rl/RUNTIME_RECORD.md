@@ -1,3 +1,15 @@
+## 2026-10-19T22:53:45.619528+08:00 第28轮完成；长B4原生GPU留存对照按显存条件跳过，正式资源保持
+
+原controller2503202/1792394518.8和driver2503287/1792394519.29已再次核对实际出生存活；当前原日志完成28/200，八worker处于下一轮原生计算，共享checkpoint25的data.pt与八rank各model/optim/extra_state仍齐全。后五组均0/200 queued；旧历史PPO105/GRPO191不是新八卡进度。执行cdd8ea40、方法f26b3b37、VERL20bd331，clip[-2,1]、乘g后原masked_var不减均值、32k/B4/LoRA与任务工作量/save5/save2保持，goal仍active。
+
+fd311b9c的原生offload_replay_mixer=False对照观察器完成第28轮48个原B4/八rank，最大paired width6514–10257；rank6/7没有通过原free/workspace/保守48H capture上界条件，共同候选被跳过。附加DT/optimizer/生成/环境调用均0，每rank6次int控制collective单列，第28轮及callback区间排除效率统计；八scope均恢复原方法。此为guard skip，不能称候选已跑、容量通过、实际OOM或内存绝对不足；没有为了让候选运行而调小保护阈值。原正式selector仍只对extent<=2048选择既有GPU留存，长输入原offload路径保持。
+
+随后通过原98661070只读metadata RPC核对实际八rank资源配置：gdn_head_batch_size=8，gdn_gpu_capture_names=(h,w,v_new,A)，copy_replay_captures=False、root pin=False、replay pin=True，FA/GDN suffix与compact captures均True；原runner6a112224/GDN3f51f5f7保持。不是逐head=1的配置，没有据此实施新分组试验或改数值实现。只读适配源SHA898668d2，0模型/optimizer/资源变更；原绑定回执为actual-worker-imports-native-resource-config-readonly-v1.json。远端rg不可用的一次只读源搜索失败已改用现有Python文件读取，没有安装、重装或清缓存。
+
+已用原e6f3b171归约FA scope全部恢复至长GPU对照提交前的真实物理窗口：生成560卡样本均值50.683929%，DT552卡样本46.686594%；边界/mixed独立，当前输入不与旧窗口相同，不能据此声称算子因果提速。复用已有首8次/每rank生成记录，仅作CPU归约：第1到8次总输出94690→41824 token、原调用中位13.486→12.359秒，最长输出大多仍512；中间7个间隔合计中位21.842秒/124.328秒观察跨度。这说明该窗口有可见批次尾部，不把token槽比例、批返回等待或间隔当物理GPU空闲/MFU/预计加速，也未改变作者采样、取消或交互loop。
+
+22:45三份实际图已保存：正式TextCraft28/0/0、AppWorld0/0/0，历史对照共同28轮PNG已展示，较上次22:26成功快照DT增加2轮。完整PNG/SVG/CSV/来源快照目录见current_runtime.latest_refreshed_plots。guard、实际资源配置、干净Util和既有生成尾部数据另存共享receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4；本地对应results_dtpo_v9_negative2_long_GPU_resident_guard、loaded_native_resource_config、post_FA_clean_utilization、existing_generation_batch_tail_20261019_v4.json。原六组控制器继续，未声称六组完成或本轮有新的生产提速部署。
+
 ## 2026-10-19T22:32:43.504863+08:00 第26轮完成、共享checkpoint25齐全；FA留GPU候选收益有限，未部署
 
 原controller2503202/出生1792394518.8、driver2503287/出生1792394519.29均按实际出生核对存活；原日志完成26/200，观测处于actor更新，后五组仍queued。共享checkpoint25包含data.pt及八rank各model/optim/extra_state共25个必要非空状态文件，未用新恢复测试代替此事实。执行cdd8ea40/方法f26b3b37/VERL20bd331及u=clip(-expm1(-d),-2,1)、乘g后原masked_var不减均值均保持；goal文字中的旧symmetric不覆盖最新人类要求。
