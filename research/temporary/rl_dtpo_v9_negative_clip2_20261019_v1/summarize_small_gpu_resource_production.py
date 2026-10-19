@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 
 owner = Path(__file__).with_name('summarize_root_resource_production.py')
-assert hashlib.sha256(owner.read_bytes()).hexdigest() == '5f1590614edf6d823e6d48335a6c2641facf65a5b5b8e9dcf2ca50d1c8aae221'
+assert hashlib.sha256(owner.read_bytes()).hexdigest() == '6a2316e649ff144f6749b6725713a316b4a5090e12a7c00f1c7b53123e80ee9a'
 code = owner.read_text()
 for old, new in (
     ('root-pageable-resource-override-completed.json', 'small-GPU-resident-resource-override-completed.json'),
@@ -53,7 +53,8 @@ if '--through-latest-progress' in sys.argv:
     validation_window_selection=[]
     for report_name,job_name in (
             ('existing-DT-FA-capture-resource-pair-results.json','FA-capture-long-pair-job.json'),
-            ('existing-DT-long-GPU-resident-resource-pair-results.json','long-GPU-resident-pair-job.json')):
+            ('existing-DT-long-GPU-resident-resource-pair-results.json','long-GPU-resident-pair-job.json'),
+            ('existing-DT-capture-storage-results.json','capture-storage-observer-job.json')):
         report_path=AUDIT/report_name
         job_path=AUDIT/job_name
         if report_path.exists():
