@@ -1,3 +1,13 @@
+## 2026-10-19T20:28:58.533137+08:00 第18轮完成；实际replay源码核对与单次长B4原生追踪已安装
+
+上一goal轮有实际进展：3b6278b6保存40批次DT计数、512请求完成时刻及物理Util对齐和17轮三套图。本轮原controller2503202/1792394518.8及driver2503287/1792394519.29实查存活；TextCraft DTPO完成18/200，进入19轮生成，后五组queued；共享最新15，最近20:16图仍17轮，此新状态不冒充已更新图。执行cdd8ea40/方法f26b3b37/VERL20bd331及负clip2公式不变，无新模型/DT/optimizer调用或重启。
+
+按实际已导入模块核对：producer来自原eventwait-resume25 entry、SHA2aa5f552；runner6a112224、retained capture5ad0bf9b、code-local993ae72a、native copy2a226ac3与monitor e1c0bcdc。当前已用pinned non_blocking D2H加作用域末同步、已用CPython3.12 sys.monitoring局部事件；不能把再次启用异步拷贝或替换全局Python profiler当新优化。原producer按层保持unshard供finite消费再reshard，未发现源码中的额外重复模型调用。原environment.json pin_root仍True是历史初始值；当前loaded runner依据已完成覆盖为False/True，不据该文件误判覆盖失效。
+
+安装环境Torch2.8.0+metax3.5.3.9原FSDP公开set_modules_to_forward_prefetch/unshard接口已读回，文件901220ef。当前DT适配层未显式安排反向层序的forward prefetch；是否构成实测通信瓶颈仍未证明，不改变配置。固定2.8官方overlap测试用人工sleep，不运行它冒充DT数值容差或吞吐验收。FA/FLA/VERL原对应计算与既有数值验收保持，未新增整网通过声明。
+
+原metadata RPC已在rank0安装单次原torch.profiler，client280965/1792412876.34完成退出；其余7rank不安装。它只包下一次自然readout中首个paired extent>=6000的原FA31 replay、finite31与GDN30 replay，原调用/结果保留、方法finally恢复；不重复attribution。追踪结果尚未生成，不称预取有效或已修复；包含该profile的迭代须排除无观测效率比较。实际源2ec33099、完成安装与所有参考路径见results_dtpo_v9_negative2_replay_contract_trace_setup_20261019_v4.json。六组goal继续active。
+
 ## 2026-10-19T20:15:58.385964+08:00 第17轮完成；DT原计数器40批次齐全，生成512请求实际结束时刻与Util已对齐
 
 上一goal轮为进展：de05330e提交八rank一次自然DT观察及实际异步接口合同。本轮原controller2503202/1792394518.8、driver2503287/1792394519.29仍实查存活，正式TextCraft DTPO完成17/200，进入18轮生成，后五组queued；共享最新15。原图于20:15:58/20:16:03/07刷新，较19:48快照DT增加2轮，历史PPO105/GRPO191仅独立对照。执行cdd8ea40、方法f26b3b37、VERL20bd331及原6a112224 DT算术、clip[-2,1]/乘g后masked_var不变；未重启训练或新增model/DT/optimizer调用。

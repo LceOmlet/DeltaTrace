@@ -1,0 +1,1418 @@
+{
+  "status": "completed_actual_replay_source_contract_audit_trace_installed_not_finished",
+  "collected_at_beijing": "2026-10-19T20:28:58.533137+08:00",
+  "execution_source": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+  "method_source": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
+  "actual_imported_producer": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+    "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+    "methods": [
+      {
+        "name": "__call__",
+        "line": 85,
+        "source": "def __call__(self, *args: Any, **kwargs: Any) -> Any:\n        modules = []\n        seen = set()\n        # Traverse both the actor root and the ABI shell.  The shell aliases\n        # the exact text transformer, and using it as a second root makes the\n        # lifecycle explicit even when PEFT/FSDP stores that transformer below\n        # a wrapper that does not expose it through ``modules()``.\n        for root in (self._forward_model, self._conditional):\n            for module in root.modules():\n                if id(module) in seen:\n                    continue\n                seen.add(id(module))\n                if hasattr(module, \"_get_fsdp_state\"):\n                    modules.append(module)\n        self._owner_fsdp_modules = modules\n        self._owner_params_unsharded = True\n        output = getattr(self._forward_model, self._owner_forward_name)(*args, **kwargs)\n        # Finite propagation consumes one decoder at a time. Keeping every\n        # decoder unsharded here duplicated almost the entire 9B checkpoint and\n        # caused an actual OOM at 32768 tokens. Release native-forward gathers;\n        # only the root-owned head/final norm are needed for the next seed.\n        # Each decoder is gathered at its replay/finite boundary below.\n        for module in reversed(modules):\n            module.reshard()\n        self._forward_model.unshard()\n        if not getattr(self, \"_owner_lifecycle_reported\", False):\n            from torch.distributed.tensor import DTensor\n\n            remaining = [\n                (name, tuple(getattr(param, \"placements\", ())))\n                for name, param in self._conditional.named_parameters()\n                if isinstance(param, DTensor)\n            ]\n            print(\n                f\"[DeltaTrace] owner FSDP2 lifecycle modules={len(modules)} \"\n                f\"layerwise=True remaining_dtensor={len(remaining)} sample={remaining[:3]}\",\n                flush=True,\n            )\n            self._owner_lifecycle_reported = True\n        return output"
+      },
+      {
+        "name": "replay_finite_layer",
+        "line": 126,
+        "source": "def replay_finite_layer(self, layer: Any, replay: Any) -> Any:\n        # Keep only this replayed layer's gathered weights for its immediately\n        # following finite consumer. FSDP still owns gathering and release.\n        # Its public setter has no matching getter/context manager: retain the\n        # exact prior mesh/auto settings for restoration, including on error.\n        saved = []\n        try:\n            for module in layer.modules():\n                if hasattr(module, \"_get_fsdp_state\"):\n                    state = module._get_fsdp_state()\n                    group = state._fsdp_param_group\n                    if group is not None:\n                        saved.append((state, group, group.post_forward_mesh_info,\n                                      state._auto_reshard_after_forward))\n                        module.set_reshard_after_forward(False, recurse=False)\n            return replay()\n        finally:\n            for state, group, mesh, auto in reversed(saved):\n                group.post_forward_mesh_info = mesh\n                state._auto_reshard_after_forward = auto"
+      },
+      {
+        "name": "prepare_finite_layer",
+        "line": 147,
+        "source": "def prepare_finite_layer(self, layer: Any) -> None:\n        # Replay's official post-forward hook may already have resharded.\n        # Public unshard restores the ordinary weights for the finite rules.\n        for module in layer.modules():\n            if hasattr(module, \"_get_fsdp_state\"):\n                module.unshard()"
+      },
+      {
+        "name": "release_finite_layer",
+        "line": 154,
+        "source": "def release_finite_layer(self, layer: Any) -> None:\n        for module in reversed(list(layer.modules())):\n            if hasattr(module, \"_get_fsdp_state\"):\n                module.reshard()"
+      },
+      {
+        "name": "release_owner_params",
+        "line": 181,
+        "source": "def release_owner_params(self) -> None:\n        if getattr(self, \"_owner_params_unsharded\", False):\n            for module in reversed(self._owner_fsdp_modules):\n                module.reshard()\n            self._owner_fsdp_modules = []\n            self._owner_params_unsharded = False"
+      }
+    ],
+    "lease_lines": [
+      {
+        "line": 56,
+        "text": "        # call and released by the normal FSDP2 post-forward hook."
+      },
+      {
+        "line": 104,
+        "text": "        # caused an actual OOM at 32768 tokens. Release native-forward gathers;"
+      },
+      {
+        "line": 126,
+        "text": "    def replay_finite_layer(self, layer: Any, replay: Any) -> Any:"
+      },
+      {
+        "line": 128,
+        "text": "        # following finite consumer. FSDP still owns gathering and release."
+      },
+      {
+        "line": 154,
+        "text": "    def release_finite_layer(self, layer: Any) -> None:"
+      },
+      {
+        "line": 181,
+        "text": "    def release_owner_params(self) -> None:"
+      },
+      {
+        "line": 394,
+        "text": "        from native_prefix_leases import prepare_native_prefix_leases"
+      },
+      {
+        "line": 395,
+        "text": "        self.readout_options['prefix_lease_factory'] = prepare_native_prefix_leases"
+      },
+      {
+        "line": 398,
+        "text": "            self.readout_options['prefix_lease_factory'] = partial("
+      },
+      {
+        "line": 399,
+        "text": "                prepare_native_prefix_leases,"
+      },
+      {
+        "line": 414,
+        "text": "                prefix_lease_factory=self.readout_options['prefix_lease_factory'])"
+      }
+    ]
+  },
+  "native_runner": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+    "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+    "functions": [
+      {
+        "name": "attribute",
+        "line": 240,
+        "end": 576
+      },
+      {
+        "name": "capture",
+        "line": 226,
+        "end": 231
+      },
+      {
+        "name": "capture",
+        "line": 332,
+        "end": 334
+      },
+      {
+        "name": "replay",
+        "line": 424,
+        "end": 425
+      }
+    ]
+  },
+  "capture_sources": [
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_code_local_capture.py",
+      "SHA256": "993ae72a49dc90901bfcbb7817e5fd32ad6004fbe630a190b775c6f1e77fbe72"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/native_attention_capture.py",
+      "SHA256": "2a226ac35302e933920aa096fe962db7ed724c1a478c247ef5700b253461ab74"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_retained_capture.py",
+      "SHA256": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810"
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/native_capture_events.py",
+      "SHA256": "e1c0bcdcb64c5ba2371d6372863f4e5fe177263b839c2a819808912213007a93"
+    }
+  ],
+  "native_FSDP_contract": {
+    "torch_version": "2.8.0+metax3.5.3.9",
+    "module_path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/__init__.py",
+    "methods": [
+      {
+        "name": "set_modules_to_forward_prefetch",
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fully_shard.py",
+        "SHA256": "901220efd8b6ea015eebd468a689a8edcf5023cfcc3694159d892950261d8e15",
+        "source": "    def set_modules_to_forward_prefetch(self, modules: list[FSDPModule]) -> None:\n        \"\"\"\n        Sets the FSDP modules for which this FSDP module should explicitly\n        prefetch all-gathers in forward. The prefetching runs after this\n        module's all-gather copy-out.\n\n        Passing a singleton list containing the next FSDP module gives the same\n        all-gather overlap behavior as the default overlap behavior, except the\n        prefetched all-gather is issued earlier from the CPU. Passing a list\n        with at least length two is required for more aggressive overlap and\n        will use more reserved memory.\n\n        Args:\n            modules (List[FSDPModule]): FSDP modules to prefetch.\n        \"\"\"\n        _assert_all_fsdp_modules(modules)\n        self._get_fsdp_state()._states_to_forward_prefetch = [\n            module._get_fsdp_state() for module in modules\n        ]\n"
+      },
+      {
+        "name": "set_modules_to_backward_prefetch",
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fully_shard.py",
+        "SHA256": "901220efd8b6ea015eebd468a689a8edcf5023cfcc3694159d892950261d8e15",
+        "source": "    def set_modules_to_backward_prefetch(self, modules: list[FSDPModule]) -> None:\n        \"\"\"\n        Sets the FSDP modules for which this FSDP module should explicitly\n        prefetch all-gathers in backward. This overrides the default backward\n        pretching implementation that prefetches the next FSDP module based on\n        the reverse post-forward order.\n\n        Passing a singleton list containing the previous FSDP module gives the\n        same all-gather overlap behavior as the default overlap behavior.\n        Passing a list with at least length two is required for more aggressive\n        overlap and will use more reserved memory.\n\n        Args:\n            modules (List[FSDPModule]): FSDP modules to prefetch.\n        \"\"\"\n        _assert_all_fsdp_modules(modules)\n        self._get_fsdp_state()._states_to_backward_prefetch = [\n            module._get_fsdp_state() for module in modules\n        ]\n"
+      },
+      {
+        "name": "unshard",
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fully_shard.py",
+        "SHA256": "901220efd8b6ea015eebd468a689a8edcf5023cfcc3694159d892950261d8e15",
+        "source": "    def unshard(self, async_op: bool = False) -> Optional[UnshardHandle]:\n        \"\"\"\n        Unshards the module's parameters by allocating memory and all-gathering\n        the parameters. This method is *not* recursive. The unshard follows the\n        :class:`MixedPrecisionPolicy`, so it will all-gather following\n        ``param_dtype`` if set.\n\n        Args:\n            async_op (bool): If ``True``, then returns a :class:`UnshardHandle`\n                that has a :meth:`wait` method to wait on the unshard op. If\n                ``False``, then returns ``None`` and waits on the handle inside\n                this function.\n\n        .. note:: If ``async_op=True``, then FSDP will wait on the pending\n            unshard in the module's pre-forward for the user. The user only\n            needs to call :meth:`wait` explicitly if the wait should happen\n            before pre-forward.\n        \"\"\"\n        state = self._get_fsdp_state()\n        fsdp_param_group = state._fsdp_param_group\n        if fsdp_param_group is not None:\n            fsdp_param_group.lazy_init()\n            fsdp_param_group.unshard(async_op=async_op)\n        handle = _UnshardHandleImpl(fsdp_param_group)\n        if async_op:\n            return handle\n        handle.wait()\n        return None\n"
+      },
+      {
+        "name": "set_reshard_after_forward",
+        "path": "/opt/conda/lib/python3.12/site-packages/torch/distributed/fsdp/_fully_shard/_fully_shard.py",
+        "SHA256": "901220efd8b6ea015eebd468a689a8edcf5023cfcc3694159d892950261d8e15",
+        "source": "    def set_reshard_after_forward(\n        self, reshard_after_forward: bool, recurse: bool = True\n    ) -> None:\n        \"\"\"\n        Sets if the module should reshard parameters after forward. This can be\n        used to change the ``reshard_after_forward`` FSDP arg at runtime. For\n        example, this can be used to set the FSDP root module's value to\n        ``True`` (since it is otherwise specially set to ``False``), or it can\n        set an FSDP module's value to ``False`` for running evals and set back\n        to ``True`` for training.\n\n        Args:\n            reshard_after_forward (bool): Whether to reshard parameters after\n                forward.\n            recurse (bool): Whether to set for all FSDP submodules or just the\n                passed-in module.\n        \"\"\"\n        if not isinstance(reshard_after_forward, bool):\n            raise ValueError(\n                f\"reshard_after_forward should be a bool, got {type(reshard_after_forward)}\"\n            )\n        self_module = cast(nn.Module, self)\n        modules = list(self_module.modules()) if recurse else [self_module]\n        for module in modules:\n            if isinstance(module, FSDPModule):\n                state = module._get_fsdp_state()\n                state._auto_reshard_after_forward = False\n                if fsdp_param_group := state._fsdp_param_group:\n                    fsdp_param_group.post_forward_mesh_info = (\n                        _get_post_forward_mesh_info(\n                            reshard_after_forward, fsdp_param_group.mesh_info\n                        )\n                    )\n"
+      }
+    ]
+  },
+  "source_findings": [
+    "Current native capture already uses pinned non_blocking D2H and a scope-exit stream synchronization; enabling asynchronous copies is not a new proposal.",
+    "Current native code-local capture already uses CPython3.12 sys.monitoring and restricts events to selected code objects; replacing a global Python profiler is not a new proposal.",
+    "The actual producer replays one layer at a time, keeps that layer unsharded for its finite consumer, then reshards using original FSDP methods.",
+    "FSDP2.8 exposes explicit forward prefetch and async unshard. Whether communication is a material current bottleneck is unproven until the installed native trace finishes.",
+    "The source environment still says root pinned True; the completed runtime override sets current loaded runner root False/replay True. Do not treat the original environment JSON as current loaded flags."
+  ],
+  "official_sources": [
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.8.0/torch/distributed/fsdp/_fully_shard/_fully_shard.py",
+      "scope": "Pinned public prefetch/unshard API contract, corroborated by installed MetaX2.8 method source"
+    },
+    {
+      "url": "https://github.com/pytorch/pytorch/blob/v2.8.0/test/distributed/_composable/fsdp/test_fully_shard_overlap.py",
+      "scope": "Artificial sleep-based stream overlap test; not a numerical tolerance or current DT performance acceptance. Not executed."
+    }
+  ],
+  "trace": {
+    "status": "installed_waiting_one_natural_long_B4",
+    "installation": {
+      "collected": 1792412938.5331368,
+      "handles": [
+        {
+          "pid": 2503202,
+          "matches": true,
+          "status": "sleeping"
+        },
+        {
+          "pid": 2503287,
+          "matches": true,
+          "status": "sleeping"
+        },
+        {
+          "pid": 280965,
+          "missing": true
+        }
+      ],
+      "phase": "ray::WorkerDict / ray::WorkerDict.actor_rollout_generate_sequences",
+      "metric": {
+        "step": 18,
+        "values": {
+          "global_seqlen/min": 67027.0,
+          "global_seqlen/max": 137499.0,
+          "global_seqlen/minmax_diff": 70472.0,
+          "global_seqlen/balanced_min": 100571.0,
+          "global_seqlen/balanced_max": 100573.0,
+          "global_seqlen/mean": 100572.125,
+          "actor/entropy_loss": 0.62,
+          "actor/kl_loss": 0.001,
+          "actor/kl_coef": 0.001,
+          "actor/pg_loss": -0.063,
+          "actor/pg_clipfrac": 0.0,
+          "actor/ppo_kl": 0.0,
+          "actor/pg_clipfrac_lower": 0.0,
+          "actor/grad_norm": 0.0290016443,
+          "actor/grad_norm_local": 0.00956644746,
+          "perf/mfu/actor": 0.0,
+          "perf/max_memory_allocated_gb": 59.956,
+          "perf/max_memory_reserved_gb": 63.418,
+          "perf/cpu_memory_used_gb": 587.033,
+          "actor/lr": 0.0,
+          "training/global_step": 18.0,
+          "training/epoch": 1.0,
+          "critic/score/mean": 0.664,
+          "critic/score/max": 1.0,
+          "critic/score/min": 0.0,
+          "critic/rewards/mean": 0.664,
+          "critic/rewards/max": 1.0,
+          "critic/rewards/min": 0.0,
+          "critic/advantages/mean": 0.054,
+          "critic/advantages/max": 32.293,
+          "critic/advantages/min": -41.55,
+          "critic/returns/mean": -7.342,
+          "critic/returns/max": 27.201,
+          "critic/returns/min": -41.55,
+          "response_length/mean": 2827.879,
+          "response_length/max": 10240.0,
+          "response_length/min": 164.0,
+          "response_length/clip_ratio": 0.02,
+          "prompt_length/mean": 315.0,
+          "prompt_length/max": 315.0,
+          "prompt_length/min": 315.0,
+          "prompt_length/clip_ratio": 0.0,
+          "episode/reward/mean": 0.664,
+          "episode/reward/max": 1.0,
+          "episode/reward/min": 0.0,
+          "episode/length/mean": 14.41,
+          "episode/length/max": 30.0,
+          "episode/length/min": 2.0,
+          "episode/tool_call_count/mean": 14.41,
+          "timing_s/gen": 410.837,
+          "timing_s/reward": 0.0,
+          "timing_s/old_log_prob": 36.675,
+          "timing_s/ref": 31.944,
+          "timing_s/adv": 108.029,
+          "timing_s/update_actor": 158.337,
+          "timing_s/dump_rollout_generations": 0.407,
+          "timing_s/step": 746.237,
+          "timing_per_token_ms/adv": 0.134,
+          "timing_per_token_ms/ref": 0.04,
+          "timing_per_token_ms/gen": 0.568,
+          "timing_per_token_ms/update_actor": 0.197,
+          "perf/total_num_tokens": 804577.0,
+          "perf/time_per_step": 746.237,
+          "perf/throughput": 134.772
+        },
+        "sources": [
+          {
+            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-97077ecb858da019ecbd0949e9bf3f33e533308647cf551c46323c9e-01000000-2507756.out",
+            "line": 427
+          }
+        ]
+      },
+      "checkpoint": 15,
+      "installation": {
+        "status": "completed_read_only_worker_binding_check",
+        "task": "TextCraft",
+        "method": "dt",
+        "version": "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+        "local_patch_commit": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+        "collected_unix": 1792412906.78316,
+        "job": {
+          "pid": 2503287,
+          "birth": 1792394519.29
+        },
+        "metadata_owner_wrapper": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/appworld-native-PPO-32k-speed-20261016-v3/source/inspect_worker_imports.py",
+        "metadata_owner_wrapper_SHA256": "d8efc370d5a3acf9454c5406f28f26ca63979a8103f4a15d6da813104c244d6f",
+        "composition_script_SHA256": "2ec330995c441d738ab0cd2b02687de8b4f9ecb2c086ba9f8ad1d957cfdf82e4",
+        "results": [
+          {
+            "pid": 2514717,
+            "birth": 1792394612.55,
+            "rank": 5,
+            "critic_memory": [],
+            "FA_deterministic": null,
+            "DT_CREDIT_MODE": "reward_target_exponential_clipped_v9",
+            "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace",
+            "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner",
+            "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "worker_minibatch": 8,
+            "enforce_eager": false,
+            "free_cache_engine": false,
+            "modules": {
+              "dt_training_batch": {
+                "imported": false
+              },
+              "reward_readout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/reward_readout.py",
+                "SHA256": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "expected": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "matches_prepared_source": true
+              },
+              "counterfactual": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/counterfactual.py",
+                "SHA256": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "expected": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "matches_prepared_source": true
+              },
+              "deltatrace_rollout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+                "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "owner_trajectory_batch": {
+                "imported": false
+              },
+              "sql_owner_rollout": {
+                "imported": false
+              },
+              "loop_owner_rollout": {
+                "imported": false
+              },
+              "verl.workers.fsdp_workers": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+                "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "expected": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "matches_prepared_source": true
+              },
+              "verl.workers.actor.dp_actor": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/actor/dp_actor.py",
+                "SHA256": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "expected": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "matches_prepared_source": true
+              },
+              "verl.trainer.ppo.core_algos": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/trainer/ppo/core_algos.py",
+                "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "matches_prepared_source": true
+              },
+              "verl.utils.experimental.torch_functional": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/experimental/torch_functional.py",
+                "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "expected": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "matches_prepared_source": true
+              },
+              "verl.models.transformers.qwen3_vl": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/models/transformers/qwen3_vl.py",
+                "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "matches_prepared_source": true
+              },
+              "verl.workers.critic.dp_critic": {
+                "imported": false
+              },
+              "verl.utils.activation_offload": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/activation_offload.py",
+                "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "expected": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "matches_prepared_source": true
+              },
+              "qwen35_gdn_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+                "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "accelerated.qwen35.qwen35_retained_capture": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_retained_capture.py",
+                "SHA256": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_answer_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+                "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_dense_finite_runner": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+                "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "expected": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "matches_prepared_source": true
+              }
+            },
+            "model_calls": 0,
+            "DT_calls": 0,
+            "optimizer_updates": 0,
+            "method_changes": 0,
+            "DT_NATIVE_HOST_MEMORY_LEASE": null,
+            "DT_NATIVE_HOST_CACHE_REPLAY_LAYER": "0",
+            "actor_optimizer_entries": 496,
+            "actor_scheduler_epoch": 18,
+            "DP_world_size": 8,
+            "DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP": "2",
+            "DT_NATIVE_HOST_CACHE_BATCH": "1",
+            "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False,pinned_use_cuda_host_register:False,pinned_num_register_threads:8",
+            "actor_optimizer_step_values": [
+              72.0
+            ],
+            "rollout_native_cache_config": {
+              "enable_prefix_caching": true,
+              "mamba_cache_mode": "align",
+              "block_size": 512
+            },
+            "rollout_native_scheduler_config": {
+              "max_num_seqs": null,
+              "max_num_batched_tokens": null,
+              "enable_chunked_prefill": null
+            },
+            "native_DT_replay_trace_installed": false,
+            "additional_DT_calls": 0
+          },
+          {
+            "pid": 2514719,
+            "birth": 1792394612.56,
+            "rank": 7,
+            "critic_memory": [],
+            "FA_deterministic": null,
+            "DT_CREDIT_MODE": "reward_target_exponential_clipped_v9",
+            "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace",
+            "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner",
+            "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "worker_minibatch": 8,
+            "enforce_eager": false,
+            "free_cache_engine": false,
+            "modules": {
+              "dt_training_batch": {
+                "imported": false
+              },
+              "reward_readout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/reward_readout.py",
+                "SHA256": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "expected": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "matches_prepared_source": true
+              },
+              "counterfactual": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/counterfactual.py",
+                "SHA256": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "expected": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "matches_prepared_source": true
+              },
+              "deltatrace_rollout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+                "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "owner_trajectory_batch": {
+                "imported": false
+              },
+              "sql_owner_rollout": {
+                "imported": false
+              },
+              "loop_owner_rollout": {
+                "imported": false
+              },
+              "verl.workers.fsdp_workers": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+                "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "expected": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "matches_prepared_source": true
+              },
+              "verl.workers.actor.dp_actor": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/actor/dp_actor.py",
+                "SHA256": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "expected": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "matches_prepared_source": true
+              },
+              "verl.trainer.ppo.core_algos": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/trainer/ppo/core_algos.py",
+                "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "matches_prepared_source": true
+              },
+              "verl.utils.experimental.torch_functional": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/experimental/torch_functional.py",
+                "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "expected": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "matches_prepared_source": true
+              },
+              "verl.models.transformers.qwen3_vl": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/models/transformers/qwen3_vl.py",
+                "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "matches_prepared_source": true
+              },
+              "verl.workers.critic.dp_critic": {
+                "imported": false
+              },
+              "verl.utils.activation_offload": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/activation_offload.py",
+                "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "expected": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "matches_prepared_source": true
+              },
+              "qwen35_gdn_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+                "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "accelerated.qwen35.qwen35_retained_capture": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_retained_capture.py",
+                "SHA256": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_answer_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+                "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_dense_finite_runner": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+                "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "expected": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "matches_prepared_source": true
+              }
+            },
+            "model_calls": 0,
+            "DT_calls": 0,
+            "optimizer_updates": 0,
+            "method_changes": 0,
+            "DT_NATIVE_HOST_MEMORY_LEASE": null,
+            "DT_NATIVE_HOST_CACHE_REPLAY_LAYER": "0",
+            "actor_optimizer_entries": 496,
+            "actor_scheduler_epoch": 18,
+            "DP_world_size": 8,
+            "DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP": "2",
+            "DT_NATIVE_HOST_CACHE_BATCH": "1",
+            "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False,pinned_use_cuda_host_register:False,pinned_num_register_threads:8",
+            "actor_optimizer_step_values": [
+              72.0
+            ],
+            "rollout_native_cache_config": {
+              "enable_prefix_caching": true,
+              "mamba_cache_mode": "align",
+              "block_size": 512
+            },
+            "rollout_native_scheduler_config": {
+              "max_num_seqs": null,
+              "max_num_batched_tokens": null,
+              "enable_chunked_prefill": null
+            },
+            "native_DT_replay_trace_installed": false,
+            "additional_DT_calls": 0
+          },
+          {
+            "pid": 2514718,
+            "birth": 1792394612.55,
+            "rank": 6,
+            "critic_memory": [],
+            "FA_deterministic": null,
+            "DT_CREDIT_MODE": "reward_target_exponential_clipped_v9",
+            "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace",
+            "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner",
+            "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "worker_minibatch": 8,
+            "enforce_eager": false,
+            "free_cache_engine": false,
+            "modules": {
+              "dt_training_batch": {
+                "imported": false
+              },
+              "reward_readout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/reward_readout.py",
+                "SHA256": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "expected": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "matches_prepared_source": true
+              },
+              "counterfactual": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/counterfactual.py",
+                "SHA256": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "expected": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "matches_prepared_source": true
+              },
+              "deltatrace_rollout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+                "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "owner_trajectory_batch": {
+                "imported": false
+              },
+              "sql_owner_rollout": {
+                "imported": false
+              },
+              "loop_owner_rollout": {
+                "imported": false
+              },
+              "verl.workers.fsdp_workers": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+                "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "expected": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "matches_prepared_source": true
+              },
+              "verl.workers.actor.dp_actor": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/actor/dp_actor.py",
+                "SHA256": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "expected": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "matches_prepared_source": true
+              },
+              "verl.trainer.ppo.core_algos": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/trainer/ppo/core_algos.py",
+                "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "matches_prepared_source": true
+              },
+              "verl.utils.experimental.torch_functional": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/experimental/torch_functional.py",
+                "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "expected": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "matches_prepared_source": true
+              },
+              "verl.models.transformers.qwen3_vl": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/models/transformers/qwen3_vl.py",
+                "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "matches_prepared_source": true
+              },
+              "verl.workers.critic.dp_critic": {
+                "imported": false
+              },
+              "verl.utils.activation_offload": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/activation_offload.py",
+                "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "expected": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "matches_prepared_source": true
+              },
+              "qwen35_gdn_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+                "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "accelerated.qwen35.qwen35_retained_capture": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_retained_capture.py",
+                "SHA256": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_answer_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+                "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_dense_finite_runner": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+                "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "expected": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "matches_prepared_source": true
+              }
+            },
+            "model_calls": 0,
+            "DT_calls": 0,
+            "optimizer_updates": 0,
+            "method_changes": 0,
+            "DT_NATIVE_HOST_MEMORY_LEASE": null,
+            "DT_NATIVE_HOST_CACHE_REPLAY_LAYER": "0",
+            "actor_optimizer_entries": 496,
+            "actor_scheduler_epoch": 18,
+            "DP_world_size": 8,
+            "DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP": "2",
+            "DT_NATIVE_HOST_CACHE_BATCH": "1",
+            "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False,pinned_use_cuda_host_register:False,pinned_num_register_threads:8",
+            "actor_optimizer_step_values": [
+              72.0
+            ],
+            "rollout_native_cache_config": {
+              "enable_prefix_caching": true,
+              "mamba_cache_mode": "align",
+              "block_size": 512
+            },
+            "rollout_native_scheduler_config": {
+              "max_num_seqs": null,
+              "max_num_batched_tokens": null,
+              "enable_chunked_prefill": null
+            },
+            "native_DT_replay_trace_installed": false,
+            "additional_DT_calls": 0
+          },
+          {
+            "pid": 2514716,
+            "birth": 1792394612.54,
+            "rank": 4,
+            "critic_memory": [],
+            "FA_deterministic": null,
+            "DT_CREDIT_MODE": "reward_target_exponential_clipped_v9",
+            "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace",
+            "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner",
+            "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "worker_minibatch": 8,
+            "enforce_eager": false,
+            "free_cache_engine": false,
+            "modules": {
+              "dt_training_batch": {
+                "imported": false
+              },
+              "reward_readout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/reward_readout.py",
+                "SHA256": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "expected": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "matches_prepared_source": true
+              },
+              "counterfactual": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/counterfactual.py",
+                "SHA256": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "expected": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "matches_prepared_source": true
+              },
+              "deltatrace_rollout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+                "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "owner_trajectory_batch": {
+                "imported": false
+              },
+              "sql_owner_rollout": {
+                "imported": false
+              },
+              "loop_owner_rollout": {
+                "imported": false
+              },
+              "verl.workers.fsdp_workers": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+                "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "expected": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "matches_prepared_source": true
+              },
+              "verl.workers.actor.dp_actor": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/actor/dp_actor.py",
+                "SHA256": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "expected": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "matches_prepared_source": true
+              },
+              "verl.trainer.ppo.core_algos": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/trainer/ppo/core_algos.py",
+                "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "matches_prepared_source": true
+              },
+              "verl.utils.experimental.torch_functional": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/experimental/torch_functional.py",
+                "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "expected": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "matches_prepared_source": true
+              },
+              "verl.models.transformers.qwen3_vl": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/models/transformers/qwen3_vl.py",
+                "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "matches_prepared_source": true
+              },
+              "verl.workers.critic.dp_critic": {
+                "imported": false
+              },
+              "verl.utils.activation_offload": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/activation_offload.py",
+                "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "expected": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "matches_prepared_source": true
+              },
+              "qwen35_gdn_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+                "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "accelerated.qwen35.qwen35_retained_capture": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_retained_capture.py",
+                "SHA256": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_answer_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+                "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_dense_finite_runner": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+                "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "expected": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "matches_prepared_source": true
+              }
+            },
+            "model_calls": 0,
+            "DT_calls": 0,
+            "optimizer_updates": 0,
+            "method_changes": 0,
+            "DT_NATIVE_HOST_MEMORY_LEASE": null,
+            "DT_NATIVE_HOST_CACHE_REPLAY_LAYER": "0",
+            "actor_optimizer_entries": 496,
+            "actor_scheduler_epoch": 18,
+            "DP_world_size": 8,
+            "DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP": "2",
+            "DT_NATIVE_HOST_CACHE_BATCH": "1",
+            "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False,pinned_use_cuda_host_register:False,pinned_num_register_threads:8",
+            "actor_optimizer_step_values": [
+              72.0
+            ],
+            "rollout_native_cache_config": {
+              "enable_prefix_caching": true,
+              "mamba_cache_mode": "align",
+              "block_size": 512
+            },
+            "rollout_native_scheduler_config": {
+              "max_num_seqs": null,
+              "max_num_batched_tokens": null,
+              "enable_chunked_prefill": null
+            },
+            "native_DT_replay_trace_installed": false,
+            "additional_DT_calls": 0
+          },
+          {
+            "pid": 2514712,
+            "birth": 1792394612.52,
+            "rank": 1,
+            "critic_memory": [],
+            "FA_deterministic": null,
+            "DT_CREDIT_MODE": "reward_target_exponential_clipped_v9",
+            "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace",
+            "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner",
+            "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "worker_minibatch": 8,
+            "enforce_eager": false,
+            "free_cache_engine": false,
+            "modules": {
+              "dt_training_batch": {
+                "imported": false
+              },
+              "reward_readout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/reward_readout.py",
+                "SHA256": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "expected": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "matches_prepared_source": true
+              },
+              "counterfactual": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/counterfactual.py",
+                "SHA256": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "expected": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "matches_prepared_source": true
+              },
+              "deltatrace_rollout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+                "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "owner_trajectory_batch": {
+                "imported": false
+              },
+              "sql_owner_rollout": {
+                "imported": false
+              },
+              "loop_owner_rollout": {
+                "imported": false
+              },
+              "verl.workers.fsdp_workers": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+                "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "expected": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "matches_prepared_source": true
+              },
+              "verl.workers.actor.dp_actor": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/actor/dp_actor.py",
+                "SHA256": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "expected": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "matches_prepared_source": true
+              },
+              "verl.trainer.ppo.core_algos": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/trainer/ppo/core_algos.py",
+                "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "matches_prepared_source": true
+              },
+              "verl.utils.experimental.torch_functional": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/experimental/torch_functional.py",
+                "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "expected": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "matches_prepared_source": true
+              },
+              "verl.models.transformers.qwen3_vl": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/models/transformers/qwen3_vl.py",
+                "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "matches_prepared_source": true
+              },
+              "verl.workers.critic.dp_critic": {
+                "imported": false
+              },
+              "verl.utils.activation_offload": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/activation_offload.py",
+                "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "expected": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "matches_prepared_source": true
+              },
+              "qwen35_gdn_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+                "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "accelerated.qwen35.qwen35_retained_capture": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_retained_capture.py",
+                "SHA256": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_answer_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+                "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_dense_finite_runner": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+                "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "expected": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "matches_prepared_source": true
+              }
+            },
+            "model_calls": 0,
+            "DT_calls": 0,
+            "optimizer_updates": 0,
+            "method_changes": 0,
+            "DT_NATIVE_HOST_MEMORY_LEASE": null,
+            "DT_NATIVE_HOST_CACHE_REPLAY_LAYER": "0",
+            "actor_optimizer_entries": 496,
+            "actor_scheduler_epoch": 18,
+            "DP_world_size": 8,
+            "DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP": "2",
+            "DT_NATIVE_HOST_CACHE_BATCH": "1",
+            "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False,pinned_use_cuda_host_register:False,pinned_num_register_threads:8",
+            "actor_optimizer_step_values": [
+              72.0
+            ],
+            "rollout_native_cache_config": {
+              "enable_prefix_caching": true,
+              "mamba_cache_mode": "align",
+              "block_size": 512
+            },
+            "rollout_native_scheduler_config": {
+              "max_num_seqs": null,
+              "max_num_batched_tokens": null,
+              "enable_chunked_prefill": null
+            },
+            "native_DT_replay_trace_installed": false,
+            "additional_DT_calls": 0
+          },
+          {
+            "pid": 2514715,
+            "birth": 1792394612.53,
+            "rank": 3,
+            "critic_memory": [],
+            "FA_deterministic": null,
+            "DT_CREDIT_MODE": "reward_target_exponential_clipped_v9",
+            "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace",
+            "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner",
+            "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "worker_minibatch": 8,
+            "enforce_eager": false,
+            "free_cache_engine": false,
+            "modules": {
+              "dt_training_batch": {
+                "imported": false
+              },
+              "reward_readout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/reward_readout.py",
+                "SHA256": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "expected": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "matches_prepared_source": true
+              },
+              "counterfactual": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/counterfactual.py",
+                "SHA256": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "expected": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "matches_prepared_source": true
+              },
+              "deltatrace_rollout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+                "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "owner_trajectory_batch": {
+                "imported": false
+              },
+              "sql_owner_rollout": {
+                "imported": false
+              },
+              "loop_owner_rollout": {
+                "imported": false
+              },
+              "verl.workers.fsdp_workers": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+                "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "expected": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "matches_prepared_source": true
+              },
+              "verl.workers.actor.dp_actor": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/actor/dp_actor.py",
+                "SHA256": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "expected": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "matches_prepared_source": true
+              },
+              "verl.trainer.ppo.core_algos": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/trainer/ppo/core_algos.py",
+                "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "matches_prepared_source": true
+              },
+              "verl.utils.experimental.torch_functional": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/experimental/torch_functional.py",
+                "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "expected": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "matches_prepared_source": true
+              },
+              "verl.models.transformers.qwen3_vl": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/models/transformers/qwen3_vl.py",
+                "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "matches_prepared_source": true
+              },
+              "verl.workers.critic.dp_critic": {
+                "imported": false
+              },
+              "verl.utils.activation_offload": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/activation_offload.py",
+                "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "expected": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "matches_prepared_source": true
+              },
+              "qwen35_gdn_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+                "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "accelerated.qwen35.qwen35_retained_capture": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_retained_capture.py",
+                "SHA256": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_answer_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+                "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_dense_finite_runner": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+                "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "expected": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "matches_prepared_source": true
+              }
+            },
+            "model_calls": 0,
+            "DT_calls": 0,
+            "optimizer_updates": 0,
+            "method_changes": 0,
+            "DT_NATIVE_HOST_MEMORY_LEASE": null,
+            "DT_NATIVE_HOST_CACHE_REPLAY_LAYER": "0",
+            "actor_optimizer_entries": 496,
+            "actor_scheduler_epoch": 18,
+            "DP_world_size": 8,
+            "DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP": "2",
+            "DT_NATIVE_HOST_CACHE_BATCH": "1",
+            "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False,pinned_use_cuda_host_register:False,pinned_num_register_threads:8",
+            "actor_optimizer_step_values": [
+              72.0
+            ],
+            "rollout_native_cache_config": {
+              "enable_prefix_caching": true,
+              "mamba_cache_mode": "align",
+              "block_size": 512
+            },
+            "rollout_native_scheduler_config": {
+              "max_num_seqs": null,
+              "max_num_batched_tokens": null,
+              "enable_chunked_prefill": null
+            },
+            "native_DT_replay_trace_installed": false,
+            "additional_DT_calls": 0
+          },
+          {
+            "pid": 2514714,
+            "birth": 1792394612.52,
+            "rank": 2,
+            "critic_memory": [],
+            "FA_deterministic": null,
+            "DT_CREDIT_MODE": "reward_target_exponential_clipped_v9",
+            "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace",
+            "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner",
+            "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "worker_minibatch": 8,
+            "enforce_eager": false,
+            "free_cache_engine": false,
+            "modules": {
+              "dt_training_batch": {
+                "imported": false
+              },
+              "reward_readout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/reward_readout.py",
+                "SHA256": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "expected": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "matches_prepared_source": true
+              },
+              "counterfactual": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/counterfactual.py",
+                "SHA256": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "expected": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "matches_prepared_source": true
+              },
+              "deltatrace_rollout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+                "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "owner_trajectory_batch": {
+                "imported": false
+              },
+              "sql_owner_rollout": {
+                "imported": false
+              },
+              "loop_owner_rollout": {
+                "imported": false
+              },
+              "verl.workers.fsdp_workers": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+                "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "expected": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "matches_prepared_source": true
+              },
+              "verl.workers.actor.dp_actor": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/actor/dp_actor.py",
+                "SHA256": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "expected": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "matches_prepared_source": true
+              },
+              "verl.trainer.ppo.core_algos": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/trainer/ppo/core_algos.py",
+                "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "matches_prepared_source": true
+              },
+              "verl.utils.experimental.torch_functional": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/experimental/torch_functional.py",
+                "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "expected": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "matches_prepared_source": true
+              },
+              "verl.models.transformers.qwen3_vl": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/models/transformers/qwen3_vl.py",
+                "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "matches_prepared_source": true
+              },
+              "verl.workers.critic.dp_critic": {
+                "imported": false
+              },
+              "verl.utils.activation_offload": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/activation_offload.py",
+                "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "expected": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "matches_prepared_source": true
+              },
+              "qwen35_gdn_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+                "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "accelerated.qwen35.qwen35_retained_capture": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_retained_capture.py",
+                "SHA256": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_answer_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+                "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_dense_finite_runner": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+                "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "expected": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "matches_prepared_source": true
+              }
+            },
+            "model_calls": 0,
+            "DT_calls": 0,
+            "optimizer_updates": 0,
+            "method_changes": 0,
+            "DT_NATIVE_HOST_MEMORY_LEASE": null,
+            "DT_NATIVE_HOST_CACHE_REPLAY_LAYER": "0",
+            "actor_optimizer_entries": 496,
+            "actor_scheduler_epoch": 18,
+            "DP_world_size": 8,
+            "DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP": "2",
+            "DT_NATIVE_HOST_CACHE_BATCH": "1",
+            "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False,pinned_use_cuda_host_register:False,pinned_num_register_threads:8",
+            "actor_optimizer_step_values": [
+              72.0
+            ],
+            "rollout_native_cache_config": {
+              "enable_prefix_caching": true,
+              "mamba_cache_mode": "align",
+              "block_size": 512
+            },
+            "rollout_native_scheduler_config": {
+              "max_num_seqs": null,
+              "max_num_batched_tokens": null,
+              "enable_chunked_prefill": null
+            },
+            "native_DT_replay_trace_installed": false,
+            "additional_DT_calls": 0
+          },
+          {
+            "pid": 2511533,
+            "birth": 1792394584.3,
+            "rank": 0,
+            "critic_memory": [],
+            "FA_deterministic": null,
+            "DT_CREDIT_MODE": "reward_target_exponential_clipped_v9",
+            "DT_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace",
+            "VERL_ROOT": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner",
+            "VENV_PYTHON": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_qwen35_20260912/env/bin/python",
+            "lora_rank": 8,
+            "lora_alpha": 16,
+            "microbatch_per_gpu": 4,
+            "worker_minibatch": 8,
+            "enforce_eager": false,
+            "free_cache_engine": false,
+            "modules": {
+              "dt_training_batch": {
+                "imported": false
+              },
+              "reward_readout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/reward_readout.py",
+                "SHA256": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "expected": "9807fb7c6e42efe20675e90aca2022e2dfa16d88570c62ae1d21901236d87c4d",
+                "matches_prepared_source": true
+              },
+              "counterfactual": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/counterfactual.py",
+                "SHA256": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "expected": "09004d56919e4a008e4ada8b00f5b719037dca881f53602b898c3bff81e33ab3",
+                "matches_prepared_source": true
+              },
+              "deltatrace_rollout": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+                "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "owner_trajectory_batch": {
+                "imported": false
+              },
+              "sql_owner_rollout": {
+                "imported": false
+              },
+              "loop_owner_rollout": {
+                "imported": false
+              },
+              "verl.workers.fsdp_workers": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+                "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "expected": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+                "matches_prepared_source": true
+              },
+              "verl.workers.actor.dp_actor": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/actor/dp_actor.py",
+                "SHA256": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "expected": "acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d",
+                "matches_prepared_source": true
+              },
+              "verl.trainer.ppo.core_algos": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/trainer/ppo/core_algos.py",
+                "SHA256": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "expected": "fc2f992b16fb7fb23aebc683ad5f00136cf61fc9013cd426f5046983babe7299",
+                "matches_prepared_source": true
+              },
+              "verl.utils.experimental.torch_functional": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/experimental/torch_functional.py",
+                "SHA256": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "expected": "bb46ebe9cb496a10e13539f8605544c550c892007345a8001bb0ff95f2c425b2",
+                "matches_prepared_source": true
+              },
+              "verl.models.transformers.qwen3_vl": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/models/transformers/qwen3_vl.py",
+                "SHA256": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "expected": "ebc52fb35812a9b0a5d9251f4e42e6fdbc15a076308390f2da81e47eea56a9d7",
+                "matches_prepared_source": true
+              },
+              "verl.workers.critic.dp_critic": {
+                "imported": false
+              },
+              "verl.utils.activation_offload": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/utils/activation_offload.py",
+                "SHA256": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "expected": "829042503f87abeeff2e4c86b27b409acb04d71b503820bbb5fa80eb7bd1d950",
+                "matches_prepared_source": true
+              },
+              "qwen35_gdn_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_gdn_finite.py",
+                "SHA256": "3f51f5f7569a4d6b410e7acef89635a50f2e6ecadfa43eb94d1fd4fdd655dfd1",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "accelerated.qwen35.qwen35_retained_capture": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/accelerated/qwen35/qwen35_retained_capture.py",
+                "SHA256": "5ad0bf9b8f9ec1868a20d964ad7a4a41c328f4da40c5d993f7ef92e8a5eaa810",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_answer_finite": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_answer_finite.py",
+                "SHA256": "1e20956a774d34917f2a31290945830bf757062bd8006881c21883e20bc3541e",
+                "expected": null,
+                "matches_prepared_source": null
+              },
+              "qwen35_dense_finite_runner": {
+                "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+                "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "expected": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+                "matches_prepared_source": true
+              }
+            },
+            "model_calls": 0,
+            "DT_calls": 0,
+            "optimizer_updates": 0,
+            "method_changes": 0,
+            "DT_NATIVE_HOST_MEMORY_LEASE": null,
+            "DT_NATIVE_HOST_CACHE_REPLAY_LAYER": "0",
+            "actor_optimizer_entries": 496,
+            "actor_scheduler_epoch": 18,
+            "DP_world_size": 8,
+            "DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP": "2",
+            "DT_NATIVE_HOST_CACHE_BATCH": "1",
+            "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False,pinned_use_cuda_host_register:False,pinned_num_register_threads:8",
+            "actor_optimizer_step_values": [
+              72.0
+            ],
+            "rollout_native_cache_config": {
+              "enable_prefix_caching": true,
+              "mamba_cache_mode": "align",
+              "block_size": 512
+            },
+            "rollout_native_scheduler_config": {
+              "max_num_seqs": null,
+              "max_num_batched_tokens": null,
+              "enable_chunked_prefill": null
+            },
+            "native_DT_replay_trace_installed": true,
+            "additional_DT_calls": 0
+          }
+        ],
+        "model_calls": 0,
+        "DT_calls": 0,
+        "optimizer_updates": 0,
+        "scope": "Unchanged original metadata RPC; absent lazy modules remain unverified"
+      },
+      "trace_receipt": false,
+      "log_tail": null
+    },
+    "source": "research/temporary/rl_dtpo_v9_negative_clip2_20261019_v1/observe_native_DT_replay_trace.py",
+    "source_SHA256": "2ec330995c441d738ab0cd2b02687de8b4f9ecb2c086ba9f8ad1d957cfdf82e4",
+    "expected_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/native-DT-replay-trace-receipt.json",
+    "scope": "One rank, first naturally scheduled paired B4 extent>=6000, FA31+finite31+GDN30; no repeated attribution/model call. Exclude instrumented iteration from uninstrumented performance claims."
+  },
+  "prefetch_configuration_changed": false,
+  "arithmetic_changes": 0,
+  "model_calls": 0,
+  "DT_calls": 0,
+  "optimizer_calls": 0,
+  "goal_status": "active"
+}
