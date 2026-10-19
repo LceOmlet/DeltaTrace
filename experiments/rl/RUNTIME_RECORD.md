@@ -1,3 +1,13 @@
+## 2026-10-19T11:38:20.131981+08:00 DTPO v9：v5指数信用逐事件裁剪，六组八卡正式队列
+
+人类明确两个任务DTPO均为v5+clip v9，另外四组保持原PPO/GRPO，替代goal里过时的symmetric标签。u=clip(-expm1(-d),-1,1)，先逐事件裁剪，再乘既定带符号信用b_k并汇总；单事件为原官方已归一化GRPO g。Q0=sum b_k、V0=sum b_k*min(exp(-d),2)、A0=sum b_k*u，原self/观察/padding/future mask保持。使用固定VERL原masked_var对最终保留policy位置汇总后的A0计算一个共同尺度，Q/V/A仅方差缩放一次、不减均值，不在乘g前缩放u、不裁剪g或最终gu。原DT、actor/core/optimizer、官方任务负载和效率路径保持。
+
+方法与执行源a88d479c199f9b3171a7d29e8a5840dc4759a6ea已提交推送，上游VERL 20bd331bdbc9026a5668e11362178e10ab7400c8。21项原v5 CPU回归和20项v9行为通过，实际双rank每rank B4、多target及精确32768 DT通过，0 optimizer更新；六配置由原生Hydra逐section核对。此双rank验收不冒称八rank正式容量或训练质量。八rank原只读元数据RPC已核对v9模式/DP8及实际已导入源码；未自然导入的lazy DT模块不冒称已验证。 controller 998007/1792380835.13，首组driver 998035/1792380835.59；本次完成0/200，实际phase=ray::WorkerDict。实际导入路径/SHA、配置、PID出生和原日志来源见results_dtpo_v9_clip_u_20261019_v1.json及远端对应receipt。
+
+顺序TextCraft DTPO v9→原PPO→原GRPO→AppWorld DTPO v9→原PPO→原GRPO，每组基础权重/0轮独占物理0–7、200完整迭代。TextCraft32组×8/global64/epochs1/4更新/save5/keep2；AppWorld作者40组×6/global32/epochs2/原取消、残批、test5、loop_sampler/共享save2/keep2；32k/B4/LoRA8/16、seed/采样/LR保持。原process owner f71ff4d8仅原生exit0、日志1..200与八rank共享完整checkpoint200齐全后交接，失败不跳过。其余五组当前queued；以各自原生状态后续更新。共享检查点在/mnt/si0021787ci2/default/lzq/deltatrace_backups/{textcraft,appworld}-8gpu-20261017/<对应20261019-v1 run>/checkpoints，日志/rollout和receipt保持共享ROOT路径。
+
+旧八卡v5自身exit1、0轮，首次DT原pinned capture报CUDA invalid argument，根因未确定，未向旧进程发停止信号；原日志及证据保留，不称clip修复了该环境错误。所有v1–v8及旧v5不拼入新v9。小时textcraft已ACTIVE切换新统一入口，分别保存两任务正式三算法图，另保留v9与历史PPO105/GRPO191对照；后者不当新队列进度。新全局范数实测与原local分别保存；历史显示仅按批准√2均衡分片假设估算并明确标注，原值与来源保留。goal持续至六组最终训练、共享完整checkpoint200和最终图全部完成，旧梯度/SQL等任务不恢复。
+
 ## 2026-10-19T10:21:00.294942+08:00 TextCraft v5 八卡正式训练：原指数信用，负尾方案暂缓
 
 用户要求先八卡训练v5，再讨论负尾。独立run textcraft-dtpo-v5-exponential-8gpu-200-20261019-v1 从基础权重/0轮提交，200迭代；原官方GRPO、逐事件原EOS d和指数Q/V/A及原v5优势仅方差缩放保持。不在乘g前缩放u，不采用对称概率比，不增加负尾裁剪。TextCraft32组×8/global64/epochs1/4更新、32k/B4/LoRA8/16、save5/keep2与原采样/LR保持；实际效率源继承8790a1b7，DT runner6a112224、actor acd3c8a5全局/分片分别记录、core fc2f992b/worker198f509c不改。

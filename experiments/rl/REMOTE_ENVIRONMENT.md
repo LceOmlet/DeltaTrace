@@ -1,3 +1,7 @@
+## 2026-10-19T11:38:20.131981+08:00 v9复用现有运行环境与已验收效率路径
+
+六组正式队列仅两DTPO隔离源接入已批准v9公式，PPO/GRPO沿原owner；不重建环境、不重装、不下载、不清缓存。严格SSH31146/HostKeyAlias32036，source原metax-entry.env.sh后使用原VENV_PYTHON并合并launch环境，MACA_PATH/LD_LIBRARY_PATH/PYTHONPATH保持。原host-register8分配配置、TP1/defaultgraph、MRoPE、DT runner6a112224、actor acd3c8a5、corefc2f992b/worker198f509c及native_host_memory4419c2e3保持。启动前八卡空闲，原TextCraft作者服务36005复用，无新服务替代。上次v5首次DT错误与本次v9双rank32k验收分别记录，不能将测试通过写成旧错误根因已修复。部署/实际导入/后续原生进度见RUNTIME_RECORD最新v9条及结果文件。
+
 ## 2026-10-19T10:21:00.294942+08:00 本次v5八卡启动所需环境恢复
 
 原v8控制器/driver不存在且8卡空闲，原TextCraft服务36005无监听；复用既有作者服务入口恢复，服务PID438992/出生1792375818.86。cumem.py/gpu_worker.py/gpu_model_runner.py实际SHA与记录的未修补版本完全匹配，分别恢复到既有验收SHA 7e557a8f/37db3830/6ed94945。新回执ROOT/receipts/textcraft-v5-eight-gpu-20261019-v1/{official-service.json,restored-platform-files.json}保留精确前后SHA与原owner来源。无安装、下载或缓存清理。严格SSH31146/HostKeyAlias32036，source原入口后合并实际launch环境，继续原VENV_PYTHON，不调用解析后的系统Python。方法/运行/实际导入与环境恢复分开记录；当前正式身份见RUNTIME_RECORD最新v5八卡条目。
