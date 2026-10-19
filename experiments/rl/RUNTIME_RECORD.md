@@ -1,3 +1,15 @@
+## 2026-10-19T21:13:05.119447+08:00 第21轮完成；原GPU replay资源开关的小批次配对通过并已实际应用
+
+原controller2503202/1792394518.8及driver2503287/1792394519.29仍匹配存活，TextCraft DTPO完成21/200，进入22轮生成，后五组queued。共享checkpoint20的data.pt及八rank model/optim/extra_state共25非空文件已经原owner标准核对。执行cdd8ea40、方法f26b3b37、VERL20bd331与clip[-2,1]/乘g后原masked_var保持；未重启。最新三套图在21:11刷新至21轮，历史PPO105/GRPO191只是独立对照，不算新八卡进度。
+
+第19轮的单rank原生两层trace已完成、原方法恢复，0额外model/DT调用；15.760秒包络中记录device事件并集6.740秒，CPU empty_strided区间内无记录device事件8.689秒。首次allGather3.041秒、下一次1.446ms，含启动/到达不齐；不由此宣称每层通信瓶颈或把CPU操作名直接等同分配根因。原始trace SHA a485947f、9464285字节及CPU归约保留；第19轮排除无观测效率比较，未部署prefetch。
+
+第21轮第三自然B4的原offload_replay_mixer True/False配对完成八rank：paired extent2217–2401，调用中位16.905→10.092秒，完整原DT向量逐值相同、RNG不变、flags及八rank观察作用域全部恢复。candidate峰值52.127–52.221GiB；原计算stage无新增，仅删除8个FA capture恢复stage。此轮额外验证DT共8次、0 optimizer/rollout，整轮和高Util不得当生产收益。该比较未保存候选精确绝对起止时间，不能补造配对GPU Util。
+
+资源adapter bfdd79e8已推送，原metadata RPC在所有八worker scheduler21时实际安装完成：仅paired rows<=8且extent<=2048时调用原GPU resident分支，其余/32768仍原卸载分支；每次finally恢复原flag。dispatch无CUDA/collective/模型/DT增量，不改FA/FLA/VERL计算、Q/V/A、mask或参数更新。仅当前TextCraft loaded runner，AppWorld尚未应用该新策略；原root=False/replay=True的AppWorld准备仍保持。第22轮起完整生产效率待读原GPU Util，不以配对40.3%的调用缩短宣称整轮收益。
+
+容差继续按固定FA/FLA/VERL对应计算、dtype、mask和原参考；本次资源输出一致不冒称新增整网官方数值验收，不使用checkpoint或多步更新0/0替代。证据results_dtpo_v9_negative2_native_replay_trace_20261019_v4.json、results_dtpo_v9_negative2_gpu_resident_pair_20261019_v4.json、results_dtpo_v9_negative2_small_GPU_resource_override_20261019_v4.json。六组goal保持active。
+
 ## 2026-10-19T20:28:58.533137+08:00 第18轮完成；实际replay源码核对与单次长B4原生追踪已安装
 
 上一goal轮有实际进展：3b6278b6保存40批次DT计数、512请求完成时刻及物理Util对齐和17轮三套图。本轮原controller2503202/1792394518.8及driver2503287/1792394519.29实查存活；TextCraft DTPO完成18/200，进入19轮生成，后五组queued；共享最新15，最近20:16图仍17轮，此新状态不冒充已更新图。执行cdd8ea40/方法f26b3b37/VERL20bd331及负clip2公式不变，无新模型/DT/optimizer调用或重启。
