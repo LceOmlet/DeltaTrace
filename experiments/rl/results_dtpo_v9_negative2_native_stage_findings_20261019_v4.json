@@ -1,0 +1,143 @@
+{
+  "recorded_at": "2026-10-19T20:17:30.807555+08:00",
+  "status": "completed_native_post_storage_cost_and_generation_barrier_observations",
+  "execution_source": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+  "method_source": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
+  "upstream_VERL": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "DT_native_runner_SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+  "DT": {
+    "records": 40,
+    "ranks": 8,
+    "restored_scopes": 8,
+    "errors": [],
+    "readout_wall_seconds_range": [
+      158.14538741111755,
+      163.4384744167328
+    ],
+    "native_host_allocation_seconds_range": [
+      17.909211,
+      22.150928
+    ],
+    "native_host_free_seconds_range": [
+      5.909373,
+      11.131464
+    ],
+    "per_rank_replay_host_enqueue_range": [
+      56.60476680519059,
+      75.84514916012995
+    ],
+    "caveat": "Native cumulative allocator and host enqueue times can overlap device work; do not add them as recoverable wall time. Inputs differ from prior observation.",
+    "next_investigation": "Remaining native replay/finite stages; no additional cache release tuning selected from these measurements."
+  },
+  "generation": {
+    "native_calls": 16,
+    "requests": 512,
+    "mean_native_call_seconds": 12.823196053504944,
+    "mean_request_wait_until_batch_return_seconds": 4.897514407522976,
+    "request_lifetime_fraction": 0.6180738103755072,
+    "separate_late_previous_iteration_calls": 8,
+    "original_native_step_restored_after_each_call": true,
+    "original_generate_restoration": "Call2 executed on all eight ranks; original wrapper finally restores engine.generate after logging.",
+    "physical_groups": [
+      {
+        "identity": [
+          "TextCraft",
+          "dt",
+          "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+          "ray::WorkerDict.actor_rollout_generate_sequences",
+          "unfinished_native_requests_75-100%"
+        ],
+        "card_samples": 32,
+        "mean_GPU_Util_percent": 59.40625
+      },
+      {
+        "identity": [
+          "TextCraft",
+          "dt",
+          "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+          "ray::WorkerDict.actor_rollout_generate_sequences",
+          "unfinished_native_requests_50-75%"
+        ],
+        "card_samples": 32,
+        "mean_GPU_Util_percent": 68.21875
+      },
+      {
+        "identity": [
+          "TextCraft",
+          "dt",
+          "textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+          "ray::WorkerDict.actor_rollout_generate_sequences",
+          "outside_common_observed_call"
+        ],
+        "card_samples": 16,
+        "mean_GPU_Util_percent": 33.4375
+      },
+      {
+        "identity": [
+          "phase_boundary_or_missing_bracket"
+        ],
+        "card_samples": 40,
+        "mean_GPU_Util_percent": 64.05
+      }
+    ],
+    "caveat": "Short prefill/decode mixture,32 samples per activity bucket; neither request-wait time nor incomplete request fraction is a GPU idle-time or causal-speedup estimate."
+  },
+  "prior_TP1_TP2_scope": {
+    "status": "native_generation_cost_and_original_TP_protocol_completed_not_deployed",
+    "input_SHA256": "626cb7bccfddbe931b8eefd06164aa8f99cf09d9b770c86d00493fbf0ffbbe77",
+    "dense_hot": {
+      "case": "dense",
+      "trial": "hot",
+      "exact_global_requests": 256,
+      "exact_generated_tokens": 32768,
+      "TP1_global_synchronous_seconds": 3.959381027962081,
+      "TP2_global_synchronous_seconds": 5.48030746798031,
+      "TP1_rank_seconds": [
+        3.924781382083893,
+        3.927513603004627,
+        3.9263410300482064,
+        3.938535980996676,
+        3.9312631289940327,
+        3.9581453730352223,
+        3.959381027962081,
+        3.9421039760345593
+      ],
+      "TP2_rank_seconds": [
+        5.427325860946439,
+        5.39410377794411,
+        5.475097154965624,
+        5.434371326002292,
+        5.4239490169566125,
+        5.449034963035956,
+        5.48030746798031,
+        5.435914458008483
+      ],
+      "observed_TP2_speed_ratio": 0.7224742500481008,
+      "includes_cold_initialization_effects": false,
+      "scope": "Matched native engine generation only, not whole training speed"
+    },
+    "conclusion": "Prior dense test already used256 global requests and32768 generated tokens. Do not misdescribe it as an unmatched tiny batch or repeat TP2 based on that premise."
+  },
+  "source_results": [
+    {
+      "path": "experiments/rl/results_dtpo_v9_negative2_root_pageable_DT_host_counters_20261019_v4.json",
+      "SHA256": "d6d57b91501bc19a5f9f79989d0928866a95b4b28e343dc9c1551615f70d03a9"
+    },
+    {
+      "path": "experiments/rl/results_dtpo_v9_negative2_generation_completions_20261019_v4.json",
+      "SHA256": "21311c0929b487e3ad3f50282f9956ff3bbdd97eae0be234218ca432ac8a41b9"
+    },
+    {
+      "path": "experiments/rl/results_dtpo_v9_negative2_generation_completion_utilization_20261019_v4.json",
+      "SHA256": "7368fc1829bf686321632b0559156c572bb7e2d9ec37acaf7e568d395c694d84"
+    }
+  ],
+  "additional_model_calls": 0,
+  "additional_DT_calls": 0,
+  "additional_generation_calls": 0,
+  "optimizer_calls": 0,
+  "training_restarts": 0,
+  "arithmetic_changes": 0,
+  "verification_scope": "Passive native metadata observations and CPU-only reductions; no new FA/FLA/VERL numerical certification.",
+  "goal_status": "active"
+}

@@ -1,3 +1,15 @@
+## 2026-10-19T20:15:58.385964+08:00 第17轮完成；DT原计数器40批次齐全，生成512请求实际结束时刻与Util已对齐
+
+上一goal轮为进展：de05330e提交八rank一次自然DT观察及实际异步接口合同。本轮原controller2503202/1792394518.8、driver2503287/1792394519.29仍实查存活，正式TextCraft DTPO完成17/200，进入18轮生成，后五组queued；共享最新15。原图于20:15:58/20:16:03/07刷新，较19:48快照DT增加2轮，历史PPO105/GRPO191仅独立对照。执行cdd8ea40、方法f26b3b37、VERL20bd331及原6a112224 DT算术、clip[-2,1]/乘g后masked_var不变；未重启训练或新增model/DT/optimizer调用。
+
+root=False/replay=True的自然DT观察完成：40原B4、八rank全部恢复、0错误；每卡readout158.145–163.438秒，原host allocator累计allocation17.909–22.151秒、free5.909–11.131秒。原replay host enqueue56.605–75.845秒，不能与device时间或allocator累计相加，也不能因输入不同宣称相对旧观察的纯算子加速。当前释放已不值得继续作为首要调参目标，后续优先原replay/有限传播与生成实际计算路径。完整原调用/路径/行号见results_dtpo_v9_negative2_root_pageable_DT_host_counters_20261019_v4.json。
+
+原生成observer扩展只在原LLMEngine.step返回后读取RequestOutput.finished，限定每rank两次现有generate，无CUDA event/同步/额外生成或环境调用。v1先观察上一轮末尾一次/每rank，v2在第18轮前加可选元数据异常隔离并解开旧wrapper，v2两次/每rank均完成：512请求、16调用、0错误，原step逐调用恢复、原generate在call2的finally恢复。旧八条单列不混入两次覆盖判据。原TaskRunner job.records不包含actor stdout，首版收集范围不足；改为复用既有b841476e原元数据读流遍历actor stdout及原JSON解码，不修改训练logger/原指标解析。
+
+前两次调用每次32请求，平均native调用12.823秒；请求完成至整批返回平均等待4.898秒，按实际完成时刻的请求生命周期比例61.807%。该比例不是GPU空闲或加速上限。复用e6f3b171物理归约与相邻八rank阶段观察：全局未完成比例75–100%组32卡样本GPU-Util59.406%，50–75%组32样本68.219%；16个outside、40个boundary分开。短窗口混prefill/decode，并发更多时Util未单调更高，不能把批内等待单独当成整个低Util的原因或盲切异步。实际部署Async worker.generate_sequences仍明确NotImplemented，原调用合同未改变。源、字段、行号与阶段判据见results_dtpo_v9_negative2_generation_completions_20261019_v4.json、results_dtpo_v9_negative2_generation_completion_utilization_20261019_v4.json。
+
+同时核对旧TP对比的实际范围：dense hot确实256全局请求、32768生成tokens（固定128），TP1 3.959秒/TP2 5.480秒，非不匹配的小batch；没有据错误小批次假设重跑TP2。总证据摘要results_dtpo_v9_negative2_native_stage_findings_20261019_v4.json。所有本轮数值/阶段数据只是被动观测与CPU归约；FA/FLA/VERL各自原容差与既有数值证明保持，不新增整网数值通过声明或用更新0/0替代。第17/18轮有被动观测，不作为无观测的受控效率试验。六组goal继续active。
+
 ## 2026-10-19T19:58:28.128909+08:00 第16轮完成；新root设置的一轮自然DT计数器观察已安装
 
 上一goal轮有实际进展：排队AppWorld原root资源准备、生产15轮/共享checkpoint15核实及生成批内等待证据均已提交推送d96beef2。本轮原controller2503202/1792394518.8及driver2503287/1792394519.29再次匹配存活；TextCraft DTPO完成16/200、进入17轮生成，后五组仍queued。第16轮原日志line413：生成451.811秒、DT163.376秒、整轮859.004秒、原输入1027979 token。共享最新仍15；最近图19:48为15轮，此处16轮是新的状态采集，不冒称图已包含16。执行cdd8ea40、方法f26b3b37、VERL20bd331及clip[-2,1]/乘g后原masked_var不变。
