@@ -1,0 +1,133 @@
+{
+  "collected_at": 1792398690.8786576,
+  "run": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4",
+  "execution_source_commit": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+  "method_source_commit": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
+  "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+  "human_priority": "A maximum 30 seconds of author send_interval sleep is not a main bottleneck. Keep send_interval unchanged and prioritize measured generation/DT major costs.",
+  "phase": "ray::WorkerDict.actor_rollout_compute_dt_token_advantages",
+  "completed_iterations": 3,
+  "pid": 2503287,
+  "birth": 1792394519.29,
+  "alive": true,
+  "checkpoint": null,
+  "latest_metrics": [
+    {
+      "step": 1,
+      "values": {
+        "timing_s/step": 1112.093,
+        "timing_s/gen": 493.147,
+        "timing_s/old_log_prob": 59.576,
+        "timing_s/ref": 34.305,
+        "timing_s/adv": 339.126,
+        "timing_s/update_actor": 185.419,
+        "timing_s/save_checkpoint": null,
+        "perf/total_num_tokens": 929760.0,
+        "actor/grad_norm": 0.0261833551
+      },
+      "sources": [
+        {
+          "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-97077ecb858da019ecbd0949e9bf3f33e533308647cf551c46323c9e-01000000-2507756.out",
+          "line": 305
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "values": {
+        "timing_s/step": 1000.435,
+        "timing_s/gen": 446.996,
+        "timing_s/old_log_prob": 39.739,
+        "timing_s/ref": 34.615,
+        "timing_s/adv": 308.807,
+        "timing_s/update_actor": 169.792,
+        "timing_s/save_checkpoint": null,
+        "perf/total_num_tokens": 1025891.0,
+        "actor/grad_norm": 0.0259261373
+      },
+      "sources": [
+        {
+          "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-97077ecb858da019ecbd0949e9bf3f33e533308647cf551c46323c9e-01000000-2507756.out",
+          "line": 312
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "values": {
+        "timing_s/step": 1000.097,
+        "timing_s/gen": 440.131,
+        "timing_s/old_log_prob": 36.75,
+        "timing_s/ref": 31.99,
+        "timing_s/adv": 329.154,
+        "timing_s/update_actor": 161.571,
+        "timing_s/save_checkpoint": null,
+        "perf/total_num_tokens": 934987.0,
+        "actor/grad_norm": 0.0359688327
+      },
+      "sources": [
+        {
+          "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-97077ecb858da019ecbd0949e9bf3f33e533308647cf551c46323c9e-01000000-2507756.out",
+          "line": 319
+        }
+      ]
+    }
+  ],
+  "actual_environment": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/direct-target-consumed-cache-release-20261007-v1/environment.json",
+    "SHA256": "cd28a6e2140190ffcba4d64229b5c62549b85473645fea249899014a034d6db2",
+    "options": {
+      "dt_offload_replay_mixer": true,
+      "dt_pin_replay_host": true,
+      "dt_gdn_gpu_capture_names": [
+        "h",
+        "w",
+        "v_new",
+        "A"
+      ],
+      "dt_pin_root_host": true,
+      "dt_reuse_native_prefix": true
+    }
+  },
+  "measured_DT_timing_source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/existing-DT-native-stage-timings.json",
+  "source_checks": [
+    {
+      "path": "/opt/conda/lib/python3.12/site-packages/torch/include/ATen/core/CachingHostAllocator.h",
+      "SHA256": "c9189947dd61e4c0f4771d73b332fb0e18960e89b6833749ff1ca9106e942459",
+      "ranges": [
+        [
+          200,
+          205
+        ],
+        [
+          476,
+          487
+        ],
+        [
+          619,
+          624
+        ]
+      ],
+      "finding": "Original host allocator reuses only the same power-of-two size bucket. Descending batches do not make a larger free block serve all smaller sizes; do not repeat the withdrawn unbounded cross-B4-cache proposal on that assumption."
+    },
+    {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-formal-eventwait-resume25-20261011-v1/entry/deltatrace_rollout.py",
+      "SHA256": "2aa5f55252a793458ff5bd569a5e203e18a99094e4fa3d3cd896b70c43b6b73e",
+      "ranges": [
+        [
+          126,
+          157
+        ]
+      ],
+      "finding": "Native owner keeps one FSDP layer unsharded for its finite consumer. Reverse prefetch is only an unselected optimization hypothesis; an older two-rank probe did not show end-to-end readout speedup, so it is not selected merely from API availability."
+    }
+  ],
+  "interpretation": [
+    "Stage times are native measurements, not independently removable costs.",
+    "Capture stream synchronize may include required copies/GPU work; it is not all avoidable CPU idle.",
+    "Current actual DT_ENVIRONMENT_JSON overrides the base DT_ROOT environment.json; the actual mixer CPU offload is True.",
+    "No new resource candidate, math change, sleep/logprob change, deployment, restart, or extra model/DT/optimizer call in this source followup."
+  ],
+  "status": "main_cost_priority_recorded_no_new_performance_fix_validated",
+  "remote_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/main-cost-priority-followup.json"
+}
