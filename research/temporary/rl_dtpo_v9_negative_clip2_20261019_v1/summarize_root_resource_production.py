@@ -70,6 +70,16 @@ def main():
         criterion_owner=str(ROOT / 'receipts/two-task-eight-gpu-sequential-20261017-v2/source/run_campaign.py'),
         files=[dict(path=str(p), bytes=p.stat().st_size if p.is_file() else None) for p in files],
         all_present_nonempty=all(p.is_file() and p.stat().st_size > 0 for p in files))
+    # These are observed instrumentation scopes in this fixed run, not method
+    # exclusions. Reward/learning curves retain their original iterations.
+    excluded_validation_steps = [7, 8, 11, 13]
+    if (AUDIT / 'native-DT-replay-trace-receipt.json').exists():
+        excluded_validation_steps.append(19)
+    resident_pair = AUDIT / 'existing-DT-gpu-resident-pair-results.json'
+    if resident_pair.exists():
+        pair = json.loads(resident_pair.read_bytes())
+        if pair.get('additional_calls', {}).get('DT', 0):
+            excluded_validation_steps.append(21)
     report = dict(status='completed_read_only_production_window', collected=time.time(),
         run=str(RUN), source_snapshot=str(destination / 'source-snapshot.json'),
         actual_execution_source=row['local_patch_commit'], method_source=override['method_commit'],
@@ -79,10 +89,11 @@ def main():
         physical_report=str(destination / 'native-utilization-phase-summary.json'),
         window=physical['window'], groups=groups,
         latest_completed=owner['completed'](job), current_phase=job['phase_label'],
-        all_metrics=job['metrics'], production_steps_after_override=[m for m in job['metrics'] if m['step'] >= 14],
-        excluded_validation_steps=[7, 8, 11, 13], checkpoint=checkpoint_record,
+        all_metrics=job['metrics'], production_steps_after_override=[m for m in job['metrics']
+            if m['step'] >= 14 and m['step'] not in excluded_validation_steps],
+        excluded_validation_steps=excluded_validation_steps, passively_observed_steps=[17, 18], checkpoint=checkpoint_record,
         model_calls=0, training_mutations=0,
-        interpretation='Native device activity, not peak FLOPS. Mixed/missing brackets remain separate. Different production input lengths prevent a single-iteration causal operator-speedup claim. Window begins after all eight storage overrides; prior iteration13 actor work may be present, but generation/DT validation intervals are excluded.')
+        interpretation='Native device activity, not peak FLOPS. Mixed/missing brackets remain separate. Different input lengths prevent a single-iteration causal speedup claim. The cumulative physical window can include the separately recorded profiled/validation intervals; it is not an uninstrumented throughput comparison. production_steps_after_override excludes known model-validation/profile iterations, while reward curves retain all original updates.')
     target = destination / 'production-window-receipt.json'
     target.write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(dict(receipt=str(target), latest_completed=report['latest_completed'],

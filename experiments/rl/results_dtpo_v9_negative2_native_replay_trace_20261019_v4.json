@@ -1,0 +1,122 @@
+{
+  "status": "completed_native_replay_trace_reduction",
+  "original_trace": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/native-DT-replay-trace-rank0.json",
+  "original_trace_SHA256": "a485947f87b4b7aea2715b4b41ed3febff577f1fe71e560d16e3e546de827c1a",
+  "original_trace_bytes": 9464285,
+  "original_profile_receipt": {
+    "status": "completed_native_replay_trace",
+    "pid": 2511533,
+    "rank": 0,
+    "state": {
+      "selected": true,
+      "active": false,
+      "completed": true,
+      "calls": 5,
+      "errors": [],
+      "paired_shape": [
+        8,
+        12366
+      ],
+      "started": 1792413179.688333,
+      "finished": 1792413195.5432072
+    },
+    "trace": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/native-DT-replay-trace-rank0.json",
+    "restored_original_methods": true,
+    "additional_model_calls": 0,
+    "additional_DT_calls": 0,
+    "optimizer_calls": 0,
+    "exclude_from_uninstrumented_performance_comparison": true,
+    "scope": "Native FA31 replay plus finite31 and GDN30 replay in first natural B4 with paired extent>=6000; original Torch profiler, no new forward or finite call"
+  },
+  "profile_envelope_seconds": 15.759621349,
+  "kernel_union_seconds": 6.042190820800781,
+  "recorded_device_event_union_seconds": 6.740409315185547,
+  "CPU_empty_strided_union_seconds": 12.289982946044923,
+  "CPU_empty_without_recorded_device_event_seconds": 8.689207824951172,
+  "communication_events": [
+    {
+      "name": "mcclKernel_AllGather_RING_SIMPLE_Sum_int8_t(mcclDevComm*, unsigned long, mcclWork*)",
+      "start_from_profile_seconds": 0.003457534912109375,
+      "seconds": 3.041037568,
+      "input_elements": 26295360,
+      "output_elements": 210362880,
+      "dtype": "BFloat16",
+      "group_size": 8
+    },
+    {
+      "name": "mcclKernel_AllGather_RING_SIMPLE_Sum_int8_t(mcclDevComm*, unsigned long, mcclWork*)",
+      "start_from_profile_seconds": 14.64741222290039,
+      "seconds": 0.0014464,
+      "input_elements": 27386968,
+      "output_elements": 219095744,
+      "dtype": "BFloat16",
+      "group_size": 8
+    }
+  ],
+  "kernel_sums": [
+    {
+      "name": "mcclKernel_AllGather_RING_SIMPLE_Sum_int8_t(mcclDevComm*, unsigned long, mcclWork*)",
+      "seconds": 3.042483968
+    },
+    {
+      "name": "void deltatrace_fa_finite_p1_kernel<2, Flash_fwd_kernel_traits<256, 64, 64, 4, false, false, mctlass::bfloat16_t, Flash_kernel_traits<256, 64, 64, 4, mctlass::bfloat16_t> > >(FiniteParams)",
+      "seconds": 1.000363264
+    },
+    {
+      "name": "void deltatrace_fa_finite_p1_kernel<1, Flash_fwd_kernel_traits<256, 64, 64, 4, false, false, mctlass::bfloat16_t, Flash_kernel_traits<256, 64, 64, 4, mctlass::bfloat16_t> > >(FiniteParams)",
+      "seconds": 0.652866816
+    },
+    {
+      "name": "mcblas__Mck_bf16gemm_tn_256x256x64_2m1n8k_512t_4stage_bf16_bf16_fp32_sb_0_0",
+      "seconds": 0.35433472
+    },
+    {
+      "name": "void deltatrace_fa_finite_p1_kernel<0, Flash_fwd_kernel_traits<256, 64, 64, 4, false, false, mctlass::bfloat16_t, Flash_kernel_traits<256, 64, 64, 4, mctlass::bfloat16_t> > >(FiniteParams)",
+      "seconds": 0.282210816
+    },
+    {
+      "name": "void flash_fwd_kernel<Flash_fwd_kernel_traits<256, 64, 32, 4, true, true, mctlass::bfloat16_t, 256, Flash_kernel_traits<256, 64, 32, 4, mctlass::bfloat16_t> >, false, true, false, false, false, false, true, false, false, 1, false, (Arch)1000>(mcFlashAttn::Flash_fwd_params, int, int)",
+      "seconds": 0.18396262400000002
+    },
+    {
+      "name": "mcblas__Mck_bf16gemm_nn_256x256x64_8m1n8k_512t_4stage_bf16_fp32_fp32_sb_0_0",
+      "seconds": 0.141839616
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat16>, at::detail::Array<char*, 3> >(int, at::native::CUDAFunctor_add<c10::BFloat16>, at::detail::Array<char*, 3>)",
+      "seconds": 0.03966438400000001
+    },
+    {
+      "name": "void at::native::elementwise_kernel_2_1_cast<128, 4, double, double, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#6}::operator()() const::{lambda(double)#1}, unsigned int, unsigned int>(long, char*, char*, c10::ScalarType, c10::ScalarType, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#6}::operator()() const::{lambda(double)#1})",
+      "seconds": 0.026091775999999973
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, at::detail::Array<char*, 2> >(int, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, at::detail::Array<char*, 2>)",
+      "seconds": 0.023191807999999998
+    },
+    {
+      "name": "std::enable_if<(((!std::is_same<double, thrust::pair<double, long> >::value)&&(!std::is_same<double, thrust::pair<double, long> >::value))&&(!std::is_same<double, thrust::pair<float, long> >::value))||std::is_same<double, thrust::pair<long, long> >::value, void>::type at::native::InputPerOutputContinuousReduceKernel<double, double, double, 2, true, false, at::native::func_wrapper_t<double, at::native::sum_functor<double, double, double>::operator()(at::TensorIterator&)::{lambda(double, double)#1}>, at::native::reduce::OffsetCalculator<1, unsigned int, false>, at::native::reduce::OffsetCalculator<2, unsigned int, false> >(double const*, at::native::func_wrapper_t<double, at::native::sum_functor<double, double, double>::operator()(at::TensorIterator&)::{lambda(double, double)#1}>, double, int, int, at::native::reduce::OffsetCalculator<1, unsigned int, false>, at::native::reduce::OffsetCalculator<2, unsigned int, false>, int, bool, char const*, char const*, void*, int*, void*, long, bool, bool)",
+      "seconds": 0.020492544000000015
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::pow_tensor_scalar_kernel_impl<float, float>(at::TensorIteratorBase&, float)::{lambda(float)#1}, std::array<char*, 2ul> >(int, at::native::(anonymous namespace)::pow_tensor_scalar_kernel_impl<float, float>(at::TensorIteratorBase&, float)::{lambda(float)#1}, std::array<char*, 2ul>)",
+      "seconds": 0.020126207999999982
+    }
+  ],
+  "caveats": [
+    "A single rank and first FA/GDN pair in one long B4; startup allocations and cross-rank arrival skew are present. This is not a full32-layer profile.",
+    "CPU allocation time can include waits; empty_strided alone does not identify which allocator or prove all time is allocation work.",
+    "Recorded device interval coverage is not native GPU-Util or a fraction of peak FLOPS. Nested CPU/GPU ranges must not be added.",
+    "The first collective3.041s and next1.446ms do not establish a large per-layer communication cost; no prefetch change is deployed."
+  ],
+  "next_candidate": {
+    "status": "one_same_input_small_B4_owner_option_comparison_pending",
+    "option": "offload_replay_mixer=False",
+    "scope": "Bounded eligible small input only, original output returned and flags/RNG restored; full long-input production path remains selected.",
+    "source": "check_existing_DT_gpu_resident_pair.py"
+  },
+  "model_calls": 0,
+  "DT_calls": 0,
+  "optimizer_calls": 0,
+  "arithmetic_changes": 0
+}
