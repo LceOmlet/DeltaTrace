@@ -1,3 +1,11 @@
+## 2026-10-20T00:46:00.834641+08:00 第37轮新资源范围已真实完成：DT Util75.90%，40次原生B4/零额外DT
+
+原driver2503287/1792394519.29仍按出生匹配存活，原c20559e3确认37/200并开始后续生成；共享完整checkpoint35保持。已部署bfba2f4c/f29bc0e7的16k留存范围在八rank真实自然37轮各执行5次原B4，largest extent5415–7956均超过旧2k，offloaded_calls本轮均0，原flags全部恢复；没有附加DT/optimizer或资源读回变更。原Q/V/A、u clip[-2,1]、GRPO g与方差缩放保持，方法f26b3b37/执行cdd8ea40/VERL20bd331未变。八rank只读counter binding SHA f139c555保留实际PID出生及原导入，详见results_dtpo_v9_negative2_validated_16384_first_production_20261019_v4.json。
+
+以原e6f3b171严格相邻同phase归约应用完成后的首个自然生产窗口，DT272卡样本均值75.9044%，原timing_s/adv72.435秒；gen390.932/actor146.476/整轮672.827秒均沿原日志，不由不同token量单轮时间推导整轮因果加速。生成有效组只有16卡样本/68.0625%，覆盖短，不能据此称生成提速；此前55.9496%/496卡样本另留。mixed832和边界400卡样本独立。原scope已排除35/36验证轮，matched35的49.625→72.9048%及58.698→42.539秒仍为独立同输入验证，不混为37轮质量或算子工作量。
+
+00:43原六面板三套图已保存：TextCraft37/0/0、AppWorld0/0/0，历史控制共同37轮（PPO105/GRPO191独立历史）。相对00:32成功快照增加1轮，当前仍只有第一组运行，后五组queued。PNG/SVG/CSV和来源快照目录已写current_runtime；goal active，所有六组200、最终共享完整checkpoint200及最终图均未完成。AppWorld尚未应用该已接受的16k资源扩展；不将此当前TextCraft runtime override冒称已进入后续任务。
+
 ## 2026-10-20T00:39:12.787328+08:00 原36轮及共享35完整；DT同输入Util/时间改善已验证，八rank 16k容量通过并应用原资源选项
 
 原controller2503202/1792394518.8、driver2503287/1792394519.29再次按实际出生核对存活；原c20559e3读取器确认36/200，下一轮生成中。共享checkpoint35含data.pt与八rank model/optim/extra_state共25个必要非空状态。后五组仍queued。实际方法f26b3b37/执行cdd8ea40/VERL20bd331、u clip[-2,1]及乘g后原masked_var不减均值、原32k/B4/LoRA/工作量/save5/save2均保持；没有重新训练或改成旧goal文字的symmetric方法。
