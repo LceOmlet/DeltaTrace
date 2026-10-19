@@ -1,0 +1,11 @@
+## 2026-10-19T21:37:23.591544+08:00 第23轮完成；自然生成/DT Util分别52.645%/45.808%，负载关联按真实回执校正
+
+当前TextCraft DTPO完成23/200、进入24轮生成，后五组queued，共享checkpoint20按原标准完整。执行cdd8ea40/方法f26b3b37/VERL20bd331不变；新资源selector仅重用原offload flag，不增加生产CUDA/collective/model/DT调用。21:11图仍21轮，此处23是新日志状态，不冒称图已更新。上一goal轮为实际同输入验证及八rank安装；本轮确认原生生产使用、读取真实物理Util，并完成独立负载关联。
+
+后续自然窗口包含第22/23轮，原e6f3b171按相邻八worker同phase严格取样：生成600卡样本均值52.645%，DT992卡样本45.808468%；边界1528和mixed872样本单列，不能把它们并为纯阶段或填0。每卡生成均值46.893–54.987%，DT43.250–52.613%；尚无物理卡到rank的新增映射证据，不把卡编号直接当rank。原生设备活动率不等于峰值FLOPS。该观察含不同自然输入，不宣称整段Util改善已经证实，也不把此前40.3%配对调用缩短推广整轮。
+
+复用ca25cfbe原readout元数据reader补齐DT真实负载：第20/22轮分别442720/502912个原factual padded compute-token槽，增加13.596%；DT122.096→135.578秒，增加11.042%。原actor总输入token不是DT有效负载。这些槽数仍不是FA/GDN实际FLOPs，query/系数suffix、target和宿主回收均影响耗时，不能据此给出纯算子加速。
+
+扩展负载reader的初版按readout序号关联训练轮次，发现第13轮附近原32k容量readout（native-interface-0..3）多一项，导致该未接受负载草稿错位；已按root-pageable-native-capacity-results中八个完整report逐值匹配排除，保留原稿到natural-DT-workload-ordinal-draft-not-accepted.json。修正后另用第21轮八rank配对宽度和第22轮真实resource计数两组独立锚点全部核对。正式c20559e3训练metrics和既有曲线从未用该序号推步，均未修改。两次早期CPU reader导入/变量名错误在模型调用前发生且已修正，不作为数值/训练故障。
+
+所有新增工作仅原日志/回执CPU读取，未增GPU profiling或模型计算；FA/FLA/VERL对应计算与容差验收保持，不新增整网通过声明。证据results_dtpo_v9_negative2_small_GPU_two_production_iterations_20261019_v4.json、results_dtpo_v9_negative2_physical_gen_DT_post_small_GPU_20261019_v4.json及results_dtpo_v9_negative2_natural_DT_workload_20261019_v4.json。六组goal继续active，不恢复旧根因/SQL/其他任务。

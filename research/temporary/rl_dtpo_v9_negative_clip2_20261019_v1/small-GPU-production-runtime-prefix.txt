@@ -1,0 +1,9 @@
+## 2026-10-19T21:24:46.667223+08:00 第22轮完成；原小批次GPU存储已实际使用，整段Util提升尚未证实
+
+上一goal轮有进展：bfdd79e8/4f80df3b完成八rank同输入资源配对、实际安装及21轮三套图。本轮原正式TextCraft DTPO完成22/200、进入23轮生成，其余五组queued；原生共享checkpoint20仍按原标准25文件非空，未重启或改信用。执行cdd8ea40/方法f26b3b37/VERL20bd331及用户v9 clip[-2,1]/乘g后原masked_var保持。最新图21:11为21轮，不冒称含第22轮。
+
+原只读metadata RPC实际读回八worker scheduler22：各2次resident小B4及3次原卸载B4，共40次自然DT；largest resident extent1541–1775，峰值52.158155GiB，所有flag已finally恢复默认False/True/True。0额外DT/optimizer、0资源变更，原client595000/1792415800.46的完整结果及实际导入保留。对应第22轮gen=452.306s、DT=135.578s、整轮=813.889s、实际原输入1035966token；不能与不同有效DT负载的轮次冒称匹配算子提速。
+
+复用c20559e3原日志reader及e6f3b171原物理/相邻阶段归约，仅选最后安装至该只读RPC完成窗口；没有新profiling或日志解析器。DT严格同阶段480卡样本GPU-Util均值45.522917%，尚未看到整段Util明显提升；生成仅40卡样本39.2%，窗口截取了生成阶段，不能作为完整生成平均或相对下降证据。边界480及mixed280卡样本独立保留，不填0、不并入纯阶段；这些是设备活动率，不是MFU/FLOPS。当前确认production use，而非production efficiency improvement；先前16.905→10.092s配对仅证明该有限输入资源调用收益。仍需完整自然生成窗口及剩余长B4的直接瓶颈证据，不据本轮新增方法或容差。
+
+对应FA/FLA/VERL计算和既有算子验收源保持，无新增整网容差声明，未使用checkpoint或多步更新0/0。证据results_dtpo_v9_negative2_small_GPU_production_20261019_v4.json及原runtime-overrides/actual-worker-imports-small-GPU-resident-production-v1.json；后五组不跳过，六组goal保持active。

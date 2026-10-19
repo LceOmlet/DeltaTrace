@@ -1,3 +1,25 @@
+## 2026-10-19T21:37:23.591544+08:00 第23轮完成；自然生成/DT Util分别52.645%/45.808%，负载关联按真实回执校正
+
+当前TextCraft DTPO完成23/200、进入24轮生成，后五组queued，共享checkpoint20按原标准完整。执行cdd8ea40/方法f26b3b37/VERL20bd331不变；新资源selector仅重用原offload flag，不增加生产CUDA/collective/model/DT调用。21:11图仍21轮，此处23是新日志状态，不冒称图已更新。上一goal轮为实际同输入验证及八rank安装；本轮确认原生生产使用、读取真实物理Util，并完成独立负载关联。
+
+后续自然窗口包含第22/23轮，原e6f3b171按相邻八worker同phase严格取样：生成600卡样本均值52.645%，DT992卡样本45.808468%；边界1528和mixed872样本单列，不能把它们并为纯阶段或填0。每卡生成均值46.893–54.987%，DT43.250–52.613%；尚无物理卡到rank的新增映射证据，不把卡编号直接当rank。原生设备活动率不等于峰值FLOPS。该观察含不同自然输入，不宣称整段Util改善已经证实，也不把此前40.3%配对调用缩短推广整轮。
+
+复用ca25cfbe原readout元数据reader补齐DT真实负载：第20/22轮分别442720/502912个原factual padded compute-token槽，增加13.596%；DT122.096→135.578秒，增加11.042%。原actor总输入token不是DT有效负载。这些槽数仍不是FA/GDN实际FLOPs，query/系数suffix、target和宿主回收均影响耗时，不能据此给出纯算子加速。
+
+扩展负载reader的初版按readout序号关联训练轮次，发现第13轮附近原32k容量readout（native-interface-0..3）多一项，导致该未接受负载草稿错位；已按root-pageable-native-capacity-results中八个完整report逐值匹配排除，保留原稿到natural-DT-workload-ordinal-draft-not-accepted.json。修正后另用第21轮八rank配对宽度和第22轮真实resource计数两组独立锚点全部核对。正式c20559e3训练metrics和既有曲线从未用该序号推步，均未修改。两次早期CPU reader导入/变量名错误在模型调用前发生且已修正，不作为数值/训练故障。
+
+所有新增工作仅原日志/回执CPU读取，未增GPU profiling或模型计算；FA/FLA/VERL对应计算与容差验收保持，不新增整网通过声明。证据results_dtpo_v9_negative2_small_GPU_two_production_iterations_20261019_v4.json、results_dtpo_v9_negative2_physical_gen_DT_post_small_GPU_20261019_v4.json及results_dtpo_v9_negative2_natural_DT_workload_20261019_v4.json。六组goal继续active，不恢复旧根因/SQL/其他任务。
+
+## 2026-10-19T21:24:46.667223+08:00 第22轮完成；原小批次GPU存储已实际使用，整段Util提升尚未证实
+
+上一goal轮有进展：bfdd79e8/4f80df3b完成八rank同输入资源配对、实际安装及21轮三套图。本轮原正式TextCraft DTPO完成22/200、进入23轮生成，其余五组queued；原生共享checkpoint20仍按原标准25文件非空，未重启或改信用。执行cdd8ea40/方法f26b3b37/VERL20bd331及用户v9 clip[-2,1]/乘g后原masked_var保持。最新图21:11为21轮，不冒称含第22轮。
+
+原只读metadata RPC实际读回八worker scheduler22：各2次resident小B4及3次原卸载B4，共40次自然DT；largest resident extent1541–1775，峰值52.158155GiB，所有flag已finally恢复默认False/True/True。0额外DT/optimizer、0资源变更，原client595000/1792415800.46的完整结果及实际导入保留。对应第22轮gen=452.306s、DT=135.578s、整轮=813.889s、实际原输入1035966token；不能与不同有效DT负载的轮次冒称匹配算子提速。
+
+复用c20559e3原日志reader及e6f3b171原物理/相邻阶段归约，仅选最后安装至该只读RPC完成窗口；没有新profiling或日志解析器。DT严格同阶段480卡样本GPU-Util均值45.522917%，尚未看到整段Util明显提升；生成仅40卡样本39.2%，窗口截取了生成阶段，不能作为完整生成平均或相对下降证据。边界480及mixed280卡样本独立保留，不填0、不并入纯阶段；这些是设备活动率，不是MFU/FLOPS。当前确认production use，而非production efficiency improvement；先前16.905→10.092s配对仅证明该有限输入资源调用收益。仍需完整自然生成窗口及剩余长B4的直接瓶颈证据，不据本轮新增方法或容差。
+
+对应FA/FLA/VERL计算和既有算子验收源保持，无新增整网容差声明，未使用checkpoint或多步更新0/0。证据results_dtpo_v9_negative2_small_GPU_production_20261019_v4.json及原runtime-overrides/actual-worker-imports-small-GPU-resident-production-v1.json；后五组不跳过，六组goal保持active。
+
 ## 2026-10-19T21:13:05.119447+08:00 第21轮完成；原GPU replay资源开关的小批次配对通过并已实际应用
 
 原controller2503202/1792394518.8及driver2503287/1792394519.29仍匹配存活，TextCraft DTPO完成21/200，进入22轮生成，后五组queued。共享checkpoint20的data.pt及八rank model/optim/extra_state共25非空文件已经原owner标准核对。执行cdd8ea40、方法f26b3b37、VERL20bd331与clip[-2,1]/乘g后原masked_var保持；未重启。最新三套图在21:11刷新至21轮，历史PPO105/GRPO191只是独立对照，不算新八卡进度。
