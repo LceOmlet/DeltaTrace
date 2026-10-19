@@ -1,3 +1,13 @@
+## 2026-10-19T18:01:43.875682+08:00 当前v9 clip2：排除长批次慢2倍的双pageable方案，保留对应官方断言范围
+
+正式源仍为cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea、方法f26b3b37cb3b88e64978e7a472ae4244670a39f3、固定VERL20bd331b；没有部署新资源/数值版本。原controller2503202/1792394518.8、driver2503287/1792394519.29保持。最新原collect确认TextCraft DTPO完成8/200、当前ray::WorkerDict.actor_rollout_update_actor，共享checkpoint5按原owner标准核对8rank模型/optimizer/extra与data.pt均非空；这是文件完整性，不是加载或数值验证。其余五组queued。
+
+原runner两类锁页同时关闭的限定同输入对照：8rank短B4约2.1k–2.25k，原中位21.980s、候选20.112s；长B4约6.8k–11.3k，原中位131.465s、候选263.098s，变慢2.0013倍，已排除、不部署、不再为该失败组合扩展32k测试。两次各8rank原DT向量逐值相同，原参数/RNG/方法恢复；向量相同仅为宿主存储对照诊断。第7/8轮包含验证额外调用，不能算正式提速或以Util提高冒称效率改善。长批次原root较快，但replay/finite明显更慢；因此仅root pageable、replay仍pinned的一个第五自然B4同输入对照已通过原RPC安装，尚无结果、不称优化通过。它在两次调用之间复用原B4 release_unused_host_cache释放未用缓冲，保留原输出/训练及最终恢复；第一次客户端缺少dt参数在触及worker前失败，原stderr保留，第二次原参数调用成功安装。
+
+当前生成20秒原py-spy/mx-smi窗口确认调用端等原同步八rank回合，rank0主线程空闲212/393、rank6空闲105/390；物理样本有部分卡0%、其他卡忙，不能把该窗口当整轮比例。实际八引擎已有async_scheduling=True、FULL_AND_PIECEWISE、max_num_seqs32/max_num_batched_tokens32768；不重复建议启用已启用能力。新的8次/rank原生成被动计时已安装，0新增生成/环境调用，自动恢复。原全轮缓存/环境/采样工作量未改。
+
+用户要求的官方容差逐算子绑定已记录：FA2.6.3原输出2倍/对应dQdKdV3倍低精度基线误差；FLA0.4.1原assert_close的o/ht .005、dq/dk/dv/dh0 .008、db/dg .02，仅用于原相同操作数/dtype/参考的对应量。VERL固定head/函数/offload/保存加载断言分别列明，head官方测试内部转FP32，不能冒充BF16全模型容差；checkpoint或多步更新后的0/0不替代DT/PPO算子标准。本次源断言核对不是新增GPU数值通过，没有新阈值或修改PLAN。完整来源、原行号、官方测试SHA和实际导入见experiments/rl/results_dtpo_v9_negative2_pageable_candidate_evidence_20261019_v4.json；当前生成栈见results_dtpo_v9_negative2_current_generation_stack_20261019_v4.json。17:36两任务正式图和历史对照已刷新，goal active。
+
 ## 2026-10-19T17:14:43.252718+08:00 生成/DT主项：原生host计数器定位DT分配回收成本，普通宿主内存同输入比较已排队
 
 当前正式仍执行cdd8ea40、方法f26b3b37、上游20bd331b；driver2503287/1792394519.29、原controller2503202/1792394518.8未替换。最新原日志完整6/200、checkpoint字段5，其余五组queued，正在第7轮生成。第6轮gen440.437s、DT324.731s、total1002.439s。没有新增正式优化版本，clip[-2,1]/乘g后原masked_var/原QVA与官方工作量不变。
