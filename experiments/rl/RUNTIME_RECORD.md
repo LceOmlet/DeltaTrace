@@ -1,3 +1,15 @@
+## 2026-10-20T00:39:12.787328+08:00 原36轮及共享35完整；DT同输入Util/时间改善已验证，八rank 16k容量通过并应用原资源选项
+
+原controller2503202/1792394518.8、driver2503287/1792394519.29再次按实际出生核对存活；原c20559e3读取器确认36/200，下一轮生成中。共享checkpoint35含data.pt与八rank model/optim/extra_state共25个必要非空状态。后五组仍queued。实际方法f26b3b37/执行cdd8ea40/VERL20bd331、u clip[-2,1]及乘g后原masked_var不减均值、原32k/B4/LoRA/工作量/save5/save2均保持；没有重新训练或改成旧goal文字的symmetric方法。
+
+第35轮自然长B4的原A0→原资源选项offload_replay_mixer=False→预热原A1已在全部八rank完成，paired width5134–9228。候选中位42.538905秒、预热原路径58.697951秒，缩短27.5291%；冷A0不作主分母。全部原DT向量逐值一致（maxabs0），RNG及选项恢复，计算owner调用无新增，仅减少capture恢复搬移。原e6f3b171严格相邻八rank同phase样本给出候选72.9048%（168卡样本）及预热原路径49.625%（200卡样本），边界32卡样本独立；此是有界同输入验证，不是整轮生产提速。第35轮16次附加验证DT/0 optimizer/0生成，整轮和回调窗口排除生产效率，原质量/更新记录保持。证据results_dtpo_v9_negative2_measured_source_resident_v2_completed及pair_utilization_20261019_v4.json，原始报告保留共享。
+
+第36轮复用原requests容量输入owner d354653d，仅将人工fixture长度由32768设为16384；八worker同时执行原B4/exact16384、GPU replay留存的单次prepared-batch容量调用，约101.15–101.23秒。原native report均确认4条精确16384/minibatch4，Q/V/A全有限、RNG/原方法/flags全部恢复。无新模型进程/optimizer/生成；额外8次验证DT。源35e80b31、输入SHA6541e7a4、实际安装binding d22d0f8f及各rank原始回执见results_dtpo_v9_negative2_resident_16384_verified_20261019_v4.json。已直接观测容量调用处于原36轮DT阶段，该轮与时间区间单列排除效率；不是32k GPU留存容量或质量测试。提交时宿主MemAvailable634.7GiB；不把Torch含private pools的逻辑peak当物理显存。
+
+资源源f29bc0e7/提交bfba2f4c通过既有metadata RPC在八rank scheduler36实际应用，原runner6a112224未改算术。只对paired rows<=8、extent<=16384选择原GPU留存选项，其余包括原32k继续原卸载路径；每次finally恢复原flag，dispatch增加0模型/DT/CUDA/collective。保留原2k策略的计数快照，新16k生产计数从0开始。完成回执runtime-overrides/validated-16384-GPU-resource-override-completed.json及完整导入/SHA已登记；第一完整生产轮37，当前尚未完成，不能把验证72.9%或27.5%直接说成新整轮收益。AppWorld尚未应用此扩展；后续应使用新inspect_validated_16384_gpu_production.py与summarize_validated_16384_production.py读取，不混原2k计数/固定标签。证据results_dtpo_v9_negative2_validated_16384_resource_override及deployment_progress_20261019_v4.json。
+
+FA/FLA/VERL原算术owner、实际FA BF16/GDN FP16及原对应参考/验收保持，没有替换数值算子；本次原DT逐值一致是与存储变更对应的接口证据，不冒称新增整模型官方容差或借用更新前后0/0。00:32三套原六面板已保存至36轮，较00:10成功快照+2；历史PPO105/GRPO191独立且梯度仅作明确均衡分片估算，后五组新八卡仍0/200。最新干净生产窗口（本次新范围应用前）生成55.9496%、DT46.3333%，不能和验证窗口混作生产。PNG/SVG/CSV/source-snapshot目录已回写current_runtime；goal保持active，六组最终200/完整checkpoint/最终图尚未完成。
+
 ## 2026-10-20T00:06:27.883743+08:00 原34轮与共享checkpoint30核验；实际source存储已读取，原生32k范围资源对照已安装待自然调用
 
 原controller2503202/1792394518.8、driver2503287/1792394519.29及八worker实际出生均再次匹配。c20559e3原读取器确认34/200，处于下一轮生成；共享checkpoint30的data.pt与八rank model/optim/extra_state共25个必要文件均非空。后五组仍queued。方法f26b3b37、实际执行cdd8ea40、VERL20bd331、逐事件u clip[-2,1]及乘g后原masked_var不减均值保持；旧goal的symmetric文字不覆盖最新人类方法。
