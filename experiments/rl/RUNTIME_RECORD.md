@@ -1,3 +1,13 @@
+## 2026-10-19T19:29:41.252599+08:00 原root传输配置的首个完整生产窗口及共享checkpoint10核实
+
+当前TextCraft DTPO v9负clip2已完成14/200，进入第15轮生成；后五组仍queued。实际执行源cdd8ea40、方法f26b3b37、VERL20bd331及原controller/driver出生保持。第14轮没有额外模型、环境、DT或optimizer验收调用，原日志生成447.465秒、DT164.484秒、整轮854.220秒，总输入1024807 token。八rank同phase且前后原宿主观察有效的物理样本：生成472个card samples，GPU-Util52.246%；DT592个，46.910%。1155个boundary/missing和512个mixed样本独立保存，不并成纯阶段，不把活动率当峰值FLOPS比例。
+
+此前同输入长B4八rank原DT向量相同、归因调用中位128.593→107.653秒，配对共同窗口GPU-Util39.732%→46.144%；该配对与本次真实生产观测分别保存。第12轮DT261.688秒/输入902069 token与第14轮不是同一输入，不将二者差值声称纯算子加速。第7/8/11/13轮含验证或profile，排除生产效率对比。生成的异步和图原先已启用，未部署新的生成计算/调度改动，不能声称生成已提速。
+
+共享checkpoint10按原f71ff4d8过程owner要求核对data.pt及八rank actor model/optim/extra_state共25文件均非空，latest_checkpointed_iteration.txt为10；原controller采集值也是10，无需修复。此核对只证明现有共享检查点文件齐备，不是新的数值容差验收。FA/FLA/VERL仍按PLAN各自计算的官方容差；本轮没有修改其算术，也未新增全模型官方容差通过声明。当前root资源覆盖仍只作用TextCraft已加载runner，AppWorld排队配置尚未改变。
+
+读数与原路径/行号：results_dtpo_v9_negative2_root_first_production_20261019_v4.json。三套图刷新于北京时间19:29:41/45/48，TextCraft正式14/0/0、AppWorld0/0/0、TextCraft历史对照14/105/191；历史对照不是新八卡队列进度。当前goal仍active。
+
 ## 2026-10-19T19:12:15.077183+08:00 当前八卡DT仅切换原root缓存传输，生产完整阶段收益待核实
 
 执行源仍cdd8ea40、方法f26b3b37、VERL20bd331；原八worker于第13轮DT结束后、scheduler12时将原runner pin_root_host=True改为False，pin_replay_host=True保持。资源adapter692d3174已提交推送，未重启、未改FA/FLA/VERL算术或增加生产模型/DT/optimizer调用。当前run和PID出生保持；AppWorld排队配置尚未改变。
