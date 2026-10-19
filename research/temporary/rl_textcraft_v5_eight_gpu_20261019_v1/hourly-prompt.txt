@@ -1,0 +1,19 @@
+每小时在本线程刷新当前 TextCraft DTPO v5 新八卡正式 run 与已停止历史 PPO/GRPO 的六面板对比图，并回显真实进度。用户最新要求是先八卡训练 v5，负尾处理随后讨论；不重启旧梯度根因或旧 v7 goal，不增加负尾裁剪、对称变换或其他新方法，不启动 SQL/AppWorld/PPO/GRPO 训练。本小时任务仅读取已有状态、日志并绘图，不能启停/恢复/重启训练或改方法/超参，不查询 credit、不重装、不清缓存、不打印凭据。
+
+先读最新人类消息及 D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/{PLAN.md,RUNTIME_RECORD.md,current_runtime.json,REMOTE_ENVIRONMENT.md}。直接运行：
+C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_textcraft_v5_eight_gpu_20261019_v1/plot_hourly.py
+入口SHA256=0b6da9c6e4e59ea8b05d7fce7eecc8d92a75e3d478ce2dff87bddef25aa730fb。它复用78d3d75a历史对照owner、原collect/read_job_logs/parse_logs(c20559e3)、原六面板renderer(f6ed1ff3)及已批准0a1d44d6范数显示适配；只选择新v5身份与已保存的原对照快照，不写另一解析器/logger。CUDA_VISIBLE_DEVICES为空。
+
+ROOT=/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922。当前TextCraft DTPO v5：runs/textcraft-dtpo-v5-exponential-8gpu-200-20261019-v1；正式receipt ROOT/receipts/textcraft-v5-eight-gpu-20261019-v1/{six-combination-manifest.json,campaign-prepared.json,campaign-state.json,dt-prepared.json,CPU-behavior-verification.json,prior-runtime-observed.json}。此为单个TextCraft run，原owner沿用manifest文件名不表示本次启动了六组。初始controller460405/出生1792376031.19、driver460454/出生1792376031.57；以后以最新正式manifest、launch/source.json、已完成runtime override和PID出生为准，不能沿用死亡PID。执行提交0d93628b92ed2a4d875c744d8c77ef7077e4bfb6，v5方法历史提交4545c55807e7d002287717b6a4254f9b083dd5fc，继承实际效率源8790a1b79cd5c22dca38935eed86f1cf7df64c0d；区分源码记录与实际导入。旧v8在切换前controller/driver均已不存在，最后原记录76轮/检查点75，原因未建立，本次未发停止信号，不自动恢复旧队列。
+
+新v5从基础权重和0轮开始、独占物理GPU0–7、200完整迭代。保留原官方GRPO已归一化组相对信用g，真实奖励结算target含0，逐事件原EOS d、逐项指数后Q/V/A及原v5训练批次优势仅方差缩放；不在乘g前缩放u，不采用v7/v8对称信用。TextCraft32组×8/global64/epochs1/4次actor更新/save5/keep2；32k/B4/LoRA8/16/seed/采样/LR与已验收DT runner6a112224、原corefc2f992b、worker198f509c、host-register8/MRoPE/TP1默认图保持。全局actor/grad_norm及另存actor/grad_norm_local保留原9位有效数字记录，实际actor SHAacd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d。21项CPU原v5行为检查已通过，本小时不重跑。原native process owner f71ff4d8负责训练及完整结束，不以初始化、存活或占卡称完整健康迭代，不声称未来不会出错。
+
+共享checkpoint：/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v5-exponential-8gpu-200-20261019-v1/checkpoints；rollout/训练日志及receipt在ROOT的NFS路径。原控制器不跳过失败组合，不自行恢复。历史双卡v5的79轮及其余v1–v8曲线保持独立，不能拼入新八卡v5。
+
+对照仍是独立原PPO textcraft-ppo-control-fixed-verl-fresh-20261014-v2（原完整恢复链已保存105轮）及原GRPO textcraft-grpo-formal-native-graph-fresh-20261012-v1（已停191轮）。入口使用原owner已保存快照，保留其原采集时间及路径/行号；不能当本次新八卡PPO/GRPO进度。其他原六组组合只按最新实际状态报告尚未启动/无运行控制器，不擅自启动。
+
+每次保存三算法不同颜色/线型/legend六面板：原环境训练回报、策略熵、裁剪前梯度范数、原KL、平均响应段长度（含工具返回）、平均工具调用数（原TextCraft交互计数）。纵轴自动缩放，缺失不填0、不插值、不平滑，不混训练回报与组乘子/独立评估。KL日志0.000不称精确零。主图梯度：当前新八卡v5为全局实测；历史PPO/GRPO仅在另建plot/grad_norm_global显示字段中将首rank分片乘√2，明确标均衡分片假设下的全局估算；原actor/grad_norm不覆盖，CSV保留norm_scope、conversion_factor、original_value及来源路径/行号。其他五指标不换算，不把估算当实测。
+
+产物保存在F:/DeltaTraceBackups/plots/textcraft-v5-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v1/<北京时间快照>：algorithm-comparison-common-window.png/svg、algorithm-comparison-full.png/svg、metrics-with-sources.csv、source-snapshot.json、workload-audit.json、plot-receipt.json。回显本次采集时间、新v5完成/200、相对上一成功同run快照增量、实际phase、最新六指标简表及图片绝对链接；对照105/191轮独立列出并明确已停止历史。共同窗口非空内联共同窗口PNG，附完整PNG/SVG与CSV；0轮时明确空窗口、缺失指标，并展示完整历史PNG，不能冒充v5已有新迭代。无新迭代也更新来源快照；失败说明具体原因和最后成功图时间，不用旧图冒充本次，不改变训练绕过。新v5完成200且最终八rank共享完整checkpoint200核验、最终图保存展示后暂停本小时任务。
+
+严格SSH31146/HostKeyAlias32036；复用research/temporary/rl_upstream_alignment_20260929/stage_environment_entry.py和C:/Users/Administrator/.codex/private/metax_exec.py。source原metax-entry.env.sh后合并实际launch环境，使用原VENV_PYTHON，不解析为系统Python，保留MACA_PATH/LD_LIBRARY_PATH/PYTHONPATH。不恢复旧全套硬件检查、大备份或诊断。

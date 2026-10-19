@@ -1,3 +1,13 @@
+## 2026-10-19T10:21:00.294942+08:00 TextCraft v5 八卡正式训练：原指数信用，负尾方案暂缓
+
+用户要求先八卡训练v5，再讨论负尾。独立run textcraft-dtpo-v5-exponential-8gpu-200-20261019-v1 从基础权重/0轮提交，200迭代；原官方GRPO、逐事件原EOS d和指数Q/V/A及原v5优势仅方差缩放保持。不在乘g前缩放u，不采用对称概率比，不增加负尾裁剪。TextCraft32组×8/global64/epochs1/4更新、32k/B4/LoRA8/16、save5/keep2与原采样/LR保持；实际效率源继承8790a1b7，DT runner6a112224、actor acd3c8a5全局/分片分别记录、core fc2f992b/worker198f509c不改。
+
+执行提交0d93628b92ed2a4d875c744d8c77ef7077e4bfb6，方法原始提交4545c558，上游VERL 20bd331bdbc9026a5668e11362178e10ab7400c8。21项原v5 CPU行为测试通过；旧绑定测试因硬编码旧actor/runner SHA而排除，当前验收来源逐文件哈希核对，未改数值测试。八rank只读元数据RPC已核对实际v5模式/DP8及已加载源码；尚未自然导入的DT模块不冒称已实际核验，未追加模型或optimizer调用。controller 460405/1792376031.19，driver 460454/1792376031.57；当前完成0/200，实际phase=ray::WorkerDict.actor_rollout_generate_sequences。初始化/占卡不称已完成健康迭代。
+
+连接时原v8控制器和driver均不存在，最后记录76轮/检查点75，退出原因未建立，未发送停止信号。历史日志/rollout/检查点保留，新八卡v5不拼接旧双卡v5。原TextCraft CPU服务复用作者入口恢复；三个已证实回退的cumem/gpu_worker/MRoPE文件恢复到既有验收SHA，不重装、不清缓存。记录含实际环境/源路径SHA、配置、PID出生、服务及恢复回执，见results_textcraft_v5_eight_gpu_20261019_v1.json和远端receipts/textcraft-v5-eight-gpu-20261019-v1。
+
+共享检查点：/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v5-exponential-8gpu-200-20261019-v1/checkpoints。原native process owner f71ff4d8只执行本次TextCraft v5，正常完整200轮及八rank原生checkpoint200齐全才结束，不自动重启或跳过失败。旧v7/梯度goal保持暂停，其他组合不自动启动。小时绘图textcraft保持ACTIVE并已切换新run；原PPO105/GRPO191为独立已停止历史对照，梯度沿已批准的明确标注√2估算规则，当前新八卡v5用全局实测，CSV保留原值/local及来源。
+
 ## 2026-10-18T19:10:43.781666+08:00 TextCraft v8 与历史 PPO/GRPO 同图
 
 用户明确要求实际绘图比较，而非文字比较其他DTPO版本。复用原历史对照owner78d3d75a、原parser c20559e3和六面板renderer f6ed1ff3，将当前v8八卡与历史两卡PPO/GRPO置于同图；原全局学习负载逐字段核对保持。仅另建plot/grad_norm_global显示字段，历史首rank分片乘√2并明确标为均衡分片假设估算，v8使用全局实测；原actor/grad_norm不覆盖，CSV保留原值、换算因子、norm_scope、日志路径/行号，其他指标不变。当前图曲线完成数{'dt': 3, 'ppo': 105, 'grpo': 191}、共同窗口3；历史105/191轮不当作本次新八卡队列进度。统一小时入口已ACTIVE，先保存原六组正式图，再生成该历史对照图。未改训练、模型、方法或超参。路径及校验见experiments/rl/results_textcraft_v8_historical_control_plot_20261018_v1.json。

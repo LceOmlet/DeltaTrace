@@ -1,3 +1,7 @@
+## 2026-10-19T10:21:00.294942+08:00 本次v5八卡启动所需环境恢复
+
+原v8控制器/driver不存在且8卡空闲，原TextCraft服务36005无监听；复用既有作者服务入口恢复，服务PID438992/出生1792375818.86。cumem.py/gpu_worker.py/gpu_model_runner.py实际SHA与记录的未修补版本完全匹配，分别恢复到既有验收SHA 7e557a8f/37db3830/6ed94945。新回执ROOT/receipts/textcraft-v5-eight-gpu-20261019-v1/{official-service.json,restored-platform-files.json}保留精确前后SHA与原owner来源。无安装、下载或缓存清理。严格SSH31146/HostKeyAlias32036，source原入口后合并实际launch环境，继续原VENV_PYTHON，不调用解析后的系统Python。方法/运行/实际导入与环境恢复分开记录；当前正式身份见RUNTIME_RECORD最新v5八卡条目。
+
 ## 2026-10-16T03:27:42.013833+08:00 DTPO v5实际部署：逐target指数信用、原GRPO与高效原生DT/PPO
 
 正式v5版本textcraft-dt-reward-target-exponential-20261016-v5，源提交4545c55807e7d002287717b6a4254f9b083dd5fc，固定VERL上游20bd331b。原官方组内信用g保留；原reward结算动作target含结算0，较早非结算Action移为source。多target显式事件在driver展平、复用原pad/balance/DP/RPC，原d逐事件指数后汇总Q/V/A，不用v4仿射seed/端点差归一化或source u分母。B=0的抵消分量仍保留；one-event多文本片段只算一次信用。原观察/self/future mask、原整批masked_var仅方差缩放和1/16 sum(S_j/N_j) PPO保持。
