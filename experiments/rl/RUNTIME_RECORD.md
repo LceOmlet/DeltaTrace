@@ -1,3 +1,15 @@
+## 2026-10-20T00:06:27.883743+08:00 原34轮与共享checkpoint30核验；实际source存储已读取，原生32k范围资源对照已安装待自然调用
+
+原controller2503202/1792394518.8、driver2503287/1792394519.29及八worker实际出生均再次匹配。c20559e3原读取器确认34/200，处于下一轮生成；共享checkpoint30的data.pt与八rank model/optim/extra_state共25个必要文件均非空。后五组仍queued。方法f26b3b37、实际执行cdd8ea40、VERL20bd331、逐事件u clip[-2,1]及乘g后原masked_var不减均值保持；旧goal的symmetric文字不覆盖最新人类方法。
+
+第31轮纯capture元数据已完成40个B4/八scope恢复，CPU目的存储约4.95–7.35GiB/rank；这不是GPU源storage或物理峰值。第33轮随后读取实际保留源storage，CPU保留覆盖完整、所有class/runner方法恢复，原memory guard没有形成共同可执行候选，附加DT为0。其间rank0自然宽13711被我此前自行添加的12288验证上限排除；不称真实OOM、32k训练限制或容量通过。完整原始source报告已保留共享，compact判定见results_dtpo_v9_negative2_measured_source_guard_20261019_v4.json。
+
+八rank原生allocator只读快照已返回，默认pool仅24MiB/rank为全inactive整segment，其余private pool不计可回收容量；读取时在DT之外，不据此补上多GiB可用量。原vLLM CuMem source明确使用Torch私有MemPool。没有清缓存、移动/新增tensor或模型调用。源cd3daf0a及实际binding17b8f515见results_dtpo_v9_negative2_native_allocator_storage_20261019_v4.json。
+
+新对照源802373ea/提交36bf2871已在八rank安装，client1661855/1792425754.91。只将额外12288验证上限恢复为原32768，实际free > 原workspace + 实测source保留量 + 两份native KV上界 +2GiB保护保持，不加默认/私有缓存容量信用。仍调用同一6a112224原offload_replay_mixer=False选项及预热原路径，训练返回A0；最多2次额外DT/rank属于验证，整轮/回调窗口排除生产Util。当前尚无自然B4结果，不称资源部署、效率改善或官方新数值验收。FA/FLA/VERL算术/精度/上游调用未改，原结果逐值比较只验证资源传输，不冒称整模型官方容差。
+
+23:56实际主图33轮已保存并展示，历史PPO105/GRPO191保持独立；三份PNG/SVG/来源CSV目录已回写current_runtime。第31scope结束至第33对照提交前的原e6f3b171干净物理窗口，生成634卡样本均值49.1483%、DT399卡样本48.0050%；mixed/边界独立，输入不同不作算子因果提速。已有scope/新v2窗口过滤沿原owner增加身份，不另写解析器。原六组goal保持active。
+
 ## 2026-10-19T23:13:08.321058+08:00 第30轮及共享checkpoint30完整；八rank纯元数据读取器已安装，实际capture字节待自然回显
 
 原controller2503202/1792394518.8、driver2503287/1792394519.29已按实际出生再次确认存活。原c20559e3读取器确认完成30/200，data.pt与八rank的model/optim/extra_state共25个必要非空状态文件已在共享global_step_30齐全；原日志包含本轮save_checkpoint48.320秒。后五组仍queued。方法f26b3b37/执行cdd8ea40/VERL20bd331、u clip[-2,1]及乘g后仅方差缩放、原工作量/32k/B4/LoRA/原共享save5/save2保持；新提交62a941d4是元数据适配，不是训练源或新数值实现。

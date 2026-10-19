@@ -83,7 +83,8 @@ def main():
     for validation_name in ('existing-DT-FA-capture-resource-pair-results.json',
                             'existing-DT-long-GPU-resident-resource-pair-results.json',
                             'existing-DT-capture-storage-results.json',
-                            'existing-DT-measured-source-resident-pair-results.json'):
+                            'existing-DT-measured-source-resident-pair-results.json',
+                            'existing-DT-measured-source-resident-pair-v2-results.json'):
         validation_path = AUDIT / validation_name
         if validation_path.exists():
             validation = json.loads(validation_path.read_bytes())
