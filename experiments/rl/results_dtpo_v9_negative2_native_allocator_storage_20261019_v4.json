@@ -1,0 +1,604 @@
+{
+  "status": "completed_native_allocator_metadata_only",
+  "collected": 1792425527.7551143,
+  "source": {
+    "status": "submitted_read_only_native_allocator_snapshot",
+    "pid": 1601171,
+    "birth": 1792425193.59,
+    "submitted": 1792425194.0002859,
+    "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/source/observe_native_allocator_storage.py",
+    "source_SHA256": "cd3daf0a8fc6a6ac6df58c63f1219313f009352f71ae342def85141d8f7a83b8",
+    "source_parent_commit": "f2e0b1c7a5e8e5acfbdd8c48dfdc39051ca05308",
+    "source_uncommitted_metadata_only": true,
+    "log": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/native-allocator-storage-client.log",
+    "actual_execution_source": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+    "model_calls": 0,
+    "cache_clears": 0,
+    "resource_changes": 0
+  },
+  "actual_binding": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/runtime-overrides/actual-worker-imports-native-allocator-storage-readonly-v1.json",
+    "SHA256": "17b8f5154ca992ab6aa82a578c48d232dab9ebb0a13806f05b9c566bd3fcba00"
+  },
+  "native_CuMem_pool_source": {
+    "path": "/opt/conda/lib/python3.12/site-packages/vllm/device_allocator/cumem.py",
+    "SHA256": "da2b4bf1d22a00863cb6478dbc587a8c746a37a699b98297849e1dd531c3bf15",
+    "excerpts": [
+      {
+        "line": 75,
+        "text": ""
+      },
+      {
+        "line": 76,
+        "text": ""
+      },
+      {
+        "line": 77,
+        "text": "@contextmanager"
+      },
+      {
+        "line": 78,
+        "text": "def use_memory_pool_with_allocator("
+      },
+      {
+        "line": 79,
+        "text": "    python_malloc_fn: Callable[[int], int], python_free_func: Callable[[int, int], None]"
+      },
+      {
+        "line": 80,
+        "text": ") -> None:"
+      },
+      {
+        "line": 81,
+        "text": "    new_alloc = get_pluggable_allocator(python_malloc_fn, python_free_func)"
+      },
+      {
+        "line": 82,
+        "text": "    mem_pool = torch.cuda.memory.MemPool(new_alloc._allocator)"
+      },
+      {
+        "line": 83,
+        "text": "    with torch.cuda.memory.use_mem_pool(mem_pool):"
+      },
+      {
+        "line": 84,
+        "text": "        yield mem_pool, new_alloc"
+      },
+      {
+        "line": 85,
+        "text": ""
+      },
+      {
+        "line": 86,
+        "text": ""
+      },
+      {
+        "line": 87,
+        "text": "class CuMemAllocator:"
+      },
+      {
+        "line": 88,
+        "text": "    \"\"\""
+      },
+      {
+        "line": 89,
+        "text": "    A singleton class that manages a memory pool for CUDA tensors."
+      },
+      {
+        "line": 90,
+        "text": "    The memory in this pool can be offloaded or discarded when the"
+      },
+      {
+        "line": 91,
+        "text": "    allocator sleeps."
+      },
+      {
+        "line": 92,
+        "text": ""
+      },
+      {
+        "line": 93,
+        "text": "    Inside the `use_memory_pool(tag)` context, all tensors created will"
+      },
+      {
+        "line": 94,
+        "text": "    be allocated in the memory pool, and has the same tag as the"
+      },
+      {
+        "line": 95,
+        "text": "    tag passed to the context."
+      },
+      {
+        "line": 96,
+        "text": ""
+      },
+      {
+        "line": 97,
+        "text": "    When we call `sleep`, all tensors with the specified tag will be"
+      },
+      {
+        "line": 98,
+        "text": "    offloaded to CPU memory, and the rest of the tensors will be discarded."
+      },
+      {
+        "line": 99,
+        "text": "    When we call `wake_up`, all tensors that are previously offloaded"
+      },
+      {
+        "line": 100,
+        "text": "    will be loaded back to GPU memory, and the rest of the tensors will"
+      },
+      {
+        "line": 101,
+        "text": "    have empty memory."
+      },
+      {
+        "line": 102,
+        "text": ""
+      },
+      {
+        "line": 103,
+        "text": "    Why it needs to be a singleton?"
+      },
+      {
+        "line": 104,
+        "text": "    When allocated tensors are garbage collected, PyTorch will call"
+      },
+      {
+        "line": 105,
+        "text": "    the free callback, which will call the `python_free_callback` method."
+      },
+      {
+        "line": 106,
+        "text": "    The C-extension uses a global variable to store the function of an"
+      },
+      {
+        "line": 107,
+        "text": "    instance of this class. If we create multiple instances of this class,"
+      },
+      {
+        "line": 108,
+        "text": "    the global variable will be overwritten and the free callback will"
+      },
+      {
+        "line": 109,
+        "text": "    not work as expected."
+      },
+      {
+        "line": 110,
+        "text": "    \"\"\""
+      },
+      {
+        "line": 111,
+        "text": ""
+      },
+      {
+        "line": 112,
+        "text": "    instance: \"CuMemAllocator\" = None"
+      },
+      {
+        "line": 247,
+        "text": "                        data.cpu_backup_tensor = None"
+      },
+      {
+        "line": 248,
+        "text": ""
+      },
+      {
+        "line": 249,
+        "text": "    @contextmanager"
+      },
+      {
+        "line": 250,
+        "text": "    def use_memory_pool(self, tag: str | None = None):"
+      },
+      {
+        "line": 251,
+        "text": "        \"\"\""
+      },
+      {
+        "line": 252,
+        "text": "        A context manager to use the memory pool."
+      },
+      {
+        "line": 253,
+        "text": "        All memory allocation created inside the context will be allocated"
+      },
+      {
+        "line": 254,
+        "text": "        in the memory pool, and has the specified tag."
+      },
+      {
+        "line": 255,
+        "text": ""
+      },
+      {
+        "line": 256,
+        "text": "        :param tag: The tag of the memory allocation. If None, the default tag"
+      },
+      {
+        "line": 257,
+        "text": "            will be used."
+      },
+      {
+        "line": 258,
+        "text": "        \"\"\""
+      },
+      {
+        "line": 259,
+        "text": "        if tag is None:"
+      },
+      {
+        "line": 260,
+        "text": "            tag = CuMemAllocator.default_tag"
+      },
+      {
+        "line": 261,
+        "text": ""
+      },
+      {
+        "line": 262,
+        "text": "        assert isinstance(tag, str)"
+      },
+      {
+        "line": 263,
+        "text": ""
+      },
+      {
+        "line": 264,
+        "text": "        old_tag = self.current_tag"
+      },
+      {
+        "line": 265,
+        "text": "        self.current_tag = tag"
+      },
+      {
+        "line": 266,
+        "text": "        with use_memory_pool_with_allocator("
+      },
+      {
+        "line": 267,
+        "text": "            self.python_malloc_callback, self.python_free_callback"
+      },
+      {
+        "line": 268,
+        "text": "        ) as data:"
+      },
+      {
+        "line": 269,
+        "text": "            # start to hit another PyTorch bug in PyTorch 2.6,"
+      },
+      {
+        "line": 270,
+        "text": "            # possibly because of gc-related issue w.r.t. the allocator and"
+      },
+      {
+        "line": 271,
+        "text": "            # the memory pool."
+      },
+      {
+        "line": 272,
+        "text": "            # to avoid the issue, we keep a reference of the data."
+      },
+      {
+        "line": 273,
+        "text": "            # see https://github.com/pytorch/pytorch/issues/146431 ."
+      },
+      {
+        "line": 274,
+        "text": "            self.allocator_and_pools[tag] = data"
+      },
+      {
+        "line": 275,
+        "text": "            yield"
+      },
+      {
+        "line": 276,
+        "text": "            # PyTorch's bug, calling torch.cuda.empty_cache() will error"
+      },
+      {
+        "line": 277,
+        "text": "            # when using pluggable allocator, see"
+      },
+      {
+        "line": 278,
+        "text": "            # https://github.com/pytorch/pytorch/issues/145168 ."
+      },
+      {
+        "line": 279,
+        "text": "            # if we have some memory allocated and then freed,"
+      }
+    ]
+  },
+  "ranks": [
+    {
+      "rank": 0,
+      "free_bytes": 17306857472,
+      "allocated_bytes": 47237808640,
+      "reserved_bytes": 47332720640,
+      "pools": {
+        "(0, 0)": {
+          "segments": 7,
+          "total_size": 515899392,
+          "active_size": 471159808,
+          "allocated_size": 471159808
+        },
+        "(0, 3)": {
+          "segments": 9,
+          "total_size": 28674359296,
+          "active_size": 28673358848,
+          "allocated_size": 28673358848
+        },
+        "(0, 2)": {
+          "segments": 4,
+          "total_size": 27262976,
+          "active_size": 0,
+          "allocated_size": 0
+        },
+        "(0, 1)": {
+          "segments": 185,
+          "total_size": 18115198976,
+          "active_size": 18093289984,
+          "allocated_size": 18093289984
+        }
+      },
+      "fully_inactive_default_bytes": 25165824,
+      "unknown_pool_segments": 0,
+      "snapshot_source": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "snapshot_source_SHA256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d"
+    },
+    {
+      "rank": 1,
+      "free_bytes": 17306861568,
+      "allocated_bytes": 47237807616,
+      "reserved_bytes": 47332720640,
+      "pools": {
+        "(0, 0)": {
+          "segments": 7,
+          "total_size": 515899392,
+          "active_size": 471158784,
+          "allocated_size": 471158784
+        },
+        "(0, 3)": {
+          "segments": 9,
+          "total_size": 28674359296,
+          "active_size": 28673358848,
+          "allocated_size": 28673358848
+        },
+        "(0, 2)": {
+          "segments": 4,
+          "total_size": 27262976,
+          "active_size": 0,
+          "allocated_size": 0
+        },
+        "(0, 1)": {
+          "segments": 185,
+          "total_size": 18115198976,
+          "active_size": 18093289984,
+          "allocated_size": 18093289984
+        }
+      },
+      "fully_inactive_default_bytes": 25165824,
+      "unknown_pool_segments": 0,
+      "snapshot_source": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "snapshot_source_SHA256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d"
+    },
+    {
+      "rank": 2,
+      "free_bytes": 17306873856,
+      "allocated_bytes": 47237807616,
+      "reserved_bytes": 47332720640,
+      "pools": {
+        "(0, 0)": {
+          "segments": 7,
+          "total_size": 515899392,
+          "active_size": 471158784,
+          "allocated_size": 471158784
+        },
+        "(0, 3)": {
+          "segments": 9,
+          "total_size": 28674359296,
+          "active_size": 28673358848,
+          "allocated_size": 28673358848
+        },
+        "(0, 2)": {
+          "segments": 4,
+          "total_size": 27262976,
+          "active_size": 0,
+          "allocated_size": 0
+        },
+        "(0, 1)": {
+          "segments": 185,
+          "total_size": 18115198976,
+          "active_size": 18093289984,
+          "allocated_size": 18093289984
+        }
+      },
+      "fully_inactive_default_bytes": 25165824,
+      "unknown_pool_segments": 0,
+      "snapshot_source": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "snapshot_source_SHA256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d"
+    },
+    {
+      "rank": 3,
+      "free_bytes": 17306853376,
+      "allocated_bytes": 47237808128,
+      "reserved_bytes": 47332720640,
+      "pools": {
+        "(0, 0)": {
+          "segments": 7,
+          "total_size": 515899392,
+          "active_size": 471159296,
+          "allocated_size": 471159296
+        },
+        "(0, 3)": {
+          "segments": 9,
+          "total_size": 28674359296,
+          "active_size": 28673358848,
+          "allocated_size": 28673358848
+        },
+        "(0, 2)": {
+          "segments": 4,
+          "total_size": 27262976,
+          "active_size": 0,
+          "allocated_size": 0
+        },
+        "(0, 1)": {
+          "segments": 185,
+          "total_size": 18115198976,
+          "active_size": 18093289984,
+          "allocated_size": 18093289984
+        }
+      },
+      "fully_inactive_default_bytes": 25165824,
+      "unknown_pool_segments": 0,
+      "snapshot_source": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "snapshot_source_SHA256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d"
+    },
+    {
+      "rank": 4,
+      "free_bytes": 17285890048,
+      "allocated_bytes": 47237809664,
+      "reserved_bytes": 47353692160,
+      "pools": {
+        "(0, 0)": {
+          "segments": 7,
+          "total_size": 536870912,
+          "active_size": 471160832,
+          "allocated_size": 471160832
+        },
+        "(0, 3)": {
+          "segments": 9,
+          "total_size": 28674359296,
+          "active_size": 28673358848,
+          "allocated_size": 28673358848
+        },
+        "(0, 2)": {
+          "segments": 4,
+          "total_size": 27262976,
+          "active_size": 0,
+          "allocated_size": 0
+        },
+        "(0, 1)": {
+          "segments": 185,
+          "total_size": 18115198976,
+          "active_size": 18093289984,
+          "allocated_size": 18093289984
+        }
+      },
+      "fully_inactive_default_bytes": 25165824,
+      "unknown_pool_segments": 0,
+      "snapshot_source": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "snapshot_source_SHA256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d"
+    },
+    {
+      "rank": 5,
+      "free_bytes": 17306865664,
+      "allocated_bytes": 47237808640,
+      "reserved_bytes": 47332720640,
+      "pools": {
+        "(0, 0)": {
+          "segments": 7,
+          "total_size": 515899392,
+          "active_size": 471159808,
+          "allocated_size": 471159808
+        },
+        "(0, 3)": {
+          "segments": 9,
+          "total_size": 28674359296,
+          "active_size": 28673358848,
+          "allocated_size": 28673358848
+        },
+        "(0, 2)": {
+          "segments": 4,
+          "total_size": 27262976,
+          "active_size": 0,
+          "allocated_size": 0
+        },
+        "(0, 1)": {
+          "segments": 185,
+          "total_size": 18115198976,
+          "active_size": 18093289984,
+          "allocated_size": 18093289984
+        }
+      },
+      "fully_inactive_default_bytes": 25165824,
+      "unknown_pool_segments": 0,
+      "snapshot_source": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "snapshot_source_SHA256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d"
+    },
+    {
+      "rank": 6,
+      "free_bytes": 17285890048,
+      "allocated_bytes": 47237809152,
+      "reserved_bytes": 47353692160,
+      "pools": {
+        "(0, 0)": {
+          "segments": 7,
+          "total_size": 536870912,
+          "active_size": 471160320,
+          "allocated_size": 471160320
+        },
+        "(0, 3)": {
+          "segments": 9,
+          "total_size": 28674359296,
+          "active_size": 28673358848,
+          "allocated_size": 28673358848
+        },
+        "(0, 2)": {
+          "segments": 4,
+          "total_size": 27262976,
+          "active_size": 0,
+          "allocated_size": 0
+        },
+        "(0, 1)": {
+          "segments": 185,
+          "total_size": 18115198976,
+          "active_size": 18093289984,
+          "allocated_size": 18093289984
+        }
+      },
+      "fully_inactive_default_bytes": 25165824,
+      "unknown_pool_segments": 0,
+      "snapshot_source": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "snapshot_source_SHA256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d"
+    },
+    {
+      "rank": 7,
+      "free_bytes": 17285885952,
+      "allocated_bytes": 47237809152,
+      "reserved_bytes": 47353692160,
+      "pools": {
+        "(0, 0)": {
+          "segments": 7,
+          "total_size": 536870912,
+          "active_size": 471160320,
+          "allocated_size": 471160320
+        },
+        "(0, 3)": {
+          "segments": 9,
+          "total_size": 28674359296,
+          "active_size": 28673358848,
+          "allocated_size": 28673358848
+        },
+        "(0, 2)": {
+          "segments": 4,
+          "total_size": 27262976,
+          "active_size": 0,
+          "allocated_size": 0
+        },
+        "(0, 1)": {
+          "segments": 185,
+          "total_size": 18115198976,
+          "active_size": 18093289984,
+          "allocated_size": 18093289984
+        }
+      },
+      "fully_inactive_default_bytes": 25165824,
+      "unknown_pool_segments": 0,
+      "snapshot_source": "/opt/conda/lib/python3.12/site-packages/torch/cuda/memory.py",
+      "snapshot_source_SHA256": "3afde64252800d6ce537ff62d471d1c60f9c07ea9c0022074db299d90d1f865d"
+    }
+  ],
+  "interpretation": "Snapshot taken outside DT. Private pools are excluded. Only 24 MiB per rank was wholly inactive in the default pool; this does not justify speculative multi-GiB capacity credit. The native free-memory guard is retained. No model/capacity/performance result is claimed."
+}
