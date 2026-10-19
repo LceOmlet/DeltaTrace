@@ -1,3 +1,13 @@
+## 2026-10-20T02:16:45.035143+08:00 原45轮与共享八rank完整checkpoint45已完成；第46轮生成，45轮三套原图已保存
+
+原controller2503202/1792394518.8、driver2503287/1792394519.29及rank0 2511533/1792394584.3按实际出生核对存活，已自然经过第45轮DT、actor更新和原生save5。c20559e3原日志确认45/200，共享latest_checkpointed_iteration=45，global_step_45的data.pt及八rank model/optim/extra_state共25个必要状态文件均非空；不加载或新造检查点。训练已开始第46轮生成，后五组仍queued。方法f26b3b37/执行cdd8ea40/VERL20bd331、clip[-2,1]及乘g后原masked_var保持，0生产改动或额外模型/DT/环境/optimizer调用。
+
+共享rollout45.jsonl原始256条，step45/input/output身份齐全，score均值0.703125，1..45原rollout文件名齐全；SHA d218d2cdb8b84bc91a7a5d23d66cea630367007da0eb025e896ea30fd6ae6534。此为现有文件记账，不把文件存在当全部历史内容逐条验收，不借其替代官方数值容差。详细25个完整状态路径/字节、原日志行号、源/override及配置引用见experiments/rl/results_dtpo_v9_negative2_native45_checkpoint45_20261020_v4.json。
+
+02:15三套原图成功保存：正式TextCraft45/0/0、AppWorld0/0/0；历史共同45轮/独立原PPO105及GRPO191，较02:05成功快照+1轮。历史梯度仅均衡分片假设下local×√2估算，v9为全局实测；PNG/SVG/CSV/来源快照均保存，AppWorld仍空窗口不填0。原e6f3b171阶段归约当前生成1560卡样本均值51.8353%、DT1516卡样本74.2757%；mixed3672/边界4644独立，验证39/40继续排除，不把自然输入变化解释为因果提速。
+
+六组200及最终共享八rank完整checkpoint200/两任务最终图尚未完成，goal active；后续依原原生结束状态交接，不重复已完成的准备审计，也不因正常GPU/写盘等待启动诊断或恢复。
+
 ## 2026-10-20T02:10:03.002979+08:00 原44轮继续；共享rollout43/44各256条与44轮对比图已核实展示
 
 原controller2503202/1792394518.8、driver2503287/1792394519.29及rank0 2511533/1792394584.3再次按实际出生确认存活，原c20559e3日志确认44/200，当前第45轮生成，共享完整checkpoint40保持；后五组仍queued。方法f26b3b37/执行cdd8ea40/VERL20bd331、逐事件u clip[-2,1]及乘g后原masked_var不减均值保持。本次0新模型/DT/环境/optimizer调用、0生产改动。
