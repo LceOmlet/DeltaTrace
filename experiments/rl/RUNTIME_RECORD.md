@@ -1,3 +1,13 @@
+## 2026-10-20T02:28:18.205451+08:00 原46轮继续、第47轮生成；41..45轮阶段时间账与整轮原日志对齐
+
+controller2503202/1792394518.8、driver2503287/1792394519.29及rank0 2511533/1792394584.3经本轮持续只读实际出生核对存活，已观察原生第46轮生成、旧策略前向、DT及actor更新，c20559e3日志确认46/200，进入47轮生成。共享完整checkpoint45保持，后五组queued；AppWorld尚无campaign-state，不能称已启动。原campaign里job的初始化标签没有逐轮更新，实际完成数以原训练日志为准，不凭该旧标签重启。方法f26b3b37/执行cdd8ea40/VERL20bd331及clip[-2,1]/乘g后仅方差缩放保持，0生产改动、0额外模型/DT/环境/optimizer调用。
+
+共享rollout46.jsonl原256条，step46及input/output字符串身份齐全，环境score均值0.734375，1..46文件名齐全，SHA2dc6f5f1b9b9049b01db2a38b1f488bf10d7668f3ec4ea7a22376f920e5efca5。只检查本轮内容，不将其他文件存在称全部内容验收。原日志路径/行号和实际PID出生见experiments/rl/results_dtpo_v9_negative2_native46_and_stage_accounting_20261020_v4.json。
+
+复用02:15原c20559e3快照中已完成41..45轮，生成平均401.7576秒，原adv阶段平均75.7256秒；每轮stage之和与原step残差分别0.011/0.019/0.009/0.008/0.018秒，最大0.019秒。adv包含原DT及driver信用汇总，不称孤立核函数时间；阶段账目不是FA/FLA/VERL数值容差，也不是同输入因果提速实验。第45轮原save_checkpoint47.471秒单列，未移入生成或DT。
+
+最近成功图仍为02:15保存并展示的45轮三套图，未把旧图冒称46轮新图；原小时绘图ACTIVE，既有干净Util窗口仍引用45轮回执。六组200、最终共享八rank完整checkpoint200及两任务最终图尚未完成，goal active，按原控制器完整结束标准自动交接。
+
 ## 2026-10-20T02:16:45.035143+08:00 原45轮与共享八rank完整checkpoint45已完成；第46轮生成，45轮三套原图已保存
 
 原controller2503202/1792394518.8、driver2503287/1792394519.29及rank0 2511533/1792394584.3按实际出生核对存活，已自然经过第45轮DT、actor更新和原生save5。c20559e3原日志确认45/200，共享latest_checkpointed_iteration=45，global_step_45的data.pt及八rank model/optim/extra_state共25个必要状态文件均非空；不加载或新造检查点。训练已开始第46轮生成，后五组仍queued。方法f26b3b37/执行cdd8ea40/VERL20bd331、clip[-2,1]及乘g后原masked_var保持，0生产改动或额外模型/DT/环境/optimizer调用。
