@@ -18,4 +18,10 @@ if efficiency.exists():
         "summary['first_iteration_efficiency_result']='experiments/rl/results_dtpo_v9_first_iteration_efficiency_20261019_v2.json'\nkey='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'")
     code=code.replace("本次完成{first['completed']}/200，实际phase={first.get('phase')}。",
         "本次完成{first['completed']}/200，实际phase={first.get('phase')}。首轮自然训练1002.954秒，DT289.211秒、更新175.328秒；与原相同八卡负载v8首轮相比整轮慢16.3%、DT慢85.2%、按输入token折算更新慢17.1%，不能将首轮通过称效率达标。八rank原只读metadata已实读Adam step4/scheduler1、各496状态；未新增模型/DT/optimizer测试。原生缓存释放每rank累计35.7–45.9秒，明确为DT内部计时；完整效率及原日志行号见results_dtpo_v9_first_iteration_efficiency_20261019_v2.json。")
+warm=Path('experiments/rl/results_dtpo_v9_two_iteration_efficiency_20261019_v2.json')
+if warm.exists():
+    code=code.replace("key='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'",
+        "summary['two_iteration_efficiency_result']='experiments/rl/results_dtpo_v9_two_iteration_efficiency_20261019_v2.json'\nsummary['prepared_resource_candidate']={'status':'prepared_only_not_natively_validated_not_deployed','receipt':'/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dt-native-consumed-root-lifetime-20261019-v1/prepared.json','candidate_runner_SHA256':'9f13c898c9faec72f57d77a81966315f25950c251e4381598b8f5442e287c5cf'}\nkey='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'")
+    code=code.replace('完整效率及原日志行号见results_dtpo_v9_first_iteration_efficiency_20261019_v2.json。',
+        '完整效率及原日志行号见results_dtpo_v9_first_iteration_efficiency_20261019_v2.json。第2完整迭代894.964秒、DT218.311秒、actor163.708秒，原八卡v8对应第2轮整轮约832秒；按输入token折算actor仍慢17.5%，不能将差额都归给首轮。原生actor RPC末尾释放每rank14.923–16.386秒，已经包含在update_actor计时，不相加为额外整轮时长。两轮完整来源见results_dtpo_v9_two_iteration_efficiency_20261019_v2.json。发现当前DT_NATIVE_HOST_CACHE_REPLAY_LAYER=0将已消费root/kwargs保留到B4结束；仅一个runner文件已在dt-native-consumed-root-lifetime-20261019-v1候选中分离消费释放与缓存清理，SHA9f13c898，未原生验证、未部署，不作为已提速。当前正式DT_ROOT/runner仍6a112224，未改训练或原生保存策略。')
 exec(compile(code,str(owner),'exec'),globals())
