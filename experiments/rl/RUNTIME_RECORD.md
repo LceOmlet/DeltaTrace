@@ -1,3 +1,13 @@
+## 2026-10-19T19:48:09.590561+08:00 原root配置连续两轮生产确认；排队AppWorld资源准备与生成批内等待证据
+
+TextCraft DTPO v9负clip2完成15/200（较19:29快照+1），进入第16轮生成；其余五组queued。执行源cdd8ea40、方法f26b3b37、VERL20bd331和原controller2503202/1792394518.8、driver2503287/1792394519.29保持。第15轮生成431.097秒、DT157.239秒、整轮873.101秒（含原save5检查点48.229秒），实际输入943189 token；第14轮DT164.484秒/1024807 token。两轮没有额外验证模型或DT调用。原严格阶段观察窗口DT1152个卡样本GPU-Util45.002%、生成1070个卡样本51.265%；2736个边界/缺失和909个mixed样本分开，不将此条件样本均值称全阶段时间平均。不同输入的生产耗时不替代之前同输入配对16.28%的归因调用改善。共享checkpoint15按原owner要求核实data.pt+八rank model/optim/extra_state共25文件非空，marker15。
+
+AppWorld仍未启动。本次将同一已接受原runner资源开关pin_root_host=False、pin_replay_host=True准备进其dt-prepared/campaign-prepared及显式Ray环境传播；原Hydra --cfg job --resolve验证除DT_ENVIRONMENT_JSON外整个有效配置不变，PPO/GRPO准备文件SHA均不变。新environment.json独立保存并加入原source_bindings，旧环境文件保留；没有重启当前TextCraft、没有新模型/环境/optimizer调用。此项仅prepared，AppWorld实际worker导入与生产效率仍待原队列启动后核实，不冒称已部署或已提速。
+
+生成已有64次原调用/1808请求中，68.584%请求短于同批最长；497331实际生成token除以925344矩形长度槽为53.746%。这是长度代理，不是GPU-Util、实际执行padding、空闲秒数或加速上限。实际AgentGym owner04148278第264行整批generate后、第273行才由原线程池执行agent_step；部署transport0d5bc393第143行等待原worker-group全部返回。因此批内短请求不能提前接下一轮环境，是具体调度限制；尚未定量证明主因。原引擎async/CUDA graph已开。固定VERL虽有AsyncvLLMServer，当前AgentGym原循环无逐请求结束hook，单改async开关不能宣称消除barrier或已保证LoRA/任务等价；本次没有改生成调度或另写采样器。
+
+FA2.6.3、FLA0.4.1及VERL20bd331仍按PLAN对应操作数、dtype、状态、参考及各自官方断言验收。root存储未改算术，已有八rank同输入向量与容量证据范围保持；上述生产或源审计不是新的全模型数值验收，不使用checkpoint/多次更新0/0替代。结果分别见results_dtpo_v9_negative2_root_second_production_20261019_v4.json、results_dtpo_v9_negative2_AppWorld_root_prepared_20261019_v4.json、results_dtpo_v9_negative2_generation_batch_barrier_20261019_v4.json。19:48:09/13/17三套原图已刷新，历史105/191不计新队列；goal继续active。
+
 ## 2026-10-19T19:29:41.252599+08:00 原root传输配置的首个完整生产窗口及共享checkpoint10核实
 
 当前TextCraft DTPO v9负clip2已完成14/200，进入第15轮生成；后五组仍queued。实际执行源cdd8ea40、方法f26b3b37、VERL20bd331及原controller/driver出生保持。第14轮没有额外模型、环境、DT或optimizer验收调用，原日志生成447.465秒、DT164.484秒、整轮854.220秒，总输入1024807 token。八rank同phase且前后原宿主观察有效的物理样本：生成472个card samples，GPU-Util52.246%；DT592个，46.910%。1155个boundary/missing和512个mixed样本独立保存，不并成纯阶段，不把活动率当峰值FLOPS比例。
