@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 
 owner = Path(__file__).with_name('summarize_root_resource_production.py')
-assert hashlib.sha256(owner.read_bytes()).hexdigest() == 'a6f8fec3a7f639c352d724ba0450d3404213a9963ed6780eea0e723e9beca9ae'
+assert hashlib.sha256(owner.read_bytes()).hexdigest() == '912ab153c720e05ae48b99b8e06cfc6433c429ec5561f828d5423514a30d2bb3'
 code = owner.read_text()
 for old, new in (
     ('root-pageable-resource-override-completed.json', 'small-GPU-resident-resource-override-completed.json'),
@@ -74,6 +74,21 @@ if '--through-latest-progress' in sys.argv:
             validation_job=json.loads(job_path.read_bytes())
             upper=min(upper,validation_job['submitted'])
             validation_window_selection.append(dict(policy='before_pending_validation_submission',source=str(job_path),upper=upper))
+    capacity_path=AUDIT/'resident-16384-native-capacity-results.json'
+    capacity_job=AUDIT/'resident-16384-capacity-job.json'
+    if capacity_path.exists():
+        capacity=json.loads(capacity_path.read_bytes())
+        capacity_rows=capacity['rows']
+        if (capacity['status']=='completed' and len(capacity_rows)==8
+                and all(r['value']['original_method_restored'] and r['value']['original_options_restored'] for r in capacity_rows)):
+            lower=max(lower,max(r['value']['finished'] for r in capacity_rows))
+            validation_window_selection.append(dict(policy='after_all_capacity_calls_restored',source=str(capacity_path),lower=lower))
+        elif capacity_rows:
+            upper=min(upper,min(r['value']['started'] for r in capacity_rows))
+            validation_window_selection.append(dict(policy='before_active_capacity_validation',source=str(capacity_path),upper=upper))
+    elif capacity_job.exists():
+        upper=min(upper,json.loads(capacity_job.read_bytes())['submitted'])
+        validation_window_selection.append(dict(policy='before_pending_capacity_validation',source=str(capacity_job),upper=upper))
     assert lower<upper,'No fresh clean physical window yet; do not substitute the validation samples' ''')
     code = code.replace("str(int(upper))", "str(int(snapshot['collected_at']))")
     code = code.replace("    report['production_counter_source']=", "    report['validation_window_selection']=validation_window_selection\n    report['production_counter_source']=")

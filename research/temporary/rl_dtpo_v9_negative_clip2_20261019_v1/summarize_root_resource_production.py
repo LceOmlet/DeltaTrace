@@ -89,6 +89,10 @@ def main():
         if validation_path.exists():
             validation = json.loads(validation_path.read_bytes())
             excluded_validation_steps.extend(validation.get('training_iterations_excluded_from_production_efficiency', []))
+    capacity_alignment = AUDIT / 'resident-16384-capacity-stage-alignment.json'
+    if capacity_alignment.exists():
+        excluded_validation_steps.extend(json.loads(capacity_alignment.read_bytes())[
+            'training_iterations_excluded_from_production_efficiency'])
     excluded_validation_steps = sorted(set(excluded_validation_steps))
     report = dict(status='completed_read_only_production_window', collected=time.time(),
         run=str(RUN), source_snapshot=str(destination / 'source-snapshot.json'),
