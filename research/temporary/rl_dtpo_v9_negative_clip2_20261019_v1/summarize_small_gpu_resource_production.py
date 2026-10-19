@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 
 owner = Path(__file__).with_name('summarize_root_resource_production.py')
-assert hashlib.sha256(owner.read_bytes()).hexdigest() == '912ab153c720e05ae48b99b8e06cfc6433c429ec5561f828d5423514a30d2bb3'
+assert hashlib.sha256(owner.read_bytes()).hexdigest() == 'ec4f178f48323183ba8a0dd9401a08f6349448f6c8957d902b29b80ad61d31a9'
 code = owner.read_text()
 for old, new in (
     ('root-pageable-resource-override-completed.json', 'small-GPU-resident-resource-override-completed.json'),
@@ -89,6 +89,19 @@ if '--through-latest-progress' in sys.argv:
     elif capacity_job.exists():
         upper=min(upper,json.loads(capacity_job.read_bytes())['submitted'])
         validation_window_selection.append(dict(policy='before_pending_capacity_validation',source=str(capacity_job),upper=upper))
+    lora_path=AUDIT/'native-LoRA-decode-config-check-results.json'
+    lora_job=AUDIT/'native-LoRA-decode-config-check-job.json'
+    if lora_path.exists():
+        lora=json.loads(lora_path.read_bytes())
+        if lora.get('production_configs_restored') and lora.get('finished'):
+            lower=max(lower,lora['finished'])
+            validation_window_selection.append(dict(policy='after_original_LoRA_check_restored',source=str(lora_path),lower=lower))
+        else:
+            upper=min(upper,lora['started'])
+            validation_window_selection.append(dict(policy='before_active_LoRA_validation',source=str(lora_path),upper=upper))
+    elif lora_job.exists():
+        upper=min(upper,json.loads(lora_job.read_bytes())['submitted'])
+        validation_window_selection.append(dict(policy='before_pending_LoRA_validation',source=str(lora_job),upper=upper))
     assert lower<upper,'No fresh clean physical window yet; do not substitute the validation samples' ''')
     code = code.replace("str(int(upper))", "str(int(snapshot['collected_at']))")
     code = code.replace("    report['production_counter_source']=", "    report['validation_window_selection']=validation_window_selection\n    report['production_counter_source']=")

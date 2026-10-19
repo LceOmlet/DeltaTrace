@@ -93,6 +93,10 @@ def main():
     if capacity_alignment.exists():
         excluded_validation_steps.extend(json.loads(capacity_alignment.read_bytes())[
             'training_iterations_excluded_from_production_efficiency'])
+    lora_check = AUDIT / 'native-LoRA-decode-config-check-results.json'
+    if lora_check.exists():
+        epoch = int(json.loads(lora_check.read_bytes())['actor_scheduler_epoch'])
+        excluded_validation_steps.extend((epoch, epoch + 1))
     excluded_validation_steps = sorted(set(excluded_validation_steps))
     report = dict(status='completed_read_only_production_window', collected=time.time(),
         run=str(RUN), source_snapshot=str(destination / 'source-snapshot.json'),
