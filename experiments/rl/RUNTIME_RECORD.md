@@ -1,3 +1,15 @@
+## 2026-10-20T07:02:01.063053+08:00 原70轮及共享八rank完整checkpoint70已核实；第71轮生成，对比图更新至70轮
+
+原controller2503202/1792394518.8、driver2503287/1792394519.29及全部8rank实际出生匹配，已自然完成第70轮DT、actor更新和原生save5，当前第71轮生成。c20559e3原日志有连续1..70完整指标，共享marker70及global_step_70的data.pt、8rank model/optim/extra_state共25个必要文件非空；data.pt SHAb3c8cc013469664df0120bbaf9b62dfe5cf7fda5544933f58b07e44090da44b7。只核对原生保存文件，没有加载、重算或新造检查点；后五组仍queued，原native结束交接规则保持。方法f26b3b37/实际执行cdd8ea40/VERL20bd331、clip[-2,1]及乘g后仅方差缩放保持，0生产改动、0额外模型/DT/环境/optimizer调用。
+
+原共享snapshot保留1..70共70条完整指标及原来源；rollout70原256条、step70/input/output身份齐全，环境score均值0.703125，1..70文件名齐全。66..70各次共享来源回执及SHA并入experiments/rl/results_dtpo_v9_negative2_native70_checkpoint70_20261020_v4.json，不把文件存在称全部历史内容逐条验收。完整25状态路径/字节、原日志行号、8rank出生、既有实际导入/完成override与共享摘要SHA随该结果登记。
+
+06:59–07:00三套原图成功保存：正式TextCraft70/0/0、AppWorld0/0/0，历史共同70轮/独立原PPO105及GRPO191；较06:05成功图DT+5轮，其余+0。旧PPO/GRPO仅梯度按均衡分片能量假设local×√2估算，当前v9为全局实测，原值不覆盖。CSV口径/原路径行号、PNG/SVG/快照及历史workload审计齐全；正式空窗口和AppWorld缺失不填0。统一原入口SHA29e81a34保持。
+
+原e6f3b171严格相邻8rank同阶段归约最近生成7912卡样本50.4220%、DT8356卡样本72.0968%；mixed/边界分开，验证39/40仍排除，不因自然输入变化声称因果提速。66..70原生成均值371.4418秒、adv均值74.3152秒；原stage之和与step最大差0.009秒，第70轮保存48.526秒单列。adv包含DT及原driver汇总，不称孤立kernel，时间账不是官方数值容差。
+
+六组200及最终共享八rank完整checkpoint200/两任务最终图仍未完成，goal active。旧gradient/v7、SQL及大备份/全套硬件任务未恢复。PPO/AppWorld仍仅原准备状态，不将当前TextCraft运行/资源覆盖冒称后续AppWorld已部署。
+
 ## 2026-10-20T06:07:30.865760+08:00 原65轮及共享八rank完整checkpoint65已核实；第66轮生成，对比图更新至65轮
 
 原controller2503202/1792394518.8、driver2503287/1792394519.29及全部8rank实际出生匹配，已自然完成第65轮DT、actor更新和原生save5，当前第66轮生成。c20559e3原日志有连续1..65完整指标，共享marker65及global_step_65的data.pt、8rank model/optim/extra_state共25个必要文件非空；data.pt SHAd670d80727032375d73807167d27af5ea1db9b49bfbf3135db9037424e8bd1df。只核对原生保存文件，没有加载、重算或新造检查点；后五组仍queued，原native结束交接规则保持。方法f26b3b37/实际执行cdd8ea40/VERL20bd331、clip[-2,1]及乘g后仅方差缩放保持，0生产改动、0额外模型/DT/环境/optimizer调用。
