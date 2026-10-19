@@ -67,7 +67,12 @@ for item in actual:
     assert len(results) == 8
     assert all(r['DT_CREDIT_MODE'] == 'reward_target_exponential_clipped_v9' and r['DP_world_size'] == 8 for r in results)
     assert not any(m.get('matches_prepared_source') is False for r in results for m in r['modules'].values())
-record.update(status='native_v9_six_run_queue_in_progress', recorded_at=now, deployment=data,
+previous=record.get('deployment')
+if previous and previous['controller']['pid']!=data['controller']['pid']:
+    record.setdefault('deployment_history',[]).append(previous)
+failed=[j for j in rows if j['status']=='exited' and j['completed']<200]
+record.update(status=('native_v9_queue_needs_attention_no_failed_combination_skipped' if failed
+        else 'native_v9_six_run_queue_in_progress'), recorded_at=now, deployment=data,
     actual_binding_scope='Only naturally imported modules; absent lazy modules remain pending.',
     hourly=dict(id='textcraft',status='ACTIVE',entry=str(HERE/'plot_hourly.py'),
         entry_SHA256=hashlib.sha256((HERE/'plot_hourly.py').read_bytes()).hexdigest()),
@@ -94,7 +99,10 @@ first=rows[0]
 title='DTPO v9：v5指数信用逐事件裁剪，六组八卡正式队列'
 bindings=('八rank原只读元数据RPC已核对v9模式/DP8及实际已导入源码；未自然导入的lazy DT模块不冒称已验证。' if actual
     else '实际八rank导入RPC已提交，待初始化自然完成；不以初始化或占卡称健康训练。')
+failure_note=('当前首组首次DT原生exit1、0轮、未进入optimizer更新；MetaX明确报mcHostRegister页面锁定内存过多。控制器停在失败组合，其他五组未启动。该平台分配错误与v9信用裁剪分开记录，不能称已完成健康训练。' if failed else '')
 header=f'''## {now} {title}
+
+{failure_note}
 
 人类明确两个任务DTPO均为v5+clip v9，另外四组保持原PPO/GRPO，替代goal里过时的symmetric标签。u=clip(-expm1(-d),-1,1)，先逐事件裁剪，再乘既定带符号信用b_k并汇总；单事件为原官方已归一化GRPO g。Q0=sum b_k、V0=sum b_k*min(exp(-d),2)、A0=sum b_k*u，原self/观察/padding/future mask保持。使用固定VERL原masked_var对最终保留policy位置汇总后的A0计算一个共同尺度，Q/V/A仅方差缩放一次、不减均值，不在乘g前缩放u、不裁剪g或最终gu。原DT、actor/core/optimizer、官方任务负载和效率路径保持。
 

@@ -1,8 +1,10 @@
-## 2026-10-19T11:38:20.131981+08:00 DTPO v9：v5指数信用逐事件裁剪，六组八卡正式队列
+## 2026-10-19T12:05:31.902889+08:00 DTPO v9：v5指数信用逐事件裁剪，六组八卡正式队列
+
+当前首组首次DT原生exit1、0轮、未进入optimizer更新；MetaX明确报mcHostRegister页面锁定内存过多。控制器停在失败组合，其他五组未启动。该平台分配错误与v9信用裁剪分开记录，不能称已完成健康训练。
 
 人类明确两个任务DTPO均为v5+clip v9，另外四组保持原PPO/GRPO，替代goal里过时的symmetric标签。u=clip(-expm1(-d),-1,1)，先逐事件裁剪，再乘既定带符号信用b_k并汇总；单事件为原官方已归一化GRPO g。Q0=sum b_k、V0=sum b_k*min(exp(-d),2)、A0=sum b_k*u，原self/观察/padding/future mask保持。使用固定VERL原masked_var对最终保留policy位置汇总后的A0计算一个共同尺度，Q/V/A仅方差缩放一次、不减均值，不在乘g前缩放u、不裁剪g或最终gu。原DT、actor/core/optimizer、官方任务负载和效率路径保持。
 
-方法与执行源a88d479c199f9b3171a7d29e8a5840dc4759a6ea已提交推送，上游VERL 20bd331bdbc9026a5668e11362178e10ab7400c8。21项原v5 CPU回归和20项v9行为通过，实际双rank每rank B4、多target及精确32768 DT通过，0 optimizer更新；六配置由原生Hydra逐section核对。此双rank验收不冒称八rank正式容量或训练质量。八rank原只读元数据RPC已核对v9模式/DP8及实际已导入源码；未自然导入的lazy DT模块不冒称已验证。 controller 998007/1792380835.13，首组driver 998035/1792380835.59；本次完成0/200，实际phase=ray::WorkerDict。实际导入路径/SHA、配置、PID出生和原日志来源见results_dtpo_v9_clip_u_20261019_v1.json及远端对应receipt。
+方法与执行源a88d479c199f9b3171a7d29e8a5840dc4759a6ea已提交推送，上游VERL 20bd331bdbc9026a5668e11362178e10ab7400c8。21项原v5 CPU回归和20项v9行为通过，实际双rank每rank B4、多target及精确32768 DT通过，0 optimizer更新；六配置由原生Hydra逐section核对。此双rank验收不冒称八rank正式容量或训练质量。八rank原只读元数据RPC已核对v9模式/DP8及实际已导入源码；未自然导入的lazy DT模块不冒称已验证。 controller 998007/1792380835.13，首组driver 998035/1792380835.59；本次完成0/200，实际phase=None。实际导入路径/SHA、配置、PID出生和原日志来源见results_dtpo_v9_clip_u_20261019_v1.json及远端对应receipt。
 
 顺序TextCraft DTPO v9→原PPO→原GRPO→AppWorld DTPO v9→原PPO→原GRPO，每组基础权重/0轮独占物理0–7、200完整迭代。TextCraft32组×8/global64/epochs1/4更新/save5/keep2；AppWorld作者40组×6/global32/epochs2/原取消、残批、test5、loop_sampler/共享save2/keep2；32k/B4/LoRA8/16、seed/采样/LR保持。原process owner f71ff4d8仅原生exit0、日志1..200与八rank共享完整checkpoint200齐全后交接，失败不跳过。其余五组当前queued；以各自原生状态后续更新。共享检查点在/mnt/si0021787ci2/default/lzq/deltatrace_backups/{textcraft,appworld}-8gpu-20261017/<对应20261019-v1 run>/checkpoints，日志/rollout和receipt保持共享ROOT路径。
 

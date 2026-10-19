@@ -5,18 +5,18 @@ C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_dtpo_
 入口及两个适配子入口 SHA 以本目录 hourly-source-hashes.json 为准；核对后执行，不改解析器或训练绕过失败。该入口先保存两任务正式六组图，再保存用户要求的 TextCraft v9 与原历史两卡 PPO/GRPO 对照图，复用原 collect/read_job_logs/parse_logs(c20559e3)、六面板 renderer(f6ed1ff3)、78d3d75a 历史对照 owner 及已批准范数显示适配。不新增 logger/解析器。CUDA_VISIBLE_DEVICES 为空。
 
 ROOT=/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922。
-总队列 ROOT/receipts/dtpo-v9-clip-u-postgroup-variance-20261019-v1/{six-combination-manifest.json,controller-job.json,selected-native-resources.json,CPU-behavior-verification.json,native-verification-summary.json,prior-v5-observation.json}。
-两个任务段 ROOT/receipts/{textcraft,appworld}-eight-gpu-v9-clip-u-20261019-v1/{campaign-prepared.json,campaign-state.json}；未启动的任务 state 可无。
+总队列 ROOT/receipts/dtpo-v9-clip-u-postgroup-variance-20261019-v2/{six-combination-manifest.json,controller-job.json,selected-native-resources.json,CPU-behavior-verification.json,native-verification-summary.json,prior-v5-observation.json}。
+两个任务段 ROOT/receipts/{textcraft,appworld}-eight-gpu-v9-clip-u-20261019-v2/{campaign-prepared.json,campaign-state.json}；未启动的任务 state 可无。
 六组顺序及正式 run：
-1. TextCraft DTPO v9：runs/textcraft-dtpo-v9-clip-u-8gpu-200-20261019-v1。
-2. TextCraft 原 PPO：runs/textcraft-ppo-8gpu-200-20261019-v1。
-3. TextCraft 原 GRPO：runs/textcraft-grpo-8gpu-200-20261019-v1。
-4. AppWorld DTPO v9：runs/appworld-dtpo-v9-clip-u-8gpu-200-20261019-v1。
-5. AppWorld 原 PPO：runs/appworld-ppo-8gpu-200-20261019-v1。
-6. AppWorld 原 GRPO：runs/appworld-grpo-8gpu-200-20261019-v1。
-六组均从基础权重和0轮独占物理 GPU0–7，分别200完整迭代。仅原生 exit0、日志1..200、八 rank 共享完整 checkpoint200 齐全后自动交接；失败不跳过。初始 controller998007/出生1792380835.13，首组 driver998035/出生1792380835.59；此后以最新正式 manifest、launch/source.json、已完成 runtime override 和 PID 出生为准，不沿用死亡 PID。方法和执行提交 a88d479c199f9b3171a7d29e8a5840dc4759a6ea，上游 VERL20bd331bdbc9026a5668e11362178e10ab7400c8。更新运行记录的提交不冒称部署源。
+1. TextCraft DTPO v9：runs/textcraft-dtpo-v9-clip-u-8gpu-200-20261019-v2。
+2. TextCraft 原 PPO：runs/textcraft-ppo-8gpu-200-20261019-v2。
+3. TextCraft 原 GRPO：runs/textcraft-grpo-8gpu-200-20261019-v2。
+4. AppWorld DTPO v9：runs/appworld-dtpo-v9-clip-u-8gpu-200-20261019-v2。
+5. AppWorld 原 PPO：runs/appworld-ppo-8gpu-200-20261019-v2。
+6. AppWorld 原 GRPO：runs/appworld-grpo-8gpu-200-20261019-v2。
+六组均从基础权重和0轮独占物理 GPU0–7，分别200完整迭代。仅原生 exit0、日志1..200、八 rank 共享完整 checkpoint200 齐全后自动交接；失败不跳过。旧执行v1 controller998007/driver998035已原生退出；执行v2实际身份读取最新controller-job及campaign-state，不沿用旧PID；此后以最新正式 manifest、launch/source.json、已完成 runtime override 和 PID 出生为准，不沿用死亡 PID。方法提交 a88d479c199f9b3171a7d29e8a5840dc4759a6ea，执行v2完整提交以正式manifest/source.json为准，上游 VERL20bd331bdbc9026a5668e11362178e10ab7400c8。更新运行记录的提交不冒称部署源。
 
-v9 原 EOS 有限传播逐事件未缩放 d，u=clip(-expm1(-d),-1,1)，逐项裁剪 u 后乘既定带符号 b_k 再汇总；单事件 b_1 为原官方已归一化 GRPO g。Q0=sum b_k、V0=sum b_k*min(exp(-d),2)、A0=sum b_k*u。原 self-target、观察/padding/future mask 保持。原保留 policy token 上调用固定 VERL masked_var，对汇总后的 A0 用同一 std(g·u) 尺度共同缩放 Q/V/A 一次，不减均值，不在乘 g 前缩放 u，不裁剪 g 或最终 gu。21项 v5 CPU 回归、20项 v9 CPU 行为及真实双 rank 每 rank B4、多 target、精确32768 DT 检查已通过；本小时不重跑，不将双 rank 容量称八 rank 正式训练验收。保留原 DT runner6a112224、corefc2f992b/worker198f509c，actor acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d，原 TP1/defaultgraph、host-register8/MRoPE 及更新效率路径。TextCraft32组×8/global64/epochs1/4次更新/save5/keep2；AppWorld作者40组×6/global32/epochs2/原取消、残批、test5、loop_sampler/共享 save2/keep2；32k/B4/LoRA8/16、seed/采样/LR保持。
+v9 原 EOS 有限传播逐事件未缩放 d，u=clip(-expm1(-d),-1,1)，逐项裁剪 u 后乘既定带符号 b_k 再汇总；单事件 b_1 为原官方已归一化 GRPO g。Q0=sum b_k、V0=sum b_k*min(exp(-d),2)、A0=sum b_k*u。原 self-target、观察/padding/future mask 保持。原保留 policy token 上调用固定 VERL masked_var，对汇总后的 A0 用同一 std(g·u) 尺度共同缩放 Q/V/A 一次，不减均值，不在乘 g 前缩放 u，不裁剪 g 或最终 gu。21项 v5 CPU 回归、20项 v9 CPU 行为及真实双 rank 每 rank B4、多 target、精确32768 DT 检查已通过；本小时不重跑，不将双 rank 容量称八 rank 正式训练验收。保留原 DT runner6a112224、corefc2f992b/worker198f509c，actor acd3c8a565820985b95c13f9c984fa127563dfd1486d7df2579fcca12aa7bb9d，原 TP1/defaultgraph、MRoPE 及更新效率路径。执行v1在首DT因MetaX mcHostRegister限制原生exit1/0轮；保留日志，不拼入执行v2。执行v2只对DT使用原Torch pinned_use_cuda_host_register=False、DT_NATIVE_HOST_CACHE_REPLAY_LAYER=0，复用RPC内原生缓存，原DT_NATIVE_HOST_CACHE_BATCH=1及最终RPC释放保持；PPO/GRPO仍host-register8，公式、算子和学习负载不改。原capture B4/32768 BF16值/步幅两模式均逐值一致；配置比较见allocation-owner-verification.json与runtime-v2-config-verification.json。8进程True分配已复现限制；大型False分配检查已主动终止，不能称容量通过。不得恢复True或清页缓存绕过。TextCraft32组×8/global64/epochs1/4次更新/save5/keep2；AppWorld作者40组×6/global32/epochs2/原取消、残批、test5、loop_sampler/共享 save2/keep2；32k/B4/LoRA8/16、seed/采样/LR保持。
 
 旧 v1–v8、双卡 v5 和失败的八卡 v5 均保留独立，不拼入 v9。旧八卡 v5 原生 exit1、0轮，首次 DT 原 pinned capture 报 CUDA invalid argument；根因未建立，不能称被本次 clip 修复或自动恢复。其他未启动正式组合明确 queued/0，不把初始化、进程存活或占卡称完整健康迭代。共享检查点 /mnt/si0021787ci2/default/lzq/deltatrace_backups/{textcraft,appworld}-8gpu-20261017/<对应新run>/checkpoints；原 rollout/日志/receipt 在 ROOT 的共享挂载中。
 
@@ -24,7 +24,7 @@ v9 原 EOS 有限传播逐事件未缩放 d，u=clip(-expm1(-d),-1,1)，逐项�
 
 TextCraft 主图另使用 v9 与独立原历史 PPO textcraft-ppo-control-fixed-verl-fresh-20261014-v2（105轮及原完整恢复链）和 GRPO textcraft-grpo-formal-native-graph-fresh-20261012-v1（已停止191轮）。仅历史梯度显示字段 plot/grad_norm_global 用原首 rank 分片乘√2，明确“均衡分片假设下的全局估算”，原 actor/grad_norm 不覆盖，CSV保留 norm_scope、conversion_factor、original_value、日志路径/行号。其他五项原值不换算。历史105/191轮不当新八卡队列进度，不将估算称实测。正式八卡 PPO/GRPO 后续数据独立保留，不与历史拼成一条曲线。
 
-正式图保存 F:/DeltaTraceBackups/plots/{textcraft,appworld}-eight-gpu-v9-clip-u-20261019-v1/<北京时间快照>，历史主图保存 F:/DeltaTraceBackups/plots/textcraft-v9-clip-u-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v1/<北京时间快照>。各目录保存 algorithm-comparison-common-window.png/svg、algorithm-comparison-full.png/svg、metrics-with-sources.csv、source-snapshot.json、plot-receipt.json；历史图另存 workload-audit.json。每次回复必须含采集时间、六组完成/200及同 run 较上一成功快照增量、实际 phase/queued、最新六指标简表、实际绝对图片链接。TextCraft内联历史共同窗口PNG，附完整PNG/SVG/CSV；共同窗口为空则说明并展示完整历史PNG。AppWorld内联正式共同窗口PNG，空时内联完整PNG并明确尚无已完成数据。无新迭代也更新来源快照。采集失败说明具体原因和最后成功图时间，旧图不冒充本次。
+正式图保存 F:/DeltaTraceBackups/plots/{textcraft,appworld}-eight-gpu-v9-clip-u-20261019-v2/<北京时间快照>，历史主图保存 F:/DeltaTraceBackups/plots/textcraft-v9-clip-u-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v2/<北京时间快照>。各目录保存 algorithm-comparison-common-window.png/svg、algorithm-comparison-full.png/svg、metrics-with-sources.csv、source-snapshot.json、plot-receipt.json；历史图另存 workload-audit.json。每次回复必须含采集时间、六组完成/200及同 run 较上一成功快照增量、实际 phase/queued、最新六指标简表、实际绝对图片链接。TextCraft内联历史共同窗口PNG，附完整PNG/SVG/CSV；共同窗口为空则说明并展示完整历史PNG。AppWorld内联正式共同窗口PNG，空时内联完整PNG并明确尚无已完成数据。无新迭代也更新来源快照。采集失败说明具体原因和最后成功图时间，旧图不冒充本次。
 
 可以复用总队列 source/report_native_utilization.py 仅读已有 mx-smi dmon 与原宿主 phase 观察并归约到 native-utilization-phase-summary.json，不新增 profiling/模型调用。区分生成/环境、DT、old/ref/critic前向、actor/critic更新、checkpoint；只合并八rank同phase且原相邻时间有效样本，mixed/初始化/missing bracket单列；不同有效token量不冒称算子加速，占卡不称充分利用，MFU0因原估算器不支持Qwen3.5不能解释为零算力，带宽未记录就写缺失。
 
