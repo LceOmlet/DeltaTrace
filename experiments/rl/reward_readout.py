@@ -390,7 +390,9 @@ class DirectActionTargetReadout:
         self.task, self.max_length = task, max_length
         self.weighted_target_credit = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
         self.reward_target_exponential = os.environ.get('DT_CREDIT_MODE') in (
-            'reward_target_exponential_v5', 'reward_target_exponential_variance_v6')
+            'reward_target_exponential_v5', 'reward_target_exponential_variance_v6',
+            'reward_target_exponential_clipped_v9')
+        self.clip_exponential_credit = os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_clipped_v9'
         self.symmetric_probability_ratio = os.environ.get('DT_CREDIT_MODE') in ('reward_target_symmetric_probability_ratio_v7', 'reward_target_symmetric_probability_ratio_postgroup_variance_v8')
         self.minibatch_size = minibatch_size
         self.packed_answer_targets = packed_answer_targets
@@ -562,6 +564,7 @@ class DirectActionTargetReadout:
                 self_target_mask=item['target'][None, None, :],
                 linear_attribution=self.weighted_target_credit,
                 symmetric_probability_ratio=self.symmetric_probability_ratio,
+                clip_exponential_credit=self.clip_exponential_credit,
             )
             result = dict(dt_token_advantages=credit.advantages[0],
                           dt_q_estimates=credit.q_estimates[0], dt_v_estimates=credit.v_estimates[0])
@@ -586,10 +589,13 @@ class DirectActionTargetReadout:
                           credit_variance_normalization=False)
         elif self.reward_target_exponential:
             report.update(target_semantics='reward_settlement_action_spans',
-                          credit_transform='per_event_exponential_then_credit_sum',
+                          credit_transform=('per_event_clipped_exponential_then_credit_sum'
+                              if self.clip_exponential_credit else 'per_event_exponential_then_credit_sum'),
                           output_seed='original_unscaled_native_span_logp',
                           coefficient_kind='stable_target_credit; native_TextCraft_uses_official_GRPO',
                           source_credit_normalization=None)
+            if self.clip_exponential_credit:
+                report.update(event_u_clip=[-1.0, 1.0],clip_before_event_coefficient=True)
             if os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_variance_v6':
                 # v6 returns unit-coefficient u here. The driver applies the
                 # official shared variance and original normalized GRPO g.

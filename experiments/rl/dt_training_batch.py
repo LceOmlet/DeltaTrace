@@ -138,7 +138,8 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
     variance_before_multiplier = os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_variance_v6'
     if os.environ.get('DT_CREDIT_MODE') in (
             'reward_target_exponential_v5', 'reward_target_exponential_variance_v6',
-            'reward_target_symmetric_probability_ratio_v7', 'reward_target_symmetric_probability_ratio_postgroup_variance_v8') and any(
+            'reward_target_symmetric_probability_ratio_v7', 'reward_target_symmetric_probability_ratio_postgroup_variance_v8',
+            'reward_target_exponential_clipped_v9') and any(
             'dt_reward_target_events' in item for item in selected):
         return _compute_multi_target_credit(data, selected, first, inverse, rewards,
             worker_group, eos_token_id=eos_token_id, pad_token_id=pad_token_id,
@@ -211,7 +212,8 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
         torch.zeros((len(first), 1, width), dtype=torch.float32), rewards[:, None],
         future[:, None, :], policy,
         self_target_mask=target[:, None, :], linear_attribution=weighted,
-        symmetric_probability_ratio=os.environ.get('DT_CREDIT_MODE') in ('reward_target_symmetric_probability_ratio_v7', 'reward_target_symmetric_probability_ratio_postgroup_variance_v8'))
+        symmetric_probability_ratio=os.environ.get('DT_CREDIT_MODE') in ('reward_target_symmetric_probability_ratio_v7', 'reward_target_symmetric_probability_ratio_postgroup_variance_v8'),
+        clip_exponential_credit=os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_clipped_v9')
     result.update(dt_token_advantages=analytic.advantages.float(),
                   dt_q_estimates=analytic.q_estimates.float(),
                   dt_v_estimates=analytic.v_estimates.float())
@@ -377,6 +379,8 @@ def _compute_multi_target_credit(data, selected, first, inverse, rewards, worker
     transform = ('per_event_symmetric_probability_ratio_then_sum'
                  if os.environ.get('DT_CREDIT_MODE') in ('reward_target_symmetric_probability_ratio_v7', 'reward_target_symmetric_probability_ratio_postgroup_variance_v8')
                  else 'per_event_exponential_then_sum')
+    if os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_clipped_v9':
+        transform = 'per_event_clipped_exponential_then_sum'
     print(f'[DT multi-target credit] trajectories={len(selected)} events={len(flattened)} '
           f'event_ids={event_ids} transform={transform}',flush=True)
     return _restore_direct_target_credit(data, selected, inverse, result)

@@ -176,7 +176,8 @@ class TextCraftOwner:
         reward_settlement_targets = os.environ.get('DT_CREDIT_MODE') in (
             'weighted_reward_target_finite_v4', 'reward_target_exponential_v5',
             'reward_target_exponential_variance_v6', 'reward_target_symmetric_probability_ratio_v7',
-            'reward_target_symmetric_probability_ratio_postgroup_variance_v8')
+            'reward_target_symmetric_probability_ratio_postgroup_variance_v8',
+            'reward_target_exponential_clipped_v9')
         direct_artifacts = []
         for trajectory_index, (h, turns) in enumerate(zip(handlers, records)):
             full_ids, full_policy = h.dt_full_input_ids, h.dt_full_policy_mask

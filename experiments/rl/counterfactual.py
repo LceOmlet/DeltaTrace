@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from collections.abc import Sequence
 from typing import Any
+import math
 import torch
 
 
@@ -32,6 +33,7 @@ def reward_event_token_credit(
     self_target_mask: torch.Tensor | None = None,
     linear_attribution: bool = False,
     symmetric_probability_ratio: bool = False,
+    clip_exponential_credit: bool = False,
 ) -> DTTokenCredit:
     """Compose sampled terminal/process rewards into individual token advantages.
 
@@ -68,13 +70,17 @@ def reward_event_token_credit(
     it requires no additional samples and no credit normalization. It is a
     different expected signal under factual sampling, not the exponential
     importance estimator above. The same self-target/mask rules still apply.
-    A terminal reward is one event. No cross-token normalization, clipping,
-    or learned baseline occurs.
+    With clip_exponential_credit=True (v9), each exponential event instead
+    uses u=clip(1-exp(-d),-1,1), Q=r, V=r*min(exp(-d),2), A=r*u.
+    The lower exponent-input bound -log(2) avoids overflowing a tail that
+    is explicitly clipped; inputs inside the bound retain the v5 exp/expm1
+    path. Clipping precedes the signed coefficient and event sum. A terminal
+    reward is one event. No cross-token normalization or learned baseline occurs.
     """
     if log_ratios.ndim != 3 or not log_ratios.is_floating_point():
         raise ValueError("log_ratios must be floating [batch, events, tokens]")
-    if linear_attribution and symmetric_probability_ratio:
-        raise ValueError("linear and symmetric credit transforms are mutually exclusive")
+    if sum((linear_attribution, symmetric_probability_ratio, clip_exponential_credit)) > 1:
+        raise ValueError("linear, symmetric and clipped exponential credit transforms are mutually exclusive")
     batch, events, tokens = log_ratios.shape
     if rewards.shape != (batch, events) or not rewards.is_floating_point():
         raise ValueError("rewards must be floating [batch, events]")
@@ -126,6 +132,10 @@ def reward_event_token_credit(
         # v4 receives a normalized finite allocation, not a log probability ratio.
         event_advantages = weighted_reward * d
         event_baselines = weighted_reward - event_advantages
+    elif clip_exponential_credit:
+        bounded_d = d.clamp_min(-math.log(2.0))
+        event_advantages = weighted_reward * (-torch.expm1(-bounded_d)).clamp(-1.0, 1.0)
+        event_baselines = weighted_reward * torch.exp(-bounded_d).clamp_max(2.0)
     else:
         event_advantages = weighted_reward * (-torch.expm1(-d))
         event_baselines = weighted_reward * torch.exp(-d)
