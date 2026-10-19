@@ -24,4 +24,12 @@ if warm.exists():
         "summary['two_iteration_efficiency_result']='experiments/rl/results_dtpo_v9_two_iteration_efficiency_20261019_v2.json'\nsummary['prepared_resource_candidate']={'status':'prepared_only_not_natively_validated_not_deployed','receipt':'/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dt-native-consumed-root-lifetime-20261019-v1/prepared.json','candidate_runner_SHA256':'9f13c898c9faec72f57d77a81966315f25950c251e4381598b8f5442e287c5cf'}\nkey='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'")
     code=code.replace('完整效率及原日志行号见results_dtpo_v9_first_iteration_efficiency_20261019_v2.json。',
         '完整效率及原日志行号见results_dtpo_v9_first_iteration_efficiency_20261019_v2.json。第2完整迭代894.964秒、DT218.311秒、actor163.708秒，原八卡v8对应第2轮整轮约832秒；按输入token折算actor仍慢17.5%，不能将差额都归给首轮。原生actor RPC末尾释放每rank14.923–16.386秒，已经包含在update_actor计时，不相加为额外整轮时长。两轮完整来源见results_dtpo_v9_two_iteration_efficiency_20261019_v2.json。发现当前DT_NATIVE_HOST_CACHE_REPLAY_LAYER=0将已消费root/kwargs保留到B4结束；仅一个runner文件已在dt-native-consumed-root-lifetime-20261019-v1候选中分离消费释放与缓存清理，SHA9f13c898，未原生验证、未部署，不作为已提速。当前正式DT_ROOT/runner仍6a112224，未改训练或原生保存策略。')
+preflight=Path('experiments/rl/results_dtpo_v9_resource_preflight_20261019_v2.json')
+if preflight.exists():
+    code=code.replace('additional_model_or_optimizer_test_calls=0)',
+        "additional_model_or_optimizer_test_calls=0,native_checkpoint_observer=(json.loads((A/'native-TextCraft-DT-checkpoint5-observer-v1-job.json').read_bytes()) if (A/'native-TextCraft-DT-checkpoint5-observer-v1-job.json').exists() else None))")
+    code=code.replace("key='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'",
+        "summary['native_checkpoint_observer']=data.get('native_checkpoint_observer')\nsummary['resource_CPU_preflight_result']='experiments/rl/results_dtpo_v9_resource_preflight_20261019_v2.json'\nkey='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'")
+    code=code.replace('当前正式DT_ROOT/runner仍6a112224，未改训练或原生保存策略。',
+        "当前正式DT_ROOT/runner仍6a112224，未改训练或原生保存策略。资源比较入口已用原v9行为harness通过CPU预检：B4各32768、CUDA未初始化，GPU比较仍未启动；见results_dtpo_v9_resource_preflight_20261019_v2.json。原检查点CPU读取器已适配本六组精确身份和八rank，TextCraft检查data.pt及原模型/optimizer/scheduler/训练与rollout RNG，AppWorld额外复用原LOOP sampler状态读取。原被动观察器source e0dbb650、PID1657396/1792386726.09已提交，当前状态={str((data.get('native_checkpoint_observer') or {}).get('status'))}，无额外保存、恢复、模型或optimizer调用；不能把等待marker或CPU预检称检查点/数值/效率验收。")
 exec(compile(code,str(owner),'exec'),globals())
