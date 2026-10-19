@@ -1,3 +1,13 @@
+## 2026-10-19T15:20:08.518097+08:00 v9负clip2执行v3失败并撤回RPC跨B4保留；执行v4恢复原B4回收，六组待重提交
+
+负clip2方法保持f26b3b37（u逐事件[-2,1]、乘g后原masked_var、Q/V/A不变）。执行v3/670a9f59的首轮实际八卡在第5个DT批次mcHostAlloc_v0返回mcErrorMemoryAllocation，栈落在CPU pin_memory capture的empty_strided；原生exit1、0完整迭代、0 optimizer更新、无完整checkpoint，原控制器按约定阻止后续组合，没有跳过。两rank各B4/32768数值与状态验收通过不等于八rank多形状累计缓存安全。本次错误不能称GPU显存不足或global OOM kill已被证明。
+
+我已撤回DT_NATIVE_HOST_CACHE_BATCH=0：恢复原DT_NATIVE_HOST_CACHE_BATCH=1逐B4释放，保留VERL_RELEASE_UNUSED_HOST_CACHE=1、REPLAY_LAYER=0和已验证原DT runner6a112224。消费释放候选9f13c898未选择。TextCraft/AppWorld两个DTPO的negative_clip仍2，其余四组PPO/GRPO原方法/host-register8不变。执行v4六组均从基础权重0轮、独占八卡200轮，所有CPU原生配置已解析且原工作量一致，当前尚未启动；不复用失败v3的无checkpoint状态或拼接曲线。复用既有信用/DT数值证明及原B4边界，八卡正式容量/进展仍须实际观察。新队列receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4，失败v3数据保留。详见results_dtpo_v9_negative2_failed_RPC_retention_20261019_v3.json、results_dtpo_v9_negative_clip2_20261019_v4.json。
+
+首轮原采样中被动观察64次原generate（八rank各8次后恢复原方法），0额外采样，原始worker stdout逐行留存。1136请求、188969生成tokens，输出中位90、134条(11.796%)恰好512并贡献68608 tokens；native prefix cached覆盖88.772%输入。对齐8组原调用，平均调用窗口覆盖86.122%（不是GPU Util/FLOPS），轮间空档均2.213秒（含环境、预处理、dispatch，未单凭时长归因）。原native RequestOutput.metrics没有TTFT，保持缺失。8worker实际prefix_cache=True、Mamba align/block512；不是没开前缀缓存。旧TP2原生dense热5.480秒慢于TP1 3.959秒，不重新盲调TP2/ngram。生成下一步针对批内长尾/调度与轮间空档；DT下一步继续测原B4安全边界的实际call-site，不把不安全的缓存保留当提速。完整实测见results_dtpo_v9_negative2_native_generation_20261019_v3.json。
+
+小时任务textcraft保持ACTIVE，当前统一绘图入口仍research/temporary/rl_dtpo_v9_negative_clip2_20261019_v1/plot_hourly.py，适配执行v4，方法名带u[-2,1]。原日志解析/renderer及历史范数显示口径保持。旧clip1执行v2六轮/完整5，负clip2失败v3零轮独立保留；不把历史PPO105/GRPO191当新队列进度。六组goal继续active，本次没有完成训练预算或作任何质量优势结论。
+
 ## 2026-10-19T14:45:28.075154+08:00 DTPO v9负clip2：CPU65项通过，原生双rank小输入/多target通过，32k检查进行中
 
 方法提交f26b3b37cb3b88e64978e7a472ae4244670a39f3已推送：逐事件u=clip(-expm1(-d),-2,1)，V项上限3；原g、汇总后masked_var仅方差缩放及Q/V/A/mask保持。两个DTPO新run从基础权重/0轮准备，PPO/GRPO保持原方法。原clip1队列已按用户替换停止，保留6轮与八rank完整checkpoint5，不拼接新曲线。当前新正式训练尚未启动。

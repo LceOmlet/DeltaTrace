@@ -1,3 +1,7 @@
+## 2026-10-19T15:20:08.518097+08:00 负clip2执行v3的宿主pinned分配错误与v4资源回退
+
+执行v3的8worker已原生退出，首轮DT末批mcHostAlloc失败，0完整迭代/0 optimizer；未证明global OOM kill。缓存跨B4保留0已撤回，当前执行v4准备恢复原CACHE_BATCH=1、REPLAY_LAYER=0、原RPC结束释放及DT hostalloc False；PPO/GRPO保留原host-register8。方法clip[-2,1]、32k/B4/LoRA/官方工作量不变。此前双rank32k只证明对应每rank数值/容量，不证明八卡多批次峰值；后续完整训练需实际核验。新队列receipt为dtpo-v9-negative-clip2-postgroup-variance-20261019-v4，仍复用严格SSH、原VENV、TextCraft官方36005服务和既有缓存，无安装/下载/清缓存。当前准备阶段不冒称运行；以最新RUNTIME_RECORD/正式source为准。
+
 ## 2026-10-19T14:45:28.075154+08:00 v9负clip2资源验收窗口与环境复用
 
 严格SSH31146/HostKeyAlias32036及原VENV_PYTHON保持，无安装/下载/清缓存。旧clip1控制器/driver均已退出并保留6轮/完整5；消费释放候选9f13c898同输入DT向量一致但没有提速，未部署。负clip2原生验收当前仅physical2/3、driver2210332/1792391947.26，0 optimizer/生成/保存；32k进行中。新两DTPO准备为原hostalloc False、REPLAY_LAYER=0、CACHE_BATCH=0、原RPC末尾释放；PPO/GRPO原资源与方法保持。DT_ROOT仍6a112224，八rank新正式训练尚未提交；后续按最新实际source/完成receipt读取，不将资源准备称容量/效率通过。详细状态见RUNTIME_RECORD最新条和results_dtpo_v9_negative_clip2_20261019_v3.json。

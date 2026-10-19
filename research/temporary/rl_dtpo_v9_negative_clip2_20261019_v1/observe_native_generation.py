@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 wrapper=Path(__file__).with_name('inspect_native_workers.py')
-assert hashlib.sha256(wrapper.read_bytes()).hexdigest()=='4ce78954d689164245c6ec9ea7580680754ed841a85dc4e4cc4ebcc0019f59ba'
+assert hashlib.sha256(wrapper.read_bytes()).hexdigest()=='986610703d7d1ad9616329c4c6e52534a703272a2bb2899078a807adca1d46c0'
 code=wrapper.read_text()
 anchor="exec(compile(code,str(owner),'exec'),globals())"
 assert code.count(anchor)==1

@@ -6,7 +6,7 @@ ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 owner=ROOT/'receipts/textcraft-eight-gpu-sequential-20261017-v1/source/inspect_native_workers.py'
 assert hashlib.sha256(owner.read_bytes()).hexdigest()=='7f3c940abc65da9317a9e5f74182f5080cae066a116ddd6beaebc7476b36bb1d'
 code=owner.read_text().replace('textcraft-eight-gpu-sequential-20261017-v1',
-    'textcraft-eight-gpu-v9-negative-clip2-20261019-v3')
+    'textcraft-eight-gpu-v9-negative-clip2-20261019-v4')
 code=code.replace("else 'eight-GPU-initial-v1')","else 'v9-negative2-eight-GPU-initial-v1')")
 anchor="    result['DP_world_size'] = actor.world_size"
 assert code.count(anchor)==1
