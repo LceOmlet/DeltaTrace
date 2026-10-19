@@ -1,0 +1,41 @@
+{
+  "status": "prepared_only_original_owner_resource_patch_not_deployed",
+  "collected": 1792417953.453523,
+  "native_owner": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py",
+    "SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520"
+  },
+  "candidate": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-FA-capture-GPU-original-gate-host-20261019-v1/qwen35_dense_finite_runner.py",
+    "SHA256": "e9ee7c89d544c52a09d6849b9b74f2a499c552899061c74fab7ede90c657291c"
+  },
+  "patch": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-FA-capture-GPU-original-gate-host-20261019-v1/native-owner-resource.patch",
+    "SHA256": "9d7e713611eb80447069cf93304d9962209d88056f675ed335545f05d03bdf3b",
+    "text": "--- /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py\n+++ /mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/dt-FA-capture-GPU-original-gate-host-20261019-v1/qwen35_dense_finite_runner.py\n@@ -408,6 +408,8 @@\n             # Release consumed captures independently of their CPU/GPU destination.\n             consume_captures=observer is None\n             mixer_device='cpu' if offload_mixer else 'cuda'\n+            if is_fa and observer is None and getattr(self,'fa_replay_capture_cuda',False):\n+                mixer_device='cuda'\n             needed=None if copy_captures else {'input_norm_input','post_norm_input',\n                                                'gate_output','up_output','silu_output'}\n             attention_needed=None if copy_captures else {'q_proj_output',\n@@ -419,7 +421,7 @@\n             gdn_capture=NativeGDNCapture if backend is None else backend.NativeGDNCapture\n             dc=decoder_capture(layer,destination='cuda',copy_tensors=copy_captures,retained_names=needed,\n                 gate_destination='cpu' if offload_mixer else None,pin_gate_host=offload_mixer and self.pin_replay_host)\n-            mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer,pinned_host=offload_mixer and self.pin_replay_host)\n+            mc=(attention_capture(layer.self_attn,flash_attention_forward,flash_attn_varlen_func,flash_attn_func,destination=mixer_device,copy_tensors=copy_captures,retained_names=attention_needed,preserve_strides=offload_mixer,pinned_host=offload_mixer and self.pin_replay_host and mixer_device=='cpu')\n                 if is_fa else gdn_capture(layer.linear_attn,device=mixer_device,copy_tensors=copy_captures,preserve_strides=offload_mixer,capture_module_outputs=copy_captures,pinned_host=offload_mixer and self.pin_replay_host,capture_input=copy_captures,gpu_capture_names=self.gdn_gpu_capture_names if offload_mixer else (),coefficient_start=gdn_cut if self.compact_gdn_captures else 0))\n             def replay():\n                 with torch.no_grad(),dc,mc,_native_conv_initial_states_scope([layer],self.native_conv_initial_states):return layer(x,**kw)\n@@ -467,7 +469,7 @@\n                     def restore():\n                         for capture in (c,e):\n                             for name,value in capture.items():\n-                                if isinstance(value,torch.Tensor) and name not in dense_aliases:\n+                                if isinstance(value,torch.Tensor) and name not in dense_aliases and not value.is_cuda:\n                                     capture[name]=copy_capture_tensor(value,'cuda',preserve_strides=True)\n                         for name,source in dense_aliases.items():\n                             c[name]=c[source].transpose(1,2)\n"
+  },
+  "unchanged_functions": [
+    "_copy",
+    "_token_effect",
+    "_effect",
+    "_relative_l2",
+    "_native_conv_initial_states_scope",
+    "_pack_native_cached_suffix_rows",
+    "_compact_native_cached_kv",
+    "_public_varlen_attention_lse",
+    "Qwen35DenseFiniteRunner.__init__",
+    "Qwen35DenseFiniteRunner.forward_prefix",
+    "Qwen35DenseFiniteRunner.read_outcomes"
+  ],
+  "default_flag": false,
+  "resource_flag": "fa_replay_capture_cuda",
+  "actual_training_modified": false,
+  "default_launch_modified": false,
+  "DT_ROOT_changed": false,
+  "new_model_calls": 0,
+  "new_DT_calls": 0,
+  "new_optimizer_calls": 0,
+  "scope": "Only the original FA capture destination, matching pinned-host flag, and skip of already-CUDA copies. FA/GDN finite arithmetic, decoder gate destination, masks, Q/V/A, original cache consumption and PPO remain unchanged.",
+  "numerical_verification": "Not performed. AST/source checks are not FA/FLA/VERL numerical acceptance.",
+  "efficiency_or_capacity_verified": false
+}

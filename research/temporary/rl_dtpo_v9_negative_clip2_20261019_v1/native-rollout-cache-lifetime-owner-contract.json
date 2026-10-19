@@ -1,0 +1,736 @@
+[
+  {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/sharding_manager/fsdp_vllm.py",
+    "SHA256": "364e69455cff871d3dd842063f216e882a3eccbdd38322fa2bd731b6e5f0bcc2",
+    "excerpts": [
+      {
+        "line": 49,
+        "text": "logger.setLevel(os.getenv(\"VERL_LOGGING_LEVEL\", \"WARN\"))"
+      },
+      {
+        "line": 50,
+        "text": ""
+      },
+      {
+        "line": 51,
+        "text": ""
+      },
+      {
+        "line": 52,
+        "text": ""
+      },
+      {
+        "line": 53,
+        "text": "class FSDPVLLMShardingManager(BaseShardingManager):"
+      },
+      {
+        "line": 54,
+        "text": "    @check_cuda_is_available()"
+      },
+      {
+        "line": 55,
+        "text": "    def __init__("
+      },
+      {
+        "line": 56,
+        "text": "        self,"
+      },
+      {
+        "line": 57,
+        "text": "        module: FSDP,"
+      },
+      {
+        "line": 58,
+        "text": "        inference_engine: LLM,"
+      },
+      {
+        "line": 59,
+        "text": "        model_config,"
+      },
+      {
+        "line": 60,
+        "text": "        full_params: bool = False,"
+      },
+      {
+        "line": 61,
+        "text": "        device_mesh: DeviceMesh = None,"
+      },
+      {
+        "line": 110,
+        "text": "        if is_version_ge(pkg='vllm', minver='0.7.3'):"
+      },
+      {
+        "line": 111,
+        "text": "            VLLMHijack.hijack()"
+      },
+      {
+        "line": 112,
+        "text": ""
+      },
+      {
+        "line": 113,
+        "text": "    @GPUMemoryLogger(role=\"fsdp vllm sharding_manager\", logger=logger)"
+      },
+      {
+        "line": 114,
+        "text": "    def __enter__(self):"
+      },
+      {
+        "line": 115,
+        "text": "        peft_model = getattr(self.module, \"_fsdp_wrapped_module\", self.module)"
+      },
+      {
+        "line": 116,
+        "text": "        def __collect_lora_params()->OrderedDict:"
+      },
+      {
+        "line": 117,
+        "text": "            \"\"\""
+      },
+      {
+        "line": 118,
+        "text": "            collect lora params or full params if base model is not ready in vllm"
+      },
+      {
+        "line": 119,
+        "text": "            work with if isinstance(peft_model, PeftModel)"
+      },
+      {
+        "line": 120,
+        "text": "            \"\"\""
+      },
+      {
+        "line": 121,
+        "text": "            from peft.utils.save_and_load import get_peft_model_state_dict"
+      },
+      {
+        "line": 122,
+        "text": ""
+      },
+      {
+        "line": 207,
+        "text": "            del params"
+      },
+      {
+        "line": 208,
+        "text": "        else:"
+      },
+      {
+        "line": 209,
+        "text": "            set_expandable_segments(False)"
+      },
+      {
+        "line": 210,
+        "text": "            if \"tags\" in inspect.signature(self.inference_engine.wake_up).parameters:"
+      },
+      {
+        "line": 211,
+        "text": "                self.inference_engine.wake_up(tags=[\"weights\"])"
+      },
+      {
+        "line": 212,
+        "text": "            else:"
+      },
+      {
+        "line": 213,
+        "text": "                self.inference_engine.wake_up()"
+      },
+      {
+        "line": 214,
+        "text": ""
+      },
+      {
+        "line": 215,
+        "text": "            # update model params"
+      },
+      {
+        "line": 216,
+        "text": "            self.update_params(params, peft_config=peft_config)"
+      },
+      {
+        "line": 217,
+        "text": "            log_gpu_memory_usage(\"After sync model weights in sharding manager\", logger=logger)"
+      },
+      {
+        "line": 218,
+        "text": "            del params"
+      },
+      {
+        "line": 219,
+        "text": "            if self.offload_param:"
+      },
+      {
+        "line": 220,
+        "text": "                offload_fsdp_model_to_cpu(self.module)"
+      },
+      {
+        "line": 221,
+        "text": "            get_torch_device().empty_cache()"
+      },
+      {
+        "line": 222,
+        "text": ""
+      },
+      {
+        "line": 223,
+        "text": "            if \"tags\" in inspect.signature(self.inference_engine.wake_up).parameters:"
+      },
+      {
+        "line": 224,
+        "text": "                self.inference_engine.wake_up(tags=[\"kv_cache\"])"
+      },
+      {
+        "line": 225,
+        "text": ""
+      },
+      {
+        "line": 226,
+        "text": "        log_gpu_memory_usage(\"After del state_dict and empty_cache in sharding manager\", logger=logger)"
+      },
+      {
+        "line": 227,
+        "text": ""
+      },
+      {
+        "line": 228,
+        "text": "        # important: need to manually set the random states of each tp to be identical."
+      },
+      {
+        "line": 229,
+        "text": "        if self.device_mesh is not None:"
+      },
+      {
+        "line": 230,
+        "text": "            self.torch_random_states = get_torch_device().get_rng_state()"
+      },
+      {
+        "line": 231,
+        "text": "            get_torch_device().set_rng_state(self.gen_random_states)"
+      },
+      {
+        "line": 232,
+        "text": ""
+      },
+      {
+        "line": 233,
+        "text": "    @GPUMemoryLogger(role=\"fsdp vllm sharding_manager\", logger=logger)"
+      },
+      {
+        "line": 234,
+        "text": "    def __exit__(self, exc_type, exc_value, traceback):"
+      },
+      {
+        "line": 235,
+        "text": "        # TODO(ZSL): check this"
+      },
+      {
+        "line": 236,
+        "text": "        if vllm_version in ("
+      },
+      {
+        "line": 237,
+        "text": "            \"0.5.4\","
+      },
+      {
+        "line": 238,
+        "text": "            \"0.6.3\","
+      },
+      {
+        "line": 239,
+        "text": "        ):"
+      },
+      {
+        "line": 240,
+        "text": "            self.inference_engine.offload_model_weights()"
+      },
+      {
+        "line": 241,
+        "text": "        else:"
+      },
+      {
+        "line": 242,
+        "text": "            self.inference_engine.sleep(level=1)"
+      },
+      {
+        "line": 243,
+        "text": ""
+      },
+      {
+        "line": 244,
+        "text": "        self.module.train()"
+      },
+      {
+        "line": 245,
+        "text": "        set_expandable_segments(True)"
+      },
+      {
+        "line": 246,
+        "text": ""
+      },
+      {
+        "line": 247,
+        "text": "        # add empty cache after each compute"
+      },
+      {
+        "line": 248,
+        "text": "        get_torch_device().empty_cache()"
+      },
+      {
+        "line": 249,
+        "text": ""
+      },
+      {
+        "line": 250,
+        "text": "        # restore random states"
+      }
+    ]
+  },
+  {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/rollout/vllm_rollout/vllm_rollout_spmd.py",
+    "SHA256": "151b9a2fcc520d1752d1ff36a31ebf6b243619a9944fab42e39b42dead2fa44d",
+    "excerpts": [
+      {
+        "line": 103,
+        "text": "            **kwargs: train_tp, for Megatron Backend to initialize hybrid engine (zero redundancy) process group"
+      },
+      {
+        "line": 104,
+        "text": "        \"\"\""
+      },
+      {
+        "line": 105,
+        "text": "        super().__init__()"
+      },
+      {
+        "line": 106,
+        "text": "        self.config = config"
+      },
+      {
+        "line": 107,
+        "text": "        assert not (not config.enforce_eager and config.free_cache_engine), \"disable CUDA graph (enforce_eager = False) if free cache engine\""
+      },
+      {
+        "line": 108,
+        "text": ""
+      },
+      {
+        "line": 109,
+        "text": "        tensor_parallel_size = self.config.get(\"tensor_model_parallel_size\", 1)"
+      },
+      {
+        "line": 110,
+        "text": "        assert tensor_parallel_size <= torch.distributed.get_world_size(), \"tensor parallel size should be less than or equal to the world size\""
+      },
+      {
+        "line": 111,
+        "text": "        max_num_batched_tokens = self.config.get(\"max_num_batched_tokens\", 8192)"
+      },
+      {
+        "line": 112,
+        "text": ""
+      },
+      {
+        "line": 113,
+        "text": "        if kwargs.get(\"train_tp\") is not None:"
+      },
+      {
+        "line": 114,
+        "text": "            # deployed with megatron"
+      },
+      {
+        "line": 115,
+        "text": "            import os"
+      },
+      {
+        "line": 206,
+        "text": "            **engine_kwargs,"
+      },
+      {
+        "line": 207,
+        "text": "        )"
+      },
+      {
+        "line": 208,
+        "text": ""
+      },
+      {
+        "line": 209,
+        "text": "        # Offload vllm model to reduce peak memory usage"
+      },
+      {
+        "line": 210,
+        "text": "        self.inference_engine.sleep(level=1)"
+      },
+      {
+        "line": 211,
+        "text": ""
+      },
+      {
+        "line": 212,
+        "text": "        kwargs = dict("
+      },
+      {
+        "line": 213,
+        "text": "            n=1,"
+      },
+      {
+        "line": 214,
+        "text": "            logprobs=0,  # can be set to 0 and let actor to recompute"
+      },
+      {
+        "line": 215,
+        "text": "            max_tokens=config.response_length,"
+      },
+      {
+        "line": 216,
+        "text": "        )"
+      },
+      {
+        "line": 217,
+        "text": ""
+      },
+      {
+        "line": 218,
+        "text": "        # # we may detokenize the result all together later"
+      },
+      {
+        "line": 253,
+        "text": "            in ("
+      },
+      {
+        "line": 254,
+        "text": "                \"0.5.4\","
+      },
+      {
+        "line": 255,
+        "text": "                \"0.6.3\","
+      },
+      {
+        "line": 256,
+        "text": "            )"
+      },
+      {
+        "line": 257,
+        "text": "            and self.config.free_cache_engine"
+      },
+      {
+        "line": 258,
+        "text": "        ):"
+      },
+      {
+        "line": 259,
+        "text": "            self.inference_engine.init_cache_engine()"
+      },
+      {
+        "line": 260,
+        "text": ""
+      },
+      {
+        "line": 261,
+        "text": "        idx = prompts.batch[\"input_ids\"]  # (bs, prompt_length)"
+      },
+      {
+        "line": 262,
+        "text": "        # left-padded attention_mask"
+      },
+      {
+        "line": 263,
+        "text": "        attention_mask = prompts.batch[\"attention_mask\"]"
+      },
+      {
+        "line": 264,
+        "text": "        position_ids = prompts.batch[\"position_ids\"]"
+      },
+      {
+        "line": 265,
+        "text": ""
+      },
+      {
+        "line": 434,
+        "text": "            in ("
+      },
+      {
+        "line": 435,
+        "text": "                \"0.5.4\","
+      },
+      {
+        "line": 436,
+        "text": "                \"0.6.3\","
+      },
+      {
+        "line": 437,
+        "text": "            )"
+      },
+      {
+        "line": 438,
+        "text": "            and self.config.free_cache_engine"
+      },
+      {
+        "line": 439,
+        "text": "        ):"
+      },
+      {
+        "line": 440,
+        "text": "            self.inference_engine.free_cache_engine()"
+      },
+      {
+        "line": 441,
+        "text": ""
+      },
+      {
+        "line": 442,
+        "text": "        return DataProto(batch=batch, non_tensor_batch=non_tensor_batch)"
+      },
+      {
+        "line": 443,
+        "text": ""
+      },
+      {
+        "line": 444,
+        "text": ""
+      },
+      {
+        "line": 445,
+        "text": "class vLLMAsyncRollout:"
+      },
+      {
+        "line": 446,
+        "text": "    \"\"\"vLLMAsyncRollout is a thin wrapper of WorkerWrapperBase,"
+      },
+      {
+        "line": 447,
+        "text": "    which is engine in single worker process."
+      },
+      {
+        "line": 448,
+        "text": "    \"\"\""
+      },
+      {
+        "line": 468,
+        "text": "        # inference engine is intialized now, update sharding manager"
+      },
+      {
+        "line": 469,
+        "text": "        self.sharding_manager.inference_engine = self.inference_engine"
+      },
+      {
+        "line": 470,
+        "text": "        self.sharding_manager.model_runner = self.inference_engine.worker.model_runner"
+      },
+      {
+        "line": 471,
+        "text": ""
+      },
+      {
+        "line": 472,
+        "text": "    def sleep(self, *args, **kwargs):"
+      },
+      {
+        "line": 473,
+        "text": "        \"\"\"Offload model weights and discard kv cache.\"\"\""
+      },
+      {
+        "line": 474,
+        "text": "        if self.is_sleep:"
+      },
+      {
+        "line": 475,
+        "text": "            return"
+      },
+      {
+        "line": 476,
+        "text": "        self.sharding_manager.__exit__(None, None, None)"
+      },
+      {
+        "line": 477,
+        "text": "        self.is_sleep = True"
+      },
+      {
+        "line": 478,
+        "text": ""
+      },
+      {
+        "line": 479,
+        "text": "    def wake_up(self, *args, **kwargs):"
+      },
+      {
+        "line": 480,
+        "text": "        \"\"\"Load model weights and build kv cache.\"\"\""
+      },
+      {
+        "line": 481,
+        "text": "        if not self.is_sleep:"
+      },
+      {
+        "line": 482,
+        "text": "            return"
+      },
+      {
+        "line": 483,
+        "text": "        self.sharding_manager.__enter__()  # pylint: disable=C2801"
+      },
+      {
+        "line": 484,
+        "text": "        self.is_sleep = False"
+      },
+      {
+        "line": 485,
+        "text": ""
+      },
+      {
+        "line": 486,
+        "text": "    def execute_method(self, method: Union[str, bytes], *args, **kwargs):"
+      },
+      {
+        "line": 487,
+        "text": "        if method == \"init_worker\":"
+      },
+      {
+        "line": 488,
+        "text": "            return self.init_worker(*args, **kwargs)"
+      },
+      {
+        "line": 489,
+        "text": "        elif method == \"load_model\":"
+      },
+      {
+        "line": 490,
+        "text": "            return self.load_model(*args, **kwargs)"
+      },
+      {
+        "line": 491,
+        "text": "        elif method == \"sleep\":"
+      },
+      {
+        "line": 492,
+        "text": "            return self.sleep(*args, **kwargs)"
+      },
+      {
+        "line": 493,
+        "text": "        elif method == \"wake_up\":"
+      },
+      {
+        "line": 494,
+        "text": "            return self.wake_up(*args, **kwargs)"
+      },
+      {
+        "line": 495,
+        "text": "        else:"
+      },
+      {
+        "line": 496,
+        "text": "            return self.inference_engine.execute_method(method, *args, **kwargs)"
+      }
+    ]
+  },
+  {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+    "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+    "excerpts": [
+      {
+        "line": 423,
+        "text": "            # TODO: a sharding manager that do nothing?"
+      },
+      {
+        "line": 424,
+        "text": ""
+      },
+      {
+        "line": 425,
+        "text": "        elif rollout_name == \"vllm\":"
+      },
+      {
+        "line": 426,
+        "text": "            from verl.workers.rollout.vllm_rollout import vllm_mode, vLLMRollout"
+      },
+      {
+        "line": 427,
+        "text": "            from verl.workers.sharding_manager.fsdp_vllm import FSDPVLLMShardingManager"
+      },
+      {
+        "line": 428,
+        "text": ""
+      },
+      {
+        "line": 429,
+        "text": "            log_gpu_memory_usage(f\"Before building {rollout_name} rollout\", logger=logger)"
+      },
+      {
+        "line": 430,
+        "text": "            local_path = copy_to_local(self.config.model.path, use_shm=self.config.model.get('use_shm', False))"
+      },
+      {
+        "line": 431,
+        "text": "            lora_kwargs = {'lora_kwargs': {\"enable_lora\":True, \"max_loras\":1, \"max_lora_rank\":self._lora_rank}} if self._is_lora else {}"
+      },
+      {
+        "line": 432,
+        "text": "            # lora_kwargs = {}"
+      },
+      {
+        "line": 433,
+        "text": "            if vllm_mode == \"customized\":"
+      },
+      {
+        "line": 434,
+        "text": "                rollout = vLLMRollout("
+      },
+      {
+        "line": 435,
+        "text": "                    actor_module=self.actor_module_fsdp,"
+      },
+      {
+        "line": 454,
+        "text": "                raise NotImplementedError(\"vllm_mode must be 'customized' or 'spmd'\")"
+      },
+      {
+        "line": 455,
+        "text": ""
+      },
+      {
+        "line": 456,
+        "text": "            log_gpu_memory_usage(f\"After building {rollout_name} rollout\", logger=logger)"
+      },
+      {
+        "line": 457,
+        "text": "            full_params = torch.distributed.get_world_size() == 1"
+      },
+      {
+        "line": 458,
+        "text": "            rollout_sharding_manager = FSDPVLLMShardingManager("
+      },
+      {
+        "line": 459,
+        "text": "                module=self.actor_module_fsdp,"
+      },
+      {
+        "line": 460,
+        "text": "                inference_engine=rollout.inference_engine,"
+      },
+      {
+        "line": 461,
+        "text": "                model_config=self.actor_model_config,"
+      },
+      {
+        "line": 462,
+        "text": "                full_params=full_params,"
+      },
+      {
+        "line": 463,
+        "text": "                device_mesh=rollout_device_mesh,"
+      },
+      {
+        "line": 464,
+        "text": "                offload_param=self._is_offload_param,"
+      },
+      {
+        "line": 465,
+        "text": "                load_format=self.config.rollout.load_format,"
+      },
+      {
+        "line": 466,
+        "text": "                layered_summon=self.config.rollout.get('layered_summon', False),"
+      }
+    ]
+  }
+]
