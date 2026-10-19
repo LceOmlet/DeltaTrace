@@ -1,3 +1,15 @@
+## 2026-10-20T01:19:52.177835+08:00 原40轮及共享checkpoint40已完整；LoRA对应官方数值/算子对照完成，未冒称生产生成提速
+
+原controller2503202/1792394518.8、driver2503287/1792394519.29继续存活，c20559e3原日志读取器确认40/200，已开始41轮生成。共享global_step_40的data.pt及八rank model/optim/extra_state共25个必要状态文件均非空；原save5/keep2保持。后五组仍queued。方法f26b3b37/实际执行cdd8ea40/VERL20bd331、逐事件u clip[-2,1]及乘g后原masked_var不减均值保持。结果与原日志路径/行号见results_dtpo_v9_negative2_native40_checkpoint40_20261020_v4.json；六组200/最终共享checkpoint200/最终图尚未完成，goal保持active。
+
+八rank只读配置回显明确实际Qwen3.5-9B/LoRA rank8、AsyncScheduler(async_scheduling=True)、FULL_AND_PIECEWISE/maxseq32/32k已启用；不是未开异步或图导致低效。原生LoRA与已有64步轨迹对应，本次只在rank0执行约3.86秒的原算子小范围对照，0模型/DT/optimizer调用。复用固定vLLM v0.15.0的generate_data_for_nslices、sgmv逐slice参考和assert_close；真实Punica FP32 buffer接BF16权重/输出，shrink按输出FP32使用atol/rtol0.01，expand按BF16使用0.06，不借FA/FLA/VERL或更新前后0/0替代。4个实际形状/12个原/候选/预热原路径输出断言全部通过；原配置、RNG及既有pointer缓存对象恢复，无全局缓存清理。源码986dea37/ab4c74ee，完整8rank binding b84ad7cb，证据results_dtpo_v9_negative2_native_LoRA_decode_configs_20261019_v4.json及共享同名verification。
+
+Expand block_m64→32在gate_up/12288两slice和down/4096单slice分别降低原算子计时38.96%/26.07%；shrink split64→16在down反而慢23.51%，不统一采用。当前FULL图仍记录原kernels，原capture owner会执行dummy runs并处理LoRA manager；没有把改配置文件当作生效，未改当前生成图/adapter状态。按旧轨迹权重只投影约40.4ms/64步的核函数时间节省，不能当完整生成或GPU Util改善。保留候选和源码，不新增整模型/optimizer回放来放大这项声明。
+
+原e6f3b171严格相邻8rank同phase归约已排除这次验证回调，物理窗口从其finished1792429787.1851666后开始；DT236卡样本均值77.2924%，mixed296/边界300卡样本独立，本窗口没有有效生成分组，缺失不填0。整轮39/40也从效率迭代表排除，质量曲线保留所有真实更新。分析owner适配源ec4f178f/2bb58e64、提交302bfeb5不当训练执行源。完整物理来源/窗口见results_dtpo_v9_negative2_clean_production_after_LoRA_check_20261020_v4.json。
+
+01:18原六面板三套图已保存：TextCraft40/0/0、AppWorld0/0/0；历史控制共同40轮，PPO105/GRPO191为独立原历史。较01:16成功快照+1轮，较上次向用户展示的38轮+2；全部PNG/SVG/来源CSV/快照及历史workload audit已登记current_runtime。历史梯度仍仅均衡分片假设估算，v9为全局实测，不混口径。AppWorld新16k资源扩展尚未应用，不将当前TextCraft运行覆盖冒称后续已部署。
+
 ## 2026-10-20T00:46:00.834641+08:00 第37轮新资源范围已真实完成：DT Util75.90%，40次原生B4/零额外DT
 
 原driver2503287/1792394519.29仍按出生匹配存活，原c20559e3确认37/200并开始后续生成；共享完整checkpoint35保持。已部署bfba2f4c/f29bc0e7的16k留存范围在八rank真实自然37轮各执行5次原B4，largest extent5415–7956均超过旧2k，offloaded_calls本轮均0，原flags全部恢复；没有附加DT/optimizer或资源读回变更。原Q/V/A、u clip[-2,1]、GRPO g与方差缩放保持，方法f26b3b37/执行cdd8ea40/VERL20bd331未变。八rank只读counter binding SHA f139c555保留实际PID出生及原导入，详见results_dtpo_v9_negative2_validated_16384_first_production_20261019_v4.json。
