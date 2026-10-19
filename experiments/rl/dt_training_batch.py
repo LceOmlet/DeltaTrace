@@ -213,7 +213,9 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
         future[:, None, :], policy,
         self_target_mask=target[:, None, :], linear_attribution=weighted,
         symmetric_probability_ratio=os.environ.get('DT_CREDIT_MODE') in ('reward_target_symmetric_probability_ratio_v7', 'reward_target_symmetric_probability_ratio_postgroup_variance_v8'),
-        clip_exponential_credit=os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_clipped_v9')
+        clip_exponential_credit=os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_clipped_v9',
+        exponential_credit_negative_clip=(float(os.environ.get('DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP','1'))
+            if os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_clipped_v9' else 1.0))
     result.update(dt_token_advantages=analytic.advantages.float(),
                   dt_q_estimates=analytic.q_estimates.float(),
                   dt_v_estimates=analytic.v_estimates.float())

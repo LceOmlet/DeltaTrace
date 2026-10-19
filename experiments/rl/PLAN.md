@@ -1,4 +1,9 @@
-**2026-10-19 用户批准 DTPO v9：基于 v5 将逐事件 u 裁剪到 [-1,1]，保留乘 g 后方差缩放，八卡从0训练并更新小时绘图。**
+**2026-10-19 最新人类修正：DTPO v9负信用裁剪阈值由1改为2，并继续排查生成和DT的GPU Util。**
+本条将两任务DTPO的逐事件指数信用改为u_ik=clip(-expm1(-d_ik),-2,1)，不是把d裁剪到-2，也不裁剪组优势g或汇总后的g*u。对应Q0_i=sum_k b_k、V0_i=sum_k b_k*min(exp(-d_ik),3)、A0_i=sum_k b_k*u_ik；指数输入可下限到-log(3)避免已被裁剪尾部先溢出。逐事件变换后再乘带符号的既定b_k并求和；原discounts/self-target/观察/padding/future mask保持，self-target仍Q=b_k/V=0/A=b_k。汇总并恢复保留policy位置后仍使用同一原VERL masked_var(A0,mask)+1e-8尺度共同缩放Q/V/A，不减均值，不在乘g前缩放。
+新身份明确包含v9/negative-clip2，两个DTPO均从原基础权重和0轮开始；原clip1的日志、rollout、原生完整检查点保留，不拼接到clip2。原六组顺序、独占八卡、200完整迭代、两任务原工作量/save5/save2/keep2和其余四组原PPO/GRPO保持。方法改动通过现有逐事件/多target/原生传输和方差缩放检查后提交推送、登记实际部署及小时绘图，不能把准备候选称部署。
+效率调查同时覆盖生成和DT，使用原生GPU Util、已有阶段/缓存计时及有界调用栈，区分环境等待、调度/尾部不齐和宿主分配/回收。DT已观察到GPU空闲窗口内原_host_emptyCache调用占据主线程；优化须复用原生资源接口，数值、峰值内存和吞吐分别核验，不能将此单一窗口的原因套用整个生成阶段。仅继续六组训练和这些直接相关工作，不扩展其他任务或方法。
+
+**2026-10-19 用户此前批准 DTPO v9：基于 v5 将逐事件 u 裁剪到 [-1,1]，保留乘 g 后方差缩放，八卡从0训练并更新小时绘图。**
 本条只替代 v5 的逐事件指数信用负尾：原 EOS 有限传播仍给出未缩放 d_ik，u_ik=clip(-expm1(-d_ik),-1,1)，先裁剪每个事件的 u，再乘既定稳定事件信用 b_k 并汇总。单事件 b_1 为原官方已归一化 GRPO g；不裁剪 g 或最终 g*u，不在乘 g 前标准化，不将多个 d 或事件信用先合并再裁剪。Q0_i=sum_k b_k，V0_i=sum_k b_k*min(exp(-d_ik),2)，A0_i=sum_k b_k*u_ik；原 discounts 一致作用三项，保持 A0=Q0-V0。实现可将指数输入下限设为 -log(2) 来等价避免已被裁剪的负尾先溢出，裁剪范围内保持 v5 原 exp/expm1 数值路径。原观察/padding/future mask 与同事件 self-target 的 Q=b_k/V=0/A=b_k 不变。
 全部事件汇总和原 retained-position scatter 后，沿用 v5 原完整训练批次保留 policy token 上的固定 VERL masked_var：s=sqrt(masked_var(A0,mask)+1e-8)，Q=Q0/s、V=V0/s、A=A0/s，不减均值；三项只共同缩放一次。原多事件展开、DP pad/balance/RPC、官方 GRPO/PPO/归约和已验收 DT/更新效率路径保持，不增加模型或环境调用。
 用户随后明确本次六组顺序为 TextCraft DTPO v9→TextCraft 原PPO→TextCraft 原GRPO→AppWorld DTPO v9→AppWorld 原PPO→AppWorld 原GRPO，两个DTPO均为本条v5+clip公式。六组各从原基础权重和0轮开始，独占物理GPU0–7、各200完整迭代。TextCraft保留原32组×8/global64/epochs1/每轮4次actor更新、共享save5/keep2；AppWorld保留作者原40组×6/global32/epochs2、原取消/残批/test5/loop_sampler、共享save2/keep2；各自32k/B4/LoRA8/16、seed/采样/LR保持。仅原生exit0、日志1..200与八rank共享完整checkpoint200齐全后自动交接，失败不跳过。v5及v1–v8日志、rollout、原生检查点保留，不拼接到v9。测试后提交推送，核对实际八rank导入/模式及原生训练进展，按两任务分别绘制v9/PPO/GRPO；TextCraft另保留原历史对照与已批准梯度显示口径。更新后的本线程goal持续到六组及最终图/完整checkpoint全部完成；不恢复旧梯度根因或扩展SQL等其他任务。

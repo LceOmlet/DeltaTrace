@@ -1,3 +1,7 @@
+## 2026-10-19T14:10:32.972482+08:00 v9 negative2方法替换窗口：复用原环境，未提交新正式训练
+
+原clip1控制器/训练session已由原process owner撤下，GPU空闲已核对；原服务、依赖栈和缓存保持。negative2 CPU65项通过，新原生接口/资源比较分开验收。资源比较PID2017050/1792390154.17只用GPU0，使用source原metax-entry后的原VENV_PYTHON及launch环境；没有安装、下载或清理编译缓存。初次guard导入错误的原始回执保留，不称模型或训练失败。正式资源候选未部署，新训练未提交，详见RUNTIME_RECORD最新条和results_dtpo_v9_negative_clip2_20261019_v3.json。
+
 ## 2026-10-19T13:40:10.470993+08:00 v9复用现有运行环境与已验收效率路径
 
 六组正式队列仅两DTPO隔离源接入已批准v9公式，PPO/GRPO沿原owner；不重建环境、不重装、不下载、不清缓存。严格SSH31146/HostKeyAlias32036，source原metax-entry.env.sh后使用原VENV_PYTHON并合并launch环境，MACA_PATH/LD_LIBRARY_PATH/PYTHONPATH保持。DT使用原Torch cudaHostAlloc、RPC内缓存复用/原批次释放，PPO/GRPO保留host-register8；TP1/defaultgraph、MRoPE、DT runner6a112224、actor acd3c8a5、corefc2f992b/worker198f509c及native_host_memory4419c2e3保持。启动前八卡空闲，原TextCraft作者服务36005复用，无新服务替代。上次v5首次DT错误与本次v9双rank32k验收分别记录；执行v1首DT也因同一MCR限制exit1/0轮，保留原回执。v2仅DT启用pinned_use_cuda_host_register=False及DT_NATIVE_HOST_CACHE_REPLAY_LAYER=0，原批次/最终RPC释放保持。实际capture B4/32768 BF16复制及步幅在两模式均逐值一致；首次分配较慢、原生缓存复用后接近。新执行源和allocation-owner-verification.json分别记录，不能将测试通过写成旧错误根因已修复。部署/实际导入/后续原生进度见RUNTIME_RECORD最新v9条及结果文件。

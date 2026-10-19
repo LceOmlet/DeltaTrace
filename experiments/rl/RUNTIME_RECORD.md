@@ -1,3 +1,13 @@
+## 2026-10-19T14:10:32.972482+08:00 用户将v9负clip改为2：CPU65项通过，正式新六组尚未部署
+
+本条按最新人类要求替代clip1训练身份。逐事件u改为clip(-expm1(-d),-2,1)，Q0=sum b、V0=sum b*min(exp(-d),3)、A0=sum b*u；随后原VERL masked_var仅方差缩放一次、不减均值，原g/mask/自target/PPO/DT原始计算保持。两任务DTPO准备源均已隔离；21项v5回归、20项旧clip1回归及24项negative2行为/原生传输/方差缩放CPU检查通过，原实际模型/DT/optimizer调用均0。新方法原生接口尚待验证，不能称新训练已提交。
+
+原clip1执行v2已因用户改方法撤下：原controller1246236/1792383021.85及driver1246259/1792383022.29两个session均实查无非zombie成员，八卡无训练进程，保留原6轮、完整共享checkpoint5及所有日志/rollout。不将旧权重或曲线拼入negative2。原process owner短时退出观察一度仍报告清理中的成员，随后核对两个session均消失并完成停止回执，没有据观察超时重启或重复发信号。停止回执见results_dtpo_v9_negative_clip2_20261019_v3.json。
+
+GPU Util调查已复用原非阻塞20秒采样：DT窗口13:47:43–13:48:01八卡Util0/PCIe0，rank0主线程399/399样本在原native_host_memory.py:44的_host_emptyCache；rank6为232/399，其余多数已回到Ray主循环。生成窗口13:55:45–13:56:02忙卡原HBM吞吐约0.8–0.94TB/s，存在部分卡完成而另一卡继续的尾部不齐；TaskRunner361/398主线程样本等待原全组生成RPC，尚不将此窗口归因为环境服务。原GPU/PCIe/HBM原文、调用栈及源SHA在原执行v2的bounded-DT-phase-1792388863和bounded-generation-phase-1792389345；这些是有界现场证据，非完整轮次或峰值FLOPS测量。
+
+原生资源候选仍未部署：只在原runner中分离已消费root释放和_host_emptyCache，SHA9f13c898。已在用户方法替换释放的空卡上启动原B4/32768同源比较，当前PID2017050/1792390154.17、GPU0、0 optimizer；比较尚未完成。初次比较在GPU worker建立前因新guard缺少subprocess导入退出，已保留原stderr并只补导入后重新提交，未作为数值失败或训练失败。新方法六组保持基础权重/0轮、独占八卡/200、原任务工作量、save5/save2及keep2；goal继续，不恢复SQL或旧梯度任务。
+
 ## 2026-10-19T13:40:10.470993+08:00 DTPO v9执行v2：原生hostalloc与RPC内缓存，六组八卡正式队列
 
 

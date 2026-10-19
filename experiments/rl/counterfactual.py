@@ -34,6 +34,7 @@ def reward_event_token_credit(
     linear_attribution: bool = False,
     symmetric_probability_ratio: bool = False,
     clip_exponential_credit: bool = False,
+    exponential_credit_negative_clip: float = 1.0,
 ) -> DTTokenCredit:
     """Compose sampled terminal/process rewards into individual token advantages.
 
@@ -71,8 +72,9 @@ def reward_event_token_credit(
     different expected signal under factual sampling, not the exponential
     importance estimator above. The same self-target/mask rules still apply.
     With clip_exponential_credit=True (v9), each exponential event instead
-    uses u=clip(1-exp(-d),-1,1), Q=r, V=r*min(exp(-d),2), A=r*u.
-    The lower exponent-input bound -log(2) avoids overflowing a tail that
+    uses u=clip(1-exp(-d),-L,1), Q=r, V=r*min(exp(-d),1+L), A=r*u,
+    where L=exponential_credit_negative_clip (legacy1; approved negative2).
+    The lower exponent-input bound -log(1+L) avoids overflowing a tail that
     is explicitly clipped; inputs inside the bound retain the v5 exp/expm1
     path. Clipping precedes the signed coefficient and event sum. A terminal
     reward is one event. No cross-token normalization or learned baseline occurs.
@@ -81,6 +83,10 @@ def reward_event_token_credit(
         raise ValueError("log_ratios must be floating [batch, events, tokens]")
     if sum((linear_attribution, symmetric_probability_ratio, clip_exponential_credit)) > 1:
         raise ValueError("linear, symmetric and clipped exponential credit transforms are mutually exclusive")
+    if clip_exponential_credit:
+        exponential_credit_negative_clip = float(exponential_credit_negative_clip)
+        if not math.isfinite(exponential_credit_negative_clip) or exponential_credit_negative_clip <= 0:
+            raise ValueError("exponential credit negative clip must be finite and positive")
     batch, events, tokens = log_ratios.shape
     if rewards.shape != (batch, events) or not rewards.is_floating_point():
         raise ValueError("rewards must be floating [batch, events]")
@@ -133,9 +139,9 @@ def reward_event_token_credit(
         event_advantages = weighted_reward * d
         event_baselines = weighted_reward - event_advantages
     elif clip_exponential_credit:
-        bounded_d = d.clamp_min(-math.log(2.0))
-        event_advantages = weighted_reward * (-torch.expm1(-bounded_d)).clamp(-1.0, 1.0)
-        event_baselines = weighted_reward * torch.exp(-bounded_d).clamp_max(2.0)
+        bounded_d = d.clamp_min(-math.log(1.0 + exponential_credit_negative_clip))
+        event_advantages = weighted_reward * (-torch.expm1(-bounded_d)).clamp(-exponential_credit_negative_clip, 1.0)
+        event_baselines = weighted_reward * torch.exp(-bounded_d).clamp_max(1.0 + exponential_credit_negative_clip)
     else:
         event_advantages = weighted_reward * (-torch.expm1(-d))
         event_baselines = weighted_reward * torch.exp(-d)
