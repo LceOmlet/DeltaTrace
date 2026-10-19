@@ -1,0 +1,319 @@
+{
+  "runtime": "## 2026-10-19T16:02:44.733675+08:00 负clip2执行v4首轮真实更新完成；生成/DT低Util分开定位\n\n当前仍为执行cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea、方法f26b3b37cb3b88e64978e7a472ae4244670a39f3，上游20bd331b；不是把新诊断记录提交当部署。原控制器2503202/1792394518.8、driver2503287/1792394519.29及8worker出生均实际匹配。TextCraft DTPO已完成1/200，当前第2轮actor更新；其余五组queued。原metadata RPC实读每rank496个Adam状态/step4/scheduler1、clip2/CACHE_BATCH1/DP8；实际已导入且有准备SHA的模块均匹配，其他未导入/无预备SHA项保留原报告范围。原生首次完整迭代1112.093s，生成493.147、old59.576/ref34.305、DT339.126、actor185.419，阶段和差0.008s。八rank原readout各5个B4/共40，160原DP行、150唯一轨迹、565076原factual padding token槽位；不同实际DT输入不冒称算子加速。回收每rank约48.29–49.57s位于DT内部，不再加到整轮。详见results_dtpo_v9_negative2_first_iteration_efficiency_20261019_v4.json。\n\n原始dmon及同phase相邻宿主观察归约给出当前生成样本均值约50.66–54.71%、DT29.14–32.35%；这是原设备活动率而非峰值FLOPS。20秒生成被动栈明确caller等同步八rank RPC，后续作者原decode/环境/分词；rank0/6还有原生vLLM future等待和turn尾部空闲，不能把等待future本身称GPU空闲。旧撤回v3失败之前的64次原生生成观测仍作为独立推理来源：88.77% prompt cache覆盖、均值2.213s轮间隙、86.12%引擎调用区间覆盖，不能把该旧run当当前完成进度。vLLM已有_last_mapping缓存，未再造本地LoRA缓存。\n\nDT原生现成calls计时已通过一次未来正常readout被动回显，0额外模型/DT/optimizer/CUDA-event；40个B4已完成、8rank原方法均自动恢复，无observer参数改动。rank0接口254.606s，其中最后B4输入[8,10240]单独172.542s，前4合计82.063s；host-enqueue原root70.537/replay125.159/finite-decoder45.983s。该计时来自第2轮，与首轮339.126s不能混加；stream_elapsed含CPU发射空隙，不当活跃kernel时长。当前20秒DT栈中rank0/6分别145/394与141/397个主线程样本在GDN capture流同步，99/394与111/397在原host_emptyCache；物理样本实际有19.1GB/s D2H、41.6GB/s H2D和回收时GPU0%，不是把所有同步都当可直接移除。优化重点为长序列捕获/搬运/同步和原B4回收，clip/g/QVA保持。没有部署新资源候选；跨B4缓存0的失败继续封存。详细来源/行号见results_dtpo_v9_negative2_current_GPU_util_20261019_v4.json及results_dtpo_v9_negative2_existing_DT_timings_20261019_v4.json。第2轮包含一次元数据RPC/有界观察，不作完全无观察的受控吞吐基线。\n\n16:02观察宿主MemAvailable约433.90GiB；较早第2轮DT有210.55GiB单次观察，之后已回收；不是全程最小值或容量保证。六组原工作量/保存/共享检查点策略及原生交接保持，goal active。15:52两任务正式图与历史对照已实际更新，目录见results_dtpo_v9_negative_clip2_20261019_v4.json；新八卡PPO/GRPO仍queued，历史105/191不计新进度。尚无本run save5检查点，不将自然首轮当八卡精确32768容量验收。\n\n",
+  "environment": "## 2026-10-19T16:02:44.733675+08:00 clip2执行v4首轮正常完成，环境/资源路径保持\n\n原8worker已自然完成首次DT与4次actor optimizer更新，当前第2轮更新；原cudaHostAlloc/CACHE_BATCH1/REPLAY_LAYER0、原VENV及严格SSH不变。没有安装、下载或清缓存操作来启动新环境；训练原B4宿主缓存回收依原owner执行。利用率调查只增加有界非阻塞栈观察及一次原metadata RPC回显已有DT计时，40原生B4/8rank观察器均已恢复原方法。新诊断提交f1ae82a4不是训练执行源；实际部署仍cdd8ea40、方法f26b3b37。共享运行/源/日志保持，完整证据及新状态见RUNTIME_RECORD首条和current_runtime中20261019_DTPO_v9_negative_clip2_six_GPU_v4_current。此自然首轮不是八rank全32768控制容量验收。\n\n",
+  "key": "20261019_DTPO_v9_negative_clip2_six_GPU_v4_current",
+  "observation": {
+    "status": "first_native_complete_iteration_verified_second_actor_update_running",
+    "collected_at_beijing": "2026-10-19T16:02:44.733675+08:00",
+    "completed_iterations": {
+      "TextCraft_DTPO": 1,
+      "TextCraft_PPO": 0,
+      "TextCraft_GRPO": 0,
+      "AppWorld_DTPO": 0,
+      "AppWorld_PPO": 0,
+      "AppWorld_GRPO": 0
+    },
+    "execution_source_commit": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+    "method_source_commit": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
+    "upstream_commit": "20bd331bdbc9026a5668e11362178e10ab7400c8",
+    "first_complete_iteration": {
+      "step": 1,
+      "stages_seconds": {
+        "timing_s/gen": 493.147,
+        "timing_s/reward": 0.0,
+        "timing_s/old_log_prob": 59.576,
+        "timing_s/ref": 34.305,
+        "timing_s/adv": 339.126,
+        "timing_s/update_actor": 185.419,
+        "timing_s/dump_rollout_generations": 0.512,
+        "timing_s/save_checkpoint": null,
+        "timing_s/step": 1112.093
+      },
+      "stage_sum_seconds": 1112.085,
+      "step_minus_stage_sum_seconds": 0.008000000000038199,
+      "total_native_input_tokens": 929760.0,
+      "response_length_including_tool_returns": 3316.875,
+      "tool_interaction_count": 16.922,
+      "old_forward_ms_per_native_input_token": 0.06407675098950266,
+      "ref_forward_ms_per_native_input_token": 0.036896618482188955,
+      "actor_update_ms_per_native_input_token": 0.19942673378076062,
+      "native_metric_sources": [
+        {
+          "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-97077ecb858da019ecbd0949e9bf3f33e533308647cf551c46323c9e-01000000-2507756.out",
+          "line": 305
+        }
+      ]
+    },
+    "first_native_optimizer_state": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/runtime-overrides/actual-worker-imports-after-first-update-v1.json",
+      "SHA256": "e5f8915ed354523431803dc5bfcb36f50b5637045201dc1f5a22b84712272e13",
+      "workers": [
+        {
+          "pid": 2514717,
+          "birth": 1792394612.55,
+          "rank": 5,
+          "actor_optimizer_entries": 496,
+          "actor_optimizer_step_values": [
+            4.0
+          ],
+          "actor_scheduler_epoch": 1,
+          "existing_DT_timing_observer_installed": true
+        },
+        {
+          "pid": 2514719,
+          "birth": 1792394612.56,
+          "rank": 7,
+          "actor_optimizer_entries": 496,
+          "actor_optimizer_step_values": [
+            4.0
+          ],
+          "actor_scheduler_epoch": 1,
+          "existing_DT_timing_observer_installed": true
+        },
+        {
+          "pid": 2514718,
+          "birth": 1792394612.55,
+          "rank": 6,
+          "actor_optimizer_entries": 496,
+          "actor_optimizer_step_values": [
+            4.0
+          ],
+          "actor_scheduler_epoch": 1,
+          "existing_DT_timing_observer_installed": true
+        },
+        {
+          "pid": 2514716,
+          "birth": 1792394612.54,
+          "rank": 4,
+          "actor_optimizer_entries": 496,
+          "actor_optimizer_step_values": [
+            4.0
+          ],
+          "actor_scheduler_epoch": 1,
+          "existing_DT_timing_observer_installed": true
+        },
+        {
+          "pid": 2514712,
+          "birth": 1792394612.52,
+          "rank": 1,
+          "actor_optimizer_entries": 496,
+          "actor_optimizer_step_values": [
+            4.0
+          ],
+          "actor_scheduler_epoch": 1,
+          "existing_DT_timing_observer_installed": true
+        },
+        {
+          "pid": 2514715,
+          "birth": 1792394612.53,
+          "rank": 3,
+          "actor_optimizer_entries": 496,
+          "actor_optimizer_step_values": [
+            4.0
+          ],
+          "actor_scheduler_epoch": 1,
+          "existing_DT_timing_observer_installed": true
+        },
+        {
+          "pid": 2514714,
+          "birth": 1792394612.52,
+          "rank": 2,
+          "actor_optimizer_entries": 496,
+          "actor_optimizer_step_values": [
+            4.0
+          ],
+          "actor_scheduler_epoch": 1,
+          "existing_DT_timing_observer_installed": true
+        },
+        {
+          "pid": 2511533,
+          "birth": 1792394584.3,
+          "rank": 0,
+          "actor_optimizer_entries": 496,
+          "actor_optimizer_step_values": [
+            4.0
+          ],
+          "actor_scheduler_epoch": 1,
+          "existing_DT_timing_observer_installed": true
+        }
+      ]
+    },
+    "physical_GPU_and_stack_evidence": "experiments/rl/results_dtpo_v9_negative2_current_GPU_util_20261019_v4.json",
+    "complete_existing_DT_timing_evidence": "experiments/rl/results_dtpo_v9_negative2_existing_DT_timings_20261019_v4.json",
+    "passive_existing_DT_metadata": {
+      "status": "completed",
+      "observed_native_B4_calls": 40,
+      "restored_rank_scopes": 8,
+      "additional_DT_calls": 0
+    },
+    "actual_processes": [
+      {
+        "pid": 2503202,
+        "birth": 1792394518.8,
+        "matches_recorded_birth": true,
+        "title": "python"
+      },
+      {
+        "pid": 2503287,
+        "birth": 1792394519.29,
+        "matches_recorded_birth": true,
+        "title": "python"
+      },
+      {
+        "pid": 2514717,
+        "birth": 1792394612.55,
+        "matches_recorded_birth": true,
+        "title": "ray::WorkerDict.actor_rollout_update_actor"
+      },
+      {
+        "pid": 2514719,
+        "birth": 1792394612.56,
+        "matches_recorded_birth": true,
+        "title": "ray::WorkerDict.actor_rollout_update_actor"
+      },
+      {
+        "pid": 2514718,
+        "birth": 1792394612.55,
+        "matches_recorded_birth": true,
+        "title": "ray::WorkerDict.actor_rollout_update_actor"
+      },
+      {
+        "pid": 2514716,
+        "birth": 1792394612.54,
+        "matches_recorded_birth": true,
+        "title": "ray::WorkerDict.actor_rollout_update_actor"
+      },
+      {
+        "pid": 2514712,
+        "birth": 1792394612.52,
+        "matches_recorded_birth": true,
+        "title": "ray::WorkerDict.actor_rollout_update_actor"
+      },
+      {
+        "pid": 2514715,
+        "birth": 1792394612.53,
+        "matches_recorded_birth": true,
+        "title": "ray::WorkerDict.actor_rollout_update_actor"
+      },
+      {
+        "pid": 2514714,
+        "birth": 1792394612.52,
+        "matches_recorded_birth": true,
+        "title": "ray::WorkerDict.actor_rollout_update_actor"
+      },
+      {
+        "pid": 2511533,
+        "birth": 1792394584.3,
+        "matches_recorded_birth": true,
+        "title": "ray::WorkerDict.actor_rollout_update_actor"
+      }
+    ],
+    "host_MemAvailable_GiB": 433.89745712280273,
+    "resource_scope": "Original B4 cache release; failed CACHE_BATCH=0 remains withdrawn. A natural complete iteration is not an eight-rank 32768 controlled capacity test.",
+    "plots": {
+      "TextCraft": "F:/DeltaTraceBackups/plots/textcraft-eight-gpu-v9-negative-clip2-20261019-v4/20261019-155200",
+      "AppWorld": "F:/DeltaTraceBackups/plots/appworld-eight-gpu-v9-negative-clip2-20261019-v4/20261019-155205",
+      "TextCraft_historical_controls": "F:/DeltaTraceBackups/plots/textcraft-v9-negative-clip2-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v4/20261019-155209"
+    },
+    "goal_status": "active"
+  },
+  "progress_note": "2026-10-19T16:05:21.712681+08:00 真实进度补充：原c20559e3采集已见当前v4完整step2，DTPO2/200，其余五组仍queued；driver2503287出生匹配，当前phase=ray::WorkerDict.actor_rollout_generate_sequences。第2轮原计时1000.435s（生成446.996、old39.739/ref34.615、DT308.807、actor169.792），含一次元数据/被动计时观察，不当无观察受控加速验收。首轮后原state4/scheduler1为历史时点，未冒称step2后的optimizer状态。16:05:21/26/30三套新图已保存；原生save5尚未到，当前checkpoint字段=None。新图和完整来源见current_runtime同v4键latest_progress。\n\n",
+  "latest_progress": {
+    "collected_at_beijing": "2026-10-19T16:05:21.712681+08:00",
+    "status": "six_run_native_queue_active",
+    "completed_iterations": {
+      "TextCraft_DTPO": 2,
+      "TextCraft_PPO": 0,
+      "TextCraft_GRPO": 0,
+      "AppWorld_DTPO": 0,
+      "AppWorld_PPO": 0,
+      "AppWorld_GRPO": 0
+    },
+    "current_phase": "ray::WorkerDict.actor_rollout_generate_sequences",
+    "pid": 2503287,
+    "observed_process_created_unix": 1792394519.29,
+    "native_checkpoint_step": null,
+    "latest_native_metric": {
+      "step": 2,
+      "values": {
+        "global_seqlen/min": 106844.0,
+        "global_seqlen/max": 160350.0,
+        "global_seqlen/minmax_diff": 53506.0,
+        "global_seqlen/balanced_min": 128234.0,
+        "global_seqlen/balanced_max": 128239.0,
+        "global_seqlen/mean": 128236.375,
+        "actor/entropy_loss": 0.656,
+        "actor/kl_loss": 0.0,
+        "actor/kl_coef": 0.001,
+        "actor/pg_loss": -0.141,
+        "actor/pg_clipfrac": 0.0,
+        "actor/ppo_kl": 0.0,
+        "actor/pg_clipfrac_lower": 0.0,
+        "actor/grad_norm": 0.0259261373,
+        "actor/grad_norm_local": 0.00857666042,
+        "perf/mfu/actor": 0.0,
+        "perf/max_memory_allocated_gb": 61.22,
+        "perf/max_memory_reserved_gb": 66.582,
+        "perf/cpu_memory_used_gb": 572.85,
+        "actor/lr": 0.0,
+        "training/global_step": 2.0,
+        "training/epoch": 0.0,
+        "critic/score/mean": 0.555,
+        "critic/score/max": 1.0,
+        "critic/score/min": 0.0,
+        "critic/rewards/mean": 0.555,
+        "critic/rewards/max": 1.0,
+        "critic/rewards/min": 0.0,
+        "critic/advantages/mean": 0.055,
+        "critic/advantages/max": 45.341,
+        "critic/advantages/min": -22.124,
+        "critic/returns/mean": -6.663,
+        "critic/returns/max": 45.341,
+        "critic/returns/min": -45.341,
+        "response_length/mean": 3692.387,
+        "response_length/max": 10240.0,
+        "response_length/min": 200.0,
+        "response_length/clip_ratio": 0.043,
+        "prompt_length/mean": 315.0,
+        "prompt_length/max": 315.0,
+        "prompt_length/min": 315.0,
+        "prompt_length/clip_ratio": 0.0,
+        "episode/reward/mean": 0.555,
+        "episode/reward/max": 1.0,
+        "episode/reward/min": 0.0,
+        "episode/length/mean": 17.797,
+        "episode/length/max": 30.0,
+        "episode/length/min": 2.0,
+        "episode/tool_call_count/mean": 17.797,
+        "timing_s/gen": 446.996,
+        "timing_s/reward": 0.0,
+        "timing_s/old_log_prob": 39.739,
+        "timing_s/ref": 34.615,
+        "timing_s/adv": 308.807,
+        "timing_s/update_actor": 169.792,
+        "timing_s/dump_rollout_generations": 0.478,
+        "timing_s/step": 1000.435,
+        "timing_per_token_ms/adv": 0.301,
+        "timing_per_token_ms/ref": 0.034,
+        "timing_per_token_ms/gen": 0.473,
+        "timing_per_token_ms/update_actor": 0.166,
+        "perf/total_num_tokens": 1025891.0,
+        "perf/time_per_step": 1000.435,
+        "perf/throughput": 128.181
+      },
+      "sources": [
+        {
+          "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-97077ecb858da019ecbd0949e9bf3f33e533308647cf551c46323c9e-01000000-2507756.out",
+          "line": 312
+        }
+      ]
+    },
+    "source_snapshot": "F:\\DeltaTraceBackups\\plots\\textcraft-eight-gpu-v9-negative-clip2-20261019-v4\\20261019-160521\\source-snapshot.json",
+    "source_snapshot_SHA256": "3277e0e978803584fc7ce3a81a3e51003dae183479e79b227053c289723b35fd",
+    "TextCraft_plot_directory": "F:\\DeltaTraceBackups\\plots\\textcraft-eight-gpu-v9-negative-clip2-20261019-v4\\20261019-160521",
+    "AppWorld_plot_directory": "F:/DeltaTraceBackups/plots/appworld-eight-gpu-v9-negative-clip2-20261019-v4/20261019-160526",
+    "historical_control_plot_directory": "F:/DeltaTraceBackups/plots/textcraft-v9-negative-clip2-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v4/20261019-160530",
+    "efficiency_claim": "The second iteration includes one metadata RPC and passive timing publication; not a controlled no-observation speed comparison",
+    "goal_status": "active"
+  }
+}

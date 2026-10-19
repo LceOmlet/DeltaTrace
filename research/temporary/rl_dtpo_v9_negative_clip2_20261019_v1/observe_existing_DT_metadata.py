@@ -10,7 +10,7 @@ from pathlib import Path
 import time
 
 ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
-AUDIT=ROOT/'receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4'
+DT_STAGE_OBSERVATION_AUDIT=ROOT/'receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4'
 wrapper=Path(__file__).with_name('inspect_native_workers.py')
 assert hashlib.sha256(wrapper.read_bytes()).hexdigest()=='986610703d7d1ad9616329c4c6e52534a703272a2bb2899078a807adca1d46c0'
 code=wrapper.read_text()
@@ -78,4 +78,4 @@ if observed:
         workers=[{key:r.get(key) for key in ['pid','birth','rank','existing_DT_timing_observer_installed']} for r in observed],
         additional_model_calls=0,additional_DT_calls=0,optimizer_updates=0,new_CUDA_events=0,
         computational_source_changes=0,scope='Publish already-computed native metadata for one future original readout per rank; automatic restoration')
-    (AUDIT/'existing-DT-metadata-observer-completed.json').write_text(json.dumps(record,indent=2)+'\n')
+    (DT_STAGE_OBSERVATION_AUDIT/'existing-DT-metadata-observer-completed.json').write_text(json.dumps(record,indent=2)+'\n')

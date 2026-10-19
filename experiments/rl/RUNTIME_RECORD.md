@@ -1,3 +1,15 @@
+2026-10-19T16:05:21.712681+08:00 真实进度补充：原c20559e3采集已见当前v4完整step2，DTPO2/200，其余五组仍queued；driver2503287出生匹配，当前phase=ray::WorkerDict.actor_rollout_generate_sequences。第2轮原计时1000.435s（生成446.996、old39.739/ref34.615、DT308.807、actor169.792），含一次元数据/被动计时观察，不当无观察受控加速验收。首轮后原state4/scheduler1为历史时点，未冒称step2后的optimizer状态。16:05:21/26/30三套新图已保存；原生save5尚未到，当前checkpoint字段=None。新图和完整来源见current_runtime同v4键latest_progress。
+
+## 2026-10-19T16:02:44.733675+08:00 负clip2执行v4首轮真实更新完成；生成/DT低Util分开定位
+
+当前仍为执行cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea、方法f26b3b37cb3b88e64978e7a472ae4244670a39f3，上游20bd331b；不是把新诊断记录提交当部署。原控制器2503202/1792394518.8、driver2503287/1792394519.29及8worker出生均实际匹配。TextCraft DTPO已完成1/200，当前第2轮actor更新；其余五组queued。原metadata RPC实读每rank496个Adam状态/step4/scheduler1、clip2/CACHE_BATCH1/DP8；实际已导入且有准备SHA的模块均匹配，其他未导入/无预备SHA项保留原报告范围。原生首次完整迭代1112.093s，生成493.147、old59.576/ref34.305、DT339.126、actor185.419，阶段和差0.008s。八rank原readout各5个B4/共40，160原DP行、150唯一轨迹、565076原factual padding token槽位；不同实际DT输入不冒称算子加速。回收每rank约48.29–49.57s位于DT内部，不再加到整轮。详见results_dtpo_v9_negative2_first_iteration_efficiency_20261019_v4.json。
+
+原始dmon及同phase相邻宿主观察归约给出当前生成样本均值约50.66–54.71%、DT29.14–32.35%；这是原设备活动率而非峰值FLOPS。20秒生成被动栈明确caller等同步八rank RPC，后续作者原decode/环境/分词；rank0/6还有原生vLLM future等待和turn尾部空闲，不能把等待future本身称GPU空闲。旧撤回v3失败之前的64次原生生成观测仍作为独立推理来源：88.77% prompt cache覆盖、均值2.213s轮间隙、86.12%引擎调用区间覆盖，不能把该旧run当当前完成进度。vLLM已有_last_mapping缓存，未再造本地LoRA缓存。
+
+DT原生现成calls计时已通过一次未来正常readout被动回显，0额外模型/DT/optimizer/CUDA-event；40个B4已完成、8rank原方法均自动恢复，无observer参数改动。rank0接口254.606s，其中最后B4输入[8,10240]单独172.542s，前4合计82.063s；host-enqueue原root70.537/replay125.159/finite-decoder45.983s。该计时来自第2轮，与首轮339.126s不能混加；stream_elapsed含CPU发射空隙，不当活跃kernel时长。当前20秒DT栈中rank0/6分别145/394与141/397个主线程样本在GDN capture流同步，99/394与111/397在原host_emptyCache；物理样本实际有19.1GB/s D2H、41.6GB/s H2D和回收时GPU0%，不是把所有同步都当可直接移除。优化重点为长序列捕获/搬运/同步和原B4回收，clip/g/QVA保持。没有部署新资源候选；跨B4缓存0的失败继续封存。详细来源/行号见results_dtpo_v9_negative2_current_GPU_util_20261019_v4.json及results_dtpo_v9_negative2_existing_DT_timings_20261019_v4.json。第2轮包含一次元数据RPC/有界观察，不作完全无观察的受控吞吐基线。
+
+16:02观察宿主MemAvailable约433.90GiB；较早第2轮DT有210.55GiB单次观察，之后已回收；不是全程最小值或容量保证。六组原工作量/保存/共享检查点策略及原生交接保持，goal active。15:52两任务正式图与历史对照已实际更新，目录见results_dtpo_v9_negative_clip2_20261019_v4.json；新八卡PPO/GRPO仍queued，历史105/191不计新进度。尚无本run save5检查点，不将自然首轮当八卡精确32768容量验收。
+
 2026-10-19T15:29:39.453050+08:00 回读补充：新v4原metadata RPC已在全部八rank完成，实际DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP=2、CACHE_BATCH=1、REPLAY_LAYER=0、DP8；已导入模块均匹配准备绑定，lazy未导入项仍不称验收。原actor optimizer为空/scheduler0符合从基础权重0轮启动，0新增model/DT/optimizer调用。实际回执/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/runs/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/runtime-overrides/actual-worker-imports-v9-negative2-eight-GPU-initial-v1.json，SHA256=f9775d9d5ea680791b8d8b03d9cb2503e27f8cf2b455df6cb78a9d329fbf9e19。原日志已进入Rounds1/30，当前完整迭代仍0/200，不能据初始化和绑定宣称八卡稳定吞吐/容量通过。
 
 ## 2026-10-19T15:27:42.932344+08:00 v9负clip2执行v4已按原B4释放重新提交八卡队列，首轮尚未完成

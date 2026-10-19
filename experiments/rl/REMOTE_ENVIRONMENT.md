@@ -1,3 +1,7 @@
+## 2026-10-19T16:02:44.733675+08:00 clip2执行v4首轮正常完成，环境/资源路径保持
+
+原8worker已自然完成首次DT与4次actor optimizer更新，当前第2轮更新；原cudaHostAlloc/CACHE_BATCH1/REPLAY_LAYER0、原VENV及严格SSH不变。没有安装、下载或清缓存操作来启动新环境；训练原B4宿主缓存回收依原owner执行。利用率调查只增加有界非阻塞栈观察及一次原metadata RPC回显已有DT计时，40原生B4/8rank观察器均已恢复原方法。新诊断提交f1ae82a4不是训练执行源；实际部署仍cdd8ea40、方法f26b3b37。共享运行/源/日志保持，完整证据及新状态见RUNTIME_RECORD首条和current_runtime中20261019_DTPO_v9_negative_clip2_six_GPU_v4_current。此自然首轮不是八rank全32768控制容量验收。
+
 ## 2026-10-19T15:27:42.932344+08:00 当前负clip2正式执行v4：原B4边界，八卡首轮待完成
 
 当前控制器2503202/1792394518.8与driver2503287/1792394519.29已实际提交存活，源cdd8ea40、方法f26b3b37。DT仍hostalloc False、CACHE_BATCH=1、REPLAY_LAYER=0及RPC末尾释放；PPO/GRPO原配置保持。source.json已核对，8worker初始化/实际导入RPC待完成，0/200不称健康训练。失败v3跨B4保留0已撤回并封存，无optimizer进度丢失。原VENV_PYTHON/严格SSH/服务36005/持久缓存保持，无新环境安装、下载或清缓存。之后按正式manifest与完成runtime override读取身份，详见RUNTIME_RECORD最新记录。
