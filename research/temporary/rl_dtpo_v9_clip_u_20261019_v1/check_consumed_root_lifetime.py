@@ -8,6 +8,7 @@ import ast
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import time
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
@@ -64,10 +65,18 @@ code = code.replace(anchor, anchor + "    env['DT_FSDP_EVENT_WAIT_RECEIPTS'] = s
 
 anchor = "        native_trace = reward_readout.trace_token_attribution\n"
 assert code.count(anchor) == 1
-code = code.replace(anchor, anchor + '''        import ast,importlib,types
+code = code.replace(anchor, anchor + '''        import ast,importlib,types,sys
         assert os.environ.get('DT_CREDIT_MODE')=='reward_target_exponential_clipped_v9'
         assert 'pinned_use_cuda_host_register:False' in os.environ['PYTORCH_CUDA_ALLOC_CONF']
         assert os.environ['DT_NATIVE_HOST_CACHE_REPLAY_LAYER']=='0'
+        # The original producer establishes these import paths lazily. This
+        # resource comparison selects the class before that producer exists.
+        native_root=Path(os.environ['DT_ROOT']).resolve()
+        native_environment=json.loads(Path(os.environ.get('DT_ENVIRONMENT_JSON',native_root/'environment.json')).read_bytes())['qwen35']
+        official=Path(os.environ.get('DT_OFFICIAL_ROOT') or native_environment['official_root'])
+        sys.path[:0]=[str(native_root),str(official),str(native_root/'clean/qwen35')]
+        sys.path.append(native_environment['ft_extension_root'])
+        os.environ.update(native_environment.get('runtime_environment',{}),HF_HUB_OFFLINE='1',TOKENIZERS_PARALLELISM='false')
         native_module = importlib.import_module('qwen35_dense_finite_runner')
         original_path = ROOT / 'candidates/dt-native-replay-host-lifetime-20261017-v3/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py'
         candidate_path = ROOT / 'candidates/dt-native-consumed-root-lifetime-20261019-v1/deltatrace/clean/qwen35/qwen35_dense_finite_runner.py'

@@ -1,0 +1,28 @@
+每小时在本线程刷新TextCraft、AppWorld各自DTPO v9/PPO/GRPO正式六面板图及六组真实进度。最新人类要求两个DTPO均为v5指数信用、逐事件u clip到[-2,1]、乘g并汇总后仅方差缩放；不是对称概率比。旧clip1执行v2已按用户替换停止，保留6轮及完整checkpoint5，不拼入新负clip2执行v3。旧gradient/v7 goal不恢复，不启动SQL。
+
+先读最新人类消息及D:/Users/Administrator/Documents/ChatGPT/DeltaTrace/experiments/rl/{PLAN.md,RUNTIME_RECORD.md,current_runtime.json,REMOTE_ENVIRONMENT.md}。本小时只读现有日志、状态并绘图，不启停/恢复/重启训练，不改方法/超参，不运行新诊断，不查询credit、不重装、不清缓存、不打印凭据。六组原生控制器承担顺序交接。准备、存活、初始化不称完整训练迭代或容量验收。
+
+直接运行C:/Users/Administrator/miniconda3/python.exe -X utf8 research/temporary/rl_dtpo_v9_negative_clip2_20261019_v1/plot_hourly.py。入口SHA256=29e81a3499b9bbd07377871fe9e2b6ba1130d6dbac465fba88f80bf9e3df14b5；子入口SHA核对同目录hourly-source-hashes.json。复用原collect/read_job_logs/parse_logs(c20559e3)、renderer(f6ed1ff3)、历史对照owner78d3d75a及已批准范数显示，不写另一解析器/logger。CUDA_VISIBLE_DEVICES为空。统一入口先保存两任务正式图，再保存TextCraft当前DTPO与独立原历史PPO/GRPO图。若新campaign-state尚未创建，明确新负clip2只在准备/原生验收、正式完成0；可运行同目录plot_both_tasks.py保存两任务空窗口，历史入口尚不能读取该run时如实报告，不以旧clip1冒充新图。
+
+ROOT=/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922。总队列ROOT/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v3/{six-combination-manifest.json,controller-job.json,selected-native-resources.json,CPU-behavior-verification.json,native-verification-summary.json,native-RPC-cache-boundary-prepared.json,superseded-clip1-stopped.json,prelaunch-source-resolution.json}。两个任务段ROOT/receipts/{textcraft,appworld}-eight-gpu-v9-negative-clip2-20261019-v3/{campaign-prepared.json,campaign-state.json}，未启动的state可无。
+六组顺序及run：
+1 TextCraft DTPO v9 runs/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v3。
+2 TextCraft原PPO runs/textcraft-ppo-8gpu-200-20261019-v3。
+3 TextCraft原GRPO runs/textcraft-grpo-8gpu-200-20261019-v3。
+4 AppWorld DTPO v9 runs/appworld-dtpo-v9-negative-clip2-8gpu-200-20261019-v3。
+5 AppWorld原PPO runs/appworld-ppo-8gpu-200-20261019-v3。
+6 AppWorld原GRPO runs/appworld-grpo-8gpu-200-20261019-v3。
+各从原基础权重和0轮独占物理GPU0–7、200完整迭代。仅原生exit0、日志1..200及八rank共享完整checkpoint200齐全后交接，失败不跳过。身份以最新正式manifest、run/source.json、launch及完成runtime override和PID出生为准，不沿用旧v2或失效PID。方法提交f26b3b37cb3b88e64978e7a472ae4244670a39f3，执行源从正式记录读取，记录提交不冒称部署源。固定VERL上游20bd331bdbc9026a5668e11362178e10ab7400c8。
+
+方法：原逐真实奖励事件EOS未缩放d；u=clip(-expm1(-d),-2,1)，逐事件变换后乘带符号b_k再汇总。单事件b_1为原官方已归一化GRPO g。Q0=sum b_k，V0=sum b_k*min(exp(-d),3)，A0=sum b_k*u。原self/观察/padding/future mask保持。保留policy位置上用原VERL masked_var(A0,mask)的同一尺度共同缩放Q/V/A，不减均值，不在乘g前缩放，不clip g或最终gu。CPU65项通过；原生实际验收状态查对应receipt，不将CPU、双rank或单卡资源比较称八rank正式验收。
+
+两DTPO复用原Torch cudaHostAlloc配置pinned_use_cuda_host_register=False及REPLAY_LAYER=0；当前准备的原生DT_NATIVE_HOST_CACHE_BATCH=0跨B4复用缓存，VERL_RELEASE_UNUSED_HOST_CACHE=1在整个RPC结束释放，实际启用以source/完成回执为准。PPO/GRPO原方法和host-register8保持。原DT runner6a112224、actor acd3c8a5/corefc2f992b/worker198f509c、TP1默认图/MRoPE保持。独立9f13c898消费释放候选的同输入DT向量相同，但293.36对293.90秒没有加速，未选择，不把候选称部署。小时任务不重跑资源比较。
+TextCraft32组×8/global64/epochs1/4次actor更新/save5/keep2；AppWorld作者40组×6/global32/epochs2/原取消、残批、test5、loop_sampler/save2/keep2；各自32k/B4/LoRA8/16、seed/采样/LR保持。共享checkpoint在/mnt/si0021787ci2/default/lzq/deltatrace_backups/{textcraft,appworld}-8gpu-20261017/<对应新run>/checkpoints，原日志/rollout/receipt也在ROOT共享挂载。旧v1–v8、失败v5、旧clip1全部独立，不拼接；新0不是旧6轮倒退。
+
+六面板：原环境训练回报、策略熵、全局裁剪前actor/grad_norm、原KL、平均响应段长度（含工具返回）、平均工具调用数（原任务交互计数）。自动纵轴、不同颜色/线型/legend；缺失不填0、不插值、不平滑，不混独立评估或组乘子。KL日志0.000不称精确零。新六组grad_norm为原DTensor.full_tensor全局实测，另保留grad_norm_local，九位有效数字和原每轮聚合不改。
+TextCraft主图另用当前负clip2 v9与原历史两卡PPO textcraft-ppo-control-fixed-verl-fresh-20261014-v2（105轮完整恢复链）、GRPO textcraft-grpo-formal-native-graph-fresh-20261012-v1（已停191轮）。仅历史梯度显示值原首rank分片乘sqrt(2)，明确“均衡分片假设下的全局估算”；原actor/grad_norm不覆盖，CSV保留norm_scope/conversion_factor/original_value及原日志路径/行号，其他五项原值不换算。历史105/191不是新八卡队列进度，后续新PPO/GRPO独立保留。
+
+正式图F:/DeltaTraceBackups/plots/{textcraft,appworld}-eight-gpu-v9-negative-clip2-20261019-v3/<北京时间快照>；历史主图F:/DeltaTraceBackups/plots/textcraft-v9-negative-clip2-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v3/<北京时间快照>。保存common-window/full的PNG/SVG、metrics-with-sources.csv、source-snapshot.json、plot-receipt.json，历史另存workload-audit.json。回复含采集时间、六组完成/200与同run较上次成功快照增量、实际phase/queued、最新六指标简表和实际图片绝对链接。内联TextCraft历史共同窗口PNG和AppWorld正式图，共同窗口空则明确说明并展示各自完整历史PNG；附完整PNG/SVG、CSV。无新迭代也刷新来源；失败说明原因和最后成功时间，旧图不称新数据。
+
+可复用总队列source/report_native_utilization.py，仅读既有mx-smi dmon与原宿主phase。只合并八rank同phase且相邻时间观察有效的样本；mixed、初始化、missing bracket分开，不把GPU活动率当峰值FLOPS，占卡不称充分利用，MFU0因Qwen3.5不支持不作零算力解释。记录不到带宽就注明缺失。已存在的有界原生成观察只承接原始请求，不额外采样；小时任务不新安装或扩大观察。
+严格SSH31146/HostKeyAlias32036，复用research/temporary/rl_upstream_alignment_20260929/stage_environment_entry.py和C:/Users/Administrator/.codex/private/metax_exec.py；source原入口后合并实际launch环境，直接原VENV_PYTHON，保留MACA_PATH/LD_LIBRARY_PATH/PYTHONPATH，不解析系统Python。不恢复旧硬件全检/大备份。六组均200、最终八rank共享完整checkpoint200核验且两任务最终图保存展示后才暂停本小时任务；此前保持。

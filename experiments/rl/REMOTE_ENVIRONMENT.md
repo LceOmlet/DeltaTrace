@@ -1,3 +1,7 @@
+## 2026-10-19T14:45:28.075154+08:00 v9负clip2资源验收窗口与环境复用
+
+严格SSH31146/HostKeyAlias32036及原VENV_PYTHON保持，无安装/下载/清缓存。旧clip1控制器/driver均已退出并保留6轮/完整5；消费释放候选9f13c898同输入DT向量一致但没有提速，未部署。负clip2原生验收当前仅physical2/3、driver2210332/1792391947.26，0 optimizer/生成/保存；32k进行中。新两DTPO准备为原hostalloc False、REPLAY_LAYER=0、CACHE_BATCH=0、原RPC末尾释放；PPO/GRPO原资源与方法保持。DT_ROOT仍6a112224，八rank新正式训练尚未提交；后续按最新实际source/完成receipt读取，不将资源准备称容量/效率通过。详细状态见RUNTIME_RECORD最新条和results_dtpo_v9_negative_clip2_20261019_v3.json。
+
 ## 2026-10-19T14:10:32.972482+08:00 v9 negative2方法替换窗口：复用原环境，未提交新正式训练
 
 原clip1控制器/训练session已由原process owner撤下，GPU空闲已核对；原服务、依赖栈和缓存保持。negative2 CPU65项通过，新原生接口/资源比较分开验收。资源比较PID2017050/1792390154.17只用GPU0，使用source原metax-entry后的原VENV_PYTHON及launch环境；没有安装、下载或清理编译缓存。初次guard导入错误的原始回执保留，不称模型或训练失败。正式资源候选未部署，新训练未提交，详见RUNTIME_RECORD最新条和results_dtpo_v9_negative_clip2_20261019_v3.json。

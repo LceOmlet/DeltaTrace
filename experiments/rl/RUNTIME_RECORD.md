@@ -1,3 +1,13 @@
+## 2026-10-19T14:45:28.075154+08:00 DTPO v9负clip2：CPU65项通过，原生双rank小输入/多target通过，32k检查进行中
+
+方法提交f26b3b37cb3b88e64978e7a472ae4244670a39f3已推送：逐事件u=clip(-expm1(-d),-2,1)，V项上限3；原g、汇总后masked_var仅方差缩放及Q/V/A/mask保持。两个DTPO新run从基础权重/0轮准备，PPO/GRPO保持原方法。原clip1队列已按用户替换停止，保留6轮与八rank完整checkpoint5，不拼接新曲线。当前新正式训练尚未启动。
+
+资源候选9f13c898已在同一原生B4/32768输入下与6a112224比较，完整DT向量逐值一致、参数/optimizer/scheduler保持；热DT293.3647与293.8995秒，没有提速，原生pinned reserved峰值137.764与131.701GiB（不是物理RAM/PSS）。候选未选择；当前新配置的DT_ROOT仍为原6a112224。实际DT全卡0%窗口中rank0的399/399主线程样本在原_host_emptyCache，PCIe为0；原生成窗口则有忙卡约0.8–0.94TB/s读写及不同卡先结束的拖尾，不把异步等待一概称环境等待。原始硬件/调用栈见results_dtpo_v9_generation_DT_native_GPU_util_20261019.json。
+
+仅复用原开关DT_NATIVE_HOST_CACHE_BATCH=0跨B4保留缓存，仍VERL_RELEASE_UNUSED_HOST_CACHE=1在DT RPC结束释放；REPLAY_LAYER=0、DT用原Torch hostalloc False，PPO/GRPO原host-register8。两个DTPO已用原Hydra完成有效配置解析，此为资源准备候选，不改DT算子。原生验收driver2210332/出生1792391947.26，physical2/3，native-small与native-multi-target两rank已读回event_u_clip=[-2,1]且状态未变，B4/rank精确32768仍进行中。0 optimizer/额外rollout/质量调用；不以双rank验收承诺八rank正式容量或吞吐。
+
+新队列receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v3，顺序TextCraft DTPO v9→PPO→GRPO→AppWorld DTPO v9→PPO→GRPO，各独占八卡200轮、原save5/save2/keep2与工作量保持。负clip2原生检查及后续实际部署以该目录receipt为准。小时自动任务textcraft已更新为新负clip2身份，原解析器/renderer保持；尚未提交时明确prepared/0，不以历史PPO105/GRPO191当新队列进度。新生成观察器只准备，拟被动记录每rank原有8次generate请求/长度/cache/耗时，尚未安装，不额外采样。详见results_dtpo_v9_negative_clip2_20261019_v3.json。
+
 ## 2026-10-19T14:10:32.972482+08:00 用户将v9负clip改为2：CPU65项通过，正式新六组尚未部署
 
 本条按最新人类要求替代clip1训练身份。逐事件u改为clip(-expm1(-d),-2,1)，Q0=sum b、V0=sum b*min(exp(-d),3)、A0=sum b*u；随后原VERL masked_var仅方差缩放一次、不减均值，原g/mask/自target/PPO/DT原始计算保持。两任务DTPO准备源均已隔离；21项v5回归、20项旧clip1回归及24项negative2行为/原生传输/方差缩放CPU检查通过，原实际模型/DT/optimizer调用均0。新方法原生接口尚待验证，不能称新训练已提交。
