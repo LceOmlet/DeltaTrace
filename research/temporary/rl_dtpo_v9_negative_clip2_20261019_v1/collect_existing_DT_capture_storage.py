@@ -26,11 +26,13 @@ report['maximum_extra_capture_storage_by_rank']={rank:max(
           training_iteration=r['value']['training_iteration'],path=r['path'],line=r['line'])
      for r in records),key=lambda x:x['extra_bytes']) for rank,records in by_rank.items()}
 report['metadata_only']=True
+report['destination_CPU_storage_only']=True
+report['GPU_retention_source_storage_measured']=False
 report['new_tensor_copies']=0
 report['new_CUDA_calls']=0
 report['new_collectives']=0
 report['capacity_pass_claimed']=False
-report['interpretation'].append('Storage metadata only, not tensor contents. Sum of maximum CPU decoder storage and maximum CPU mixer storage is a conservative bound for sampled replay captures, not total physical peak or unobserved input capacity. No numerical operator or resource flag changed.')
+report['interpretation'].append('Storage metadata only, not tensor contents. The legacy extra_bytes fields sum destination CPU decoder/mixer storage; they do not bound the original GPU parent storage borrowed by a view. They are not total physical peak or unobserved input capacity. No numerical operator or resource flag changed.')
 ''' + anchor)
 anchor = 'print(json.dumps(brief, ensure_ascii=False))'
 assert code.count(anchor) == 1
