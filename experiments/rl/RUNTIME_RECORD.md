@@ -1,3 +1,13 @@
+## 2026-10-19T19:12:15.077183+08:00 当前八卡DT仅切换原root缓存传输，生产完整阶段收益待核实
+
+执行源仍cdd8ea40、方法f26b3b37、VERL20bd331；原八worker于第13轮DT结束后、scheduler12时将原runner pin_root_host=True改为False，pin_replay_host=True保持。资源adapter692d3174已提交推送，未重启、未改FA/FLA/VERL算术或增加生产模型/DT/optimizer调用。当前run和PID出生保持；AppWorld排队配置尚未改变。
+
+同输入长B4八rank原DT向量逐值相同，归因调用中位128.593→107.653秒，共同窗口GPU Util39.732%→46.144%；两次调用之间宿主回收另列，不能当整阶段或整轮加速。原B4精确32768在rank0/1完成，六个其余rank用原B4/586参与；八rank Q/V/A有限、RNG不变、验证方法及flags已恢复。这不是八rank同时最长输入容量证明。第13轮含容量验证必须排除效率统计；第14轮起才是完整新配置生产窗口，目前尚无该完整窗口结果。
+
+实际完成回执为runtime-overrides/root-pageable-resource-override-completed.json；原metadata包装顶层沿用read_only字样，更正回执明确记录资源变更并保留原始证据。当前实际配置以该完成回执及逐rank记录为准。数值容差仍按PLAN对应官方计算，不将同向量观察或有限输出称新的全模型容差验收，不用checkpoint/多次更新0/0冒充。生成端官方异步/图已开启；已存trace的LoRA几何单独保存，未执行或部署LoRA调参。
+
+证据：results_dtpo_v9_negative2_root_capacity_20261019_v4.json、results_dtpo_v9_negative2_root_resource_override_20261019_v4.json及results_dtpo_v9_negative2_generation_LoRA_geometry_20261019_v4.json。六组goal保持active，后五组queued。
+
 ## 2026-10-19T18:46:46.084569+08:00 生成/DT 原生利用率证据：root-only 传输候选有收益，尚未部署
 
 正式执行仍cdd8ea40，方法f26b3b37，VERL20bd331b；TextCraft DTPO原日志完成11/200，其余五组queued。v9仍逐事件u=clip(-expm1(-d),-2,1)、乘g后仅方差缩放，原任务/32k/B4/参数/更新不改。本次只调查生成与DT；六组goal保持active。
