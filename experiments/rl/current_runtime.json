@@ -39469,8 +39469,8 @@
     "failure_result": "experiments/rl/results_dtpo_v9_negative2_failed_RPC_retention_20261019_v3.json"
   },
   "20261019_DTPO_v9_negative_clip2_six_GPU_v4_current": {
-    "recorded_at": "2026-10-19T21:37:23.591544+08:00",
-    "status": "native_23_iterations_complete_production_Util_workload_aligned",
+    "recorded_at": "2026-10-19T22:32:43.504863+08:00",
+    "status": "native_26_complete_FA_resource_verified_not_selected_long_native_flag_prepared",
     "method_source_commit": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
     "execution_source_commit": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
     "formal_training_submitted": true,
@@ -39500,7 +39500,7 @@
     ],
     "DT_NATIVE_HOST_CACHE_BATCH": "1",
     "VERL_RELEASE_UNUSED_HOST_CACHE": "1",
-    "completed_iterations": 23,
+    "completed_iterations": 26,
     "native_actual_imports_pending": false,
     "eight_rank_steady_training_verified": true,
     "result": "experiments/rl/results_dtpo_v9_negative_clip2_20261019_v4.json",
@@ -39513,7 +39513,7 @@
       "ranks": 8,
       "imported_modules_match_prepared": true
     },
-    "phase": "ray::WorkerDict.actor_rollout_generate_sequences",
+    "phase": "ray::WorkerDict.actor_rollout_update_actor",
     "latest_natural_iteration_observation": {
       "status": "first_native_complete_iteration_verified_second_actor_update_running",
       "collected_at_beijing": "2026-10-19T16:02:44.733675+08:00",
@@ -39730,112 +39730,191 @@
       "goal_status": "active"
     },
     "latest_progress": {
-      "collected_at_beijing": "2026-10-19T21:13:05.119447+08:00",
-      "status": "six_run_native_queue_active",
-      "completed_iterations": {
-        "TextCraft_DTPO": 21,
-        "TextCraft_PPO": 0,
-        "TextCraft_GRPO": 0,
-        "AppWorld_DTPO": 0,
-        "AppWorld_PPO": 0,
-        "AppWorld_GRPO": 0
-      },
-      "current_phase": "ray::WorkerDict / ray::WorkerDict.actor_rollout_generate_sequences",
-      "pid": 2503287,
-      "observed_process_created_unix": 1792394519.29,
-      "native_checkpoint_step": 20,
-      "shared_checkpoint_25_native_files_verified": true,
-      "latest_native_metric": {
-        "step": 21,
-        "values": {
-          "global_seqlen/min": 70095.0,
-          "global_seqlen/max": 140379.0,
-          "global_seqlen/minmax_diff": 70284.0,
-          "global_seqlen/balanced_min": 109066.0,
-          "global_seqlen/balanced_max": 109069.0,
-          "global_seqlen/mean": 109067.375,
-          "actor/entropy_loss": 0.65,
-          "actor/kl_loss": 0.0,
-          "actor/kl_coef": 0.001,
-          "actor/pg_loss": -0.096,
-          "actor/pg_clipfrac": 0.0,
-          "actor/ppo_kl": 0.0,
-          "actor/pg_clipfrac_lower": 0.0,
-          "actor/grad_norm": 0.0268917195,
-          "actor/grad_norm_local": 0.00877798791,
-          "perf/mfu/actor": 0.0,
-          "perf/max_memory_allocated_gb": 63.943,
-          "perf/max_memory_reserved_gb": 69.334,
-          "perf/cpu_memory_used_gb": 590.276,
-          "actor/lr": 0.0,
-          "training/global_step": 21.0,
-          "training/epoch": 1.0,
-          "critic/score/mean": 0.594,
-          "critic/score/max": 1.0,
-          "critic/score/min": 0.0,
-          "critic/rewards/mean": 0.594,
-          "critic/rewards/max": 1.0,
-          "critic/rewards/min": 0.0,
-          "critic/advantages/mean": 0.056,
-          "critic/advantages/max": 42.582,
-          "critic/advantages/min": -27.876,
-          "critic/returns/mean": -7.059,
-          "critic/returns/max": 42.582,
-          "critic/returns/min": -42.582,
-          "response_length/mean": 3093.355,
-          "response_length/max": 10240.0,
-          "response_length/min": 176.0,
-          "response_length/clip_ratio": 0.027,
-          "prompt_length/mean": 315.0,
-          "prompt_length/max": 315.0,
-          "prompt_length/min": 315.0,
-          "prompt_length/clip_ratio": 0.0,
-          "episode/reward/mean": 0.594,
-          "episode/reward/max": 1.0,
-          "episode/reward/min": 0.0,
-          "episode/length/mean": 16.887,
-          "episode/length/max": 30.0,
-          "episode/length/min": 2.0,
-          "episode/tool_call_count/mean": 16.887,
-          "timing_s/gen": 429.005,
-          "timing_s/reward": 0.0,
-          "timing_s/old_log_prob": 38.824,
-          "timing_s/ref": 33.818,
-          "timing_s/adv": 183.029,
-          "timing_s/update_actor": 175.85,
-          "timing_s/dump_rollout_generations": 0.473,
-          "timing_s/step": 861.008,
-          "timing_per_token_ms/adv": 0.21,
-          "timing_per_token_ms/ref": 0.039,
-          "timing_per_token_ms/gen": 0.542,
-          "timing_per_token_ms/update_actor": 0.202,
-          "perf/total_num_tokens": 872539.0,
-          "perf/time_per_step": 861.008,
-          "perf/throughput": 126.674
+      "collected": 1792420100.5606313,
+      "handles": [
+        {
+          "pid": 2503202,
+          "actual_birth": 1792394518.8,
+          "matches": true,
+          "status": "running"
         },
-        "sources": [
+        {
+          "pid": 2503287,
+          "actual_birth": 1792394519.29,
+          "matches": true,
+          "status": "sleeping"
+        }
+      ],
+      "source_collected": null,
+      "phase": "ray::WorkerDict.actor_rollout_update_actor",
+      "pid_alive": true,
+      "completed": 26,
+      "latest_metric": {
+        "critic/score/mean": 0.602,
+        "actor/entropy_loss": 0.63,
+        "actor/grad_norm": 0.0276245871,
+        "actor/grad_norm_local": 0.00890310027,
+        "actor/kl_loss": 0.001,
+        "response_length/mean": 3484.426,
+        "num_turns/mean": null,
+        "timing_s/gen": 446.015,
+        "timing_s/compute_dt_token_advantages": null,
+        "timing_s/update_actor": 174.63,
+        "timing_s/step": 978.702,
+        "timing_s/compute_ref_log_prob": null
+      },
+      "checkpoint": {
+        "step": 25,
+        "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25",
+        "files": [
           {
-            "path": "/tmp/ray/session_2026-10-19_15-22-25_982170_2503287/logs/worker-97077ecb858da019ecbd0949e9bf3f33e533308647cf551c46323c9e-01000000-2507756.out",
-            "line": 449
+            "path": "data.pt",
+            "bytes": 1499
+          },
+          {
+            "path": "actor/model_world_size_8_rank_4.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "actor/optim_world_size_8_rank_4.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "actor/generation_config.json",
+            "bytes": 116
+          },
+          {
+            "path": "actor/extra_state_world_size_8_rank_6.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "actor/model_world_size_8_rank_3.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "actor/optim_world_size_8_rank_3.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "actor/extra_state_world_size_8_rank_1.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "actor/processor_config.json",
+            "bytes": 1191
+          },
+          {
+            "path": "actor/model_world_size_8_rank_1.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "actor/optim_world_size_8_rank_1.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "actor/extra_state_world_size_8_rank_3.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "actor/chat_template.jinja",
+            "bytes": 7756
+          },
+          {
+            "path": "actor/model_world_size_8_rank_6.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "actor/optim_world_size_8_rank_6.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "actor/tokenizer_config.json",
+            "bytes": 1165
+          },
+          {
+            "path": "actor/extra_state_world_size_8_rank_4.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "actor/model_world_size_8_rank_2.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "actor/optim_world_size_8_rank_2.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "actor/extra_state_world_size_8_rank_0.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "actor/model_world_size_8_rank_5.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "actor/optim_world_size_8_rank_5.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "actor/extra_state_world_size_8_rank_7.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "actor/model_world_size_8_rank_7.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "actor/optim_world_size_8_rank_7.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "actor/extra_state_world_size_8_rank_5.pt",
+            "bytes": 15353
+          },
+          {
+            "path": "actor/tokenizer.json",
+            "bytes": 19989325
+          },
+          {
+            "path": "actor/model_world_size_8_rank_0.pt",
+            "bytes": 2249963627
+          },
+          {
+            "path": "actor/optim_world_size_8_rank_0.pt",
+            "bytes": 22174308
+          },
+          {
+            "path": "actor/config.json",
+            "bytes": 1930
+          },
+          {
+            "path": "actor/extra_state_world_size_8_rank_2.pt",
+            "bytes": 15353
           }
         ]
       },
-      "source_snapshot": "F:\\DeltaTraceBackups\\plots\\textcraft-eight-gpu-v9-negative-clip2-20261019-v4\\20261019-211132\\source-snapshot.json",
-      "source_snapshot_SHA256": "c4a1f00b3fabae62696249aee9ac93b9ec8bfaa0fb3bcc79d4a9b8aa2066d03d",
-      "TextCraft_plot_directory": "F:/DeltaTraceBackups/plots/textcraft-eight-gpu-v9-negative-clip2-20261019-v4/20261019-211132",
-      "AppWorld_plot_directory": "F:/DeltaTraceBackups/plots/appworld-eight-gpu-v9-negative-clip2-20261019-v4/20261019-211136",
-      "historical_control_plot_directory": "F:/DeltaTraceBackups/plots/textcraft-v9-negative-clip2-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v4/20261019-211140",
-      "prior_plot_snapshot": "20261019-205648",
-      "new_iterations_since_prior_plot": {
-        "TextCraft_DTPO": 1,
-        "TextCraft_PPO": 0,
-        "TextCraft_GRPO": 0,
-        "AppWorld_DTPO": 0,
-        "AppWorld_PPO": 0,
-        "AppWorld_GRPO": 0
-      },
-      "efficiency_claim": "Iteration21 includes eight optional validation DT calls and is excluded from production efficiency comparisons; method and training return values unchanged.",
-      "goal_status": "active"
+      "FA_pair_status": "completed",
+      "job_keys": [
+        "task",
+        "environment_task",
+        "method",
+        "gpu",
+        "devices",
+        "run_dir",
+        "budget",
+        "pid",
+        "pid_alive",
+        "observed_process_created_unix",
+        "ray_session",
+        "phase_label",
+        "exit_code",
+        "checkpoint_step",
+        "metrics",
+        "phases",
+        "records",
+        "errors"
+      ],
+      "state_status": "running_native_job"
     },
     "latest_main_cost_priority_observation": {
       "collected_at": 1792398690.8786576,
@@ -40645,6 +40724,124 @@
       "step20_to22_DT_wall_ratio": 1.110421307823352,
       "scope": "Original factual padded slots, not FLOPs or a matched-input kernel benchmark",
       "formal_metrics_or_plots_changed": false
+    },
+    "latest_FA_capture_resource_verification": {
+      "status": "bounded_FA_resource_comparison_completed_not_selected_for_production",
+      "recorded_at": "2026-10-19T22:23:36.702920+08:00",
+      "validation_source_commit": "04305052",
+      "actual_execution_source": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+      "method_source": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
+      "candidate_source_SHA256": "e9ee7c89d544c52a09d6849b9b74f2a499c552899061c74fab7ede90c657291c",
+      "paired_width_range": [
+        6105,
+        10586
+      ],
+      "medians_seconds": {
+        "cold_original": 79.61211431026459,
+        "candidate": 66.78802490234375,
+        "warm_original": 69.82600450515747
+      },
+      "reduction_against_warm_original": 0.04350785390547918,
+      "validation_GPU_Util": {
+        "cold_original": {
+          "mean": 46.11875,
+          "card_samples": 320
+        },
+        "warm_original": {
+          "mean": 53.07857142857143,
+          "card_samples": 280
+        },
+        "candidate": {
+          "mean": 54.73106060606061,
+          "card_samples": 264
+        }
+      },
+      "raw_vectors_equal_ranks": 8,
+      "warm_original_vectors_equal_ranks": 8,
+      "RNG_unchanged_ranks": 8,
+      "original_options_and_methods_restored_ranks": 8,
+      "core_stage_call_counts_unchanged": true,
+      "extra_validation_DT_calls": 16,
+      "extra_optimizer_calls": 0,
+      "extra_generation_or_environment_calls": 0,
+      "excluded_training_iterations": [
+        26
+      ],
+      "counter_scope": "Torch allocated/peak are allocator values, not physical VRAM. Guard data separately records cudaMemGetInfo free/total snapshots; neither is a continuous physical peak.",
+      "candidate_deployed": false,
+      "full_32768_capacity_verified": false,
+      "new_official_numerical_suite_claimed": false,
+      "decision": "Retain as a validated bounded resource candidate. Warm-control call savings about4.35% and matched-window activity+1.65points do not establish a large whole-DT improvement; do not spend a new32k capacity trial or change production for this isolated patch now.",
+      "next_direct_resource_question": "Original all-GPU replay option on longer inputs, using observed physical free memory and the same original owner; no RL-method change.",
+      "source_reports": [
+        {
+          "path": "experiments\\rl\\results_dtpo_v9_negative2_FA_capture_pair_20261019_v4.json",
+          "SHA256": "030c5f89ee2bda743c69eb88309880123e29db0ff3ed4b2d74c93a4266ae96cc"
+        },
+        {
+          "path": "experiments\\rl\\results_dtpo_v9_negative2_FA_capture_pair_utilization_20261019_v4.json",
+          "SHA256": "00a6fb467fdb66760aae72d0ede071152db9be5ebd0cd5f73f403e896c356a98"
+        }
+      ]
+    },
+    "native_long_GPU_resident_preparation": {
+      "status": "prepared_original_owner_flag_validation_not_submitted",
+      "collected": 1792420316.8321931,
+      "source": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/source/check_existing_DT_long_gpu_resident_pair.py",
+      "source_SHA256": "a339ff751ae8f18120d6e50e22ed4d7bd6e91ecfb78aefb6474f863c63a02404",
+      "observer_compiles": true,
+      "metadata_client_not_executed": true,
+      "prior_FA_scopes_restored": 8,
+      "original_runner_SHA256": "6a112224b3d4e63d047a576d7df68ff1ee65e4bbacfcb0014f84c17bd82b8520",
+      "math_source_changes": 0,
+      "production_deployment": false,
+      "width_guard": [
+        2049,
+        12288
+      ],
+      "memory_guard_scope": "Conservative optional-validation selection using actual free physical memory; not an eight-rank32k capacity certificate.",
+      "maximum_additional_DT_calls_per_rank": 2,
+      "actual_execution_source": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+      "method_source": "f26b3b37cb3b88e64978e7a472ae4244670a39f3",
+      "prior_FA_verification": "experiments/rl/results_dtpo_v9_negative2_FA_capture_warm_control_20261019_v4.json",
+      "native_checkpoint25": {
+        "path": "/mnt/si0021787ci2/default/lzq/deltatrace_backups/textcraft-8gpu-20261017/textcraft-dtpo-v9-negative-clip2-8gpu-200-20261019-v4/checkpoints/global_step_25",
+        "required_nonempty_files": 25
+      },
+      "source_bindings": {
+        "check_existing_DT_long_gpu_resident_pair.py": "a339ff751ae8f18120d6e50e22ed4d7bd6e91ecfb78aefb6474f863c63a02404",
+        "collect_existing_DT_long_gpu_resident_pair.py": "07105b9364da1427cf763964f414a6d8676b1cdcc5dcd6005fd99cb040286a7a",
+        "summarize_root_resource_production.py": "5f1590614edf6d823e6d48335a6c2641facf65a5b5b8e9dcf2ca50d1c8aae221",
+        "summarize_small_gpu_resource_production.py": "5262b53c438cf9975d420fba38b00a48828544e4e23a69bf8fe0737ed582bb1a"
+      }
+    },
+    "latest_refreshed_plots": {
+      "TextCraft_formal": {
+        "directory": "F:/DeltaTraceBackups/plots/textcraft-eight-gpu-v9-negative-clip2-20261019-v4/20261019-222640",
+        "completed": {
+          "dt": 26,
+          "ppo": 0,
+          "grpo": 0
+        }
+      },
+      "AppWorld_formal": {
+        "directory": "F:/DeltaTraceBackups/plots/appworld-eight-gpu-v9-negative-clip2-20261019-v4/20261019-222644",
+        "completed": {
+          "dt": 0,
+          "ppo": 0,
+          "grpo": 0
+        }
+      },
+      "TextCraft_historical_controls": {
+        "directory": "F:/DeltaTraceBackups/plots/textcraft-v9-negative-clip2-eight-gpu-historical-PPO-GRPO-global-norm-20261019-v4/20261019-222648",
+        "completed": {
+          "dt": 26,
+          "ppo": 105,
+          "grpo": 191
+        },
+        "common_window": 26,
+        "old_control_norm": "equal-shard energy assumption local*sqrt2 estimate; DT measured global"
+      }
     }
   }
 }

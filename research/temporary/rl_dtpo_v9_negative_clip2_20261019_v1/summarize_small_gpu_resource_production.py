@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 
 owner = Path(__file__).with_name('summarize_root_resource_production.py')
-assert hashlib.sha256(owner.read_bytes()).hexdigest() == '6ed68c31a011471d12ff544a6a06b60bce21035fbd9e583998f0a71e5b583e3b'
+assert hashlib.sha256(owner.read_bytes()).hexdigest() == '5f1590614edf6d823e6d48335a6c2641facf65a5b5b8e9dcf2ca50d1c8aae221'
 code = owner.read_text()
 for old, new in (
     ('root-pageable-resource-override-completed.json', 'small-GPU-resident-resource-override-completed.json'),
@@ -49,9 +49,33 @@ code = code.replace(anchor, '''    report['production_counter_source']=dict(path
 ''' + anchor)
 if '--through-latest-progress' in sys.argv:
     assert "upper = production['collected_unix']" in code
-    code = code.replace("upper = production['collected_unix']", "upper = snapshot['collected_at']")
+    code = code.replace("upper = production['collected_unix']", '''upper = snapshot['collected_at']
+    validation_window_selection=[]
+    for report_name,job_name in (
+            ('existing-DT-FA-capture-resource-pair-results.json','FA-capture-long-pair-job.json'),
+            ('existing-DT-long-GPU-resident-resource-pair-results.json','long-GPU-resident-pair-job.json')):
+        report_path=AUDIT/report_name
+        job_path=AUDIT/job_name
+        if report_path.exists():
+            window_report=json.loads(report_path.read_bytes())
+            scopes=window_report.get('restored_scopes',[])
+            timing_rows=window_report.get('native_timing_records',[])
+            if (len(scopes)==8 and all(s['value']['restored_original_methods'] for s in scopes)):
+                lower=max(lower,max(s['value']['finished'] for s in scopes))
+                validation_window_selection.append(dict(policy='after_all_validation_scopes_restored',source=str(report_path),lower=lower))
+            elif timing_rows or scopes:
+                cutoff=min(r['value']['started'] for r in timing_rows+scopes)
+                upper=min(upper,cutoff)
+                validation_window_selection.append(dict(policy='before_active_validation_readout',source=str(report_path),upper=upper))
+        elif job_path.exists():
+            validation_job=json.loads(job_path.read_bytes())
+            upper=min(upper,validation_job['submitted'])
+            validation_window_selection.append(dict(policy='before_pending_validation_submission',source=str(job_path),upper=upper))
+    assert lower<upper,'No fresh clean physical window yet; do not substitute the validation samples' ''')
+    code = code.replace("str(int(upper))", "str(int(snapshot['collected_at']))")
+    code = code.replace("    report['production_counter_source']=", "    report['validation_window_selection']=validation_window_selection\n    report['production_counter_source']=")
     code = code.replace('After the last installation and before completion of the single read-only counter RPC; excludes prior validation/profile scopes.',
-                        'After the last installation through the current original log collection, including later natural production phases. The separate counter RPC confirms iteration22 only. Excludes prior validation/profile scopes.')
+                        'Applied-storage production interval selected outside the new validation callback: before pending/active validation, or after all eight scopes restore. The separate counter RPC confirms iteration22 only. Exact lower/upper selection is retained.')
 namespace = {'__name__': 'original_small_GPU_resource_production', '__file__': str(owner)}
 exec(compile(code, str(owner), 'exec'), namespace)
 namespace['main']()

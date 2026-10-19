@@ -80,6 +80,13 @@ def main():
         pair = json.loads(resident_pair.read_bytes())
         if pair.get('additional_calls', {}).get('DT', 0):
             excluded_validation_steps.append(21)
+    for validation_name in ('existing-DT-FA-capture-resource-pair-results.json',
+                            'existing-DT-long-GPU-resident-resource-pair-results.json'):
+        validation_path = AUDIT / validation_name
+        if validation_path.exists():
+            validation = json.loads(validation_path.read_bytes())
+            excluded_validation_steps.extend(validation.get('training_iterations_excluded_from_production_efficiency', []))
+    excluded_validation_steps = sorted(set(excluded_validation_steps))
     report = dict(status='completed_read_only_production_window', collected=time.time(),
         run=str(RUN), source_snapshot=str(destination / 'source-snapshot.json'),
         actual_execution_source=row['local_patch_commit'], method_source=override['method_commit'],

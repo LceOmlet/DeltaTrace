@@ -20,7 +20,7 @@ anchor = "if complete and len(report['same_input_pairs'])==8:"
 assert code.count(anchor) == 1
 code = code.replace(anchor, '''if complete and not report['same_input_pairs']:
     report['comparison_status']='not_executed_no_common_memory_eligible_long_B4'
-report['training_iterations_excluded_from_production_efficiency']=sorted({r['value']['training_iteration'] for r in scopes})
+report['training_iterations_excluded_from_production_efficiency']=sorted({r['value']['training_iteration'] for r in scopes+rows})
 report['validation_control_collectives_by_rank']={str(r['value']['rank']):r['value']['validation_guard_collectives'] for r in scopes}
 report['memory_guard_errors']=[dict(path=r['path'],line=r['line'],rank=r['value']['rank'],guard=r['value']['FA_capture_memory_guard']) for r in rows if r['value']['FA_capture_memory_guard'].get('error')]
 ''' + anchor)

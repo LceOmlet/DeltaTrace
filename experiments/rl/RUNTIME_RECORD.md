@@ -1,3 +1,13 @@
+## 2026-10-19T22:32:43.504863+08:00 第26轮完成、共享checkpoint25齐全；FA留GPU候选收益有限，未部署
+
+原controller2503202/出生1792394518.8、driver2503287/出生1792394519.29均按实际出生核对存活；原日志完成26/200，观测处于actor更新，后五组仍queued。共享checkpoint25包含data.pt及八rank各model/optim/extra_state共25个必要非空状态文件，未用新恢复测试代替此事实。执行cdd8ea40/方法f26b3b37/VERL20bd331及u=clip(-expm1(-d),-2,1)、乘g后原masked_var不减均值均保持；goal文字中的旧symmetric不覆盖最新人类要求。
+
+FA-only资源候选e9ee7c89在八rank自然B4/paired width6105–10586完成原A0→候选B→预热原A1。三组每rank核心计算调用计数相同，候选和A1的完整原始DT向量逐值相同、RNG不变、原选项/方法全部恢复。B中位66.7880秒，预热A1中位69.8260秒，缩短4.3508%；原e6f3b171相邻八worker同phase物理样本分别为B54.7311%、预热A153.0786%，增加1.6525个百分点。冷A0中位79.6121秒不作纯资源收益分母。共16次附加验证DT/0 optimizer/0生成环境调用，第26轮及整个callback区间排除效率统计；质量图仍保留原训练更新。此为有界资源对照，不声称新官方整模型容差或八rank32768容量验收；收益有限，候选保留在独立candidate并标未部署，不追加32k试验或替换正式路径。
+
+原guard记录每卡物理总63.59375GiB、自然小B4结束时free约47GiB；Torch allocated约45.889/peak52.2GiB是allocator口径，不能当物理显存已用或连续物理峰值。原生vLLM sharding manager的exit对当前版本本已调用sleep(level1)，没有按free_cache_engine名字猜测并修改生成缓存开关。下一项仅准备复用原6a112224的offload_replay_mixer=False，对可容纳的2049..12288长输入作一次原A-B-A，guard依据实际free、原工作区及保守capture上界；当前只编译/准备，未提交、未部署，保留原32k offload路线。
+
+22:26三份实际图已刷新并展示TextCraft共同26轮主图；正式TextCraft26/0/0、AppWorld0/0/0，历史对照PPO105/GRPO191独立，不冒称新队列进度。原PNG/SVG/CSV及source快照保存在current_runtime.latest_refreshed_plots所列目录。完整证据为results_dtpo_v9_negative2_FA_capture_pair、FA_capture_pair_utilization、FA_capture_warm_control和long_GPU_resident_preparation_20261019_v4.json；原数值owner、环境、检查点策略和源默认路径保持。
+
 ## 2026-10-19T21:37:23.591544+08:00 第23轮完成；自然生成/DT Util分别52.645%/45.808%，负载关联按真实回执校正
 
 当前TextCraft DTPO完成23/200、进入24轮生成，后五组queued，共享checkpoint20按原标准完整。执行cdd8ea40/方法f26b3b37/VERL20bd331不变；新资源selector仅重用原offload flag，不增加生产CUDA/collective/model/DT调用。21:11图仍21轮，此处23是新日志状态，不冒称图已更新。上一goal轮为实际同输入验证及八rank安装；本轮确认原生生产使用、读取真实物理Util，并完成独立负载关联。
