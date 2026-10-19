@@ -1,3 +1,11 @@
+## 2026-10-19T17:14:43.252718+08:00 生成/DT主项：原生host计数器定位DT分配回收成本，普通宿主内存同输入比较已排队
+
+当前正式仍执行cdd8ea40、方法f26b3b37、上游20bd331b；driver2503287/1792394519.29、原controller2503202/1792394518.8未替换。最新原日志完整6/200、checkpoint字段5，其余五组queued，正在第7轮生成。第6轮gen440.437s、DT324.731s、total1002.439s。没有新增正式优化版本，clip[-2,1]/乘g后原masked_var/原QVA与官方工作量不变。
+
+一次自然readout的8rank×5B4原生host_memory_stats读取已完成，40调用、8作用域恢复、0错误、0额外模型/DT/optimizer调用。readout每rank305.405–322.886s；宿主pinned分配累计71.387–106.826s，释放33.087–51.268s，证明该部分值得优先处理。原计数器累计时间与GPU排队工作可能重叠，不能直接相减声称能节省多少。原始路径/行号、逐批次前后计数与完整计时见results_dtpo_v9_negative2_existing_DT_host_counters_20261019_v4.json。
+
+仅复用原runner的pin_root_host/pin_replay_host=False选项准备一次同输入比较：在下一自然readout第三个B4各rank额外调用一次原DT，只作验收并返回原baseline结果，恢复原flags/RNG/方法，不改FA/FLA核、PPO更新或正式配置。安装已完成，结果待采集；源e9a63d4f、runtime-overrides/actual-worker-imports-existing-DT-pageable-pair-v1.json及完成安装回执均单独记录。该readout/整轮含验收额外计算，必须从生产GPU Util/吞吐提升结论中排除，不把额外工作充高Util当提速。同输入向量差仅作传输/接口诊断，不冒称官方数值验收；若进入采用环节，FA/FLA/VERL仍逐计算路径复用对应官方参考/原断言，禁止借用检查点重载或无关多次更新的零差容差，B4/32768容量和同输入效率另验。详见results_dtpo_v9_negative2_host_allocator_bottleneck_20261019_v4.json。goal继续active。
+
 2026-10-19T16:05:21.712681+08:00 真实进度补充：原c20559e3采集已见当前v4完整step2，DTPO2/200，其余五组仍queued；driver2503287出生匹配，当前phase=ray::WorkerDict.actor_rollout_generate_sequences。第2轮原计时1000.435s（生成446.996、old39.739/ref34.615、DT308.807、actor169.792），含一次元数据/被动计时观察，不当无观察受控加速验收。首轮后原state4/scheduler1为历史时点，未冒称step2后的optimizer状态。16:05:21/26/30三套新图已保存；原生save5尚未到，当前checkpoint字段=None。新图和完整来源见current_runtime同v4键latest_progress。
 
 ## 2026-10-19T16:02:44.733675+08:00 负clip2执行v4首轮真实更新完成；生成/DT低Util分开定位
