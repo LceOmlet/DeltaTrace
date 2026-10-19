@@ -1,0 +1,437 @@
+{
+  "status": "source_review_original_native_handoff_contract_not_run_completion",
+  "recorded_at": "2026-10-19T23:13:08.321058+08:00",
+  "actual_controller": {
+    "collected": 1792422438.3031614,
+    "controller": {
+      "pid": 2503202,
+      "birth": 1792394518.8,
+      "status": "sleeping"
+    },
+    "controller_sources": [
+      {
+        "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/source/run_campaign.py",
+        "SHA256": "8dc6e89c42c102179e42fc2c0bbcae3d5efb8c276a085ed20ff8432380b93e1a",
+        "excerpts": [
+          {
+            "line": 5,
+            "text": "ROOT=Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')"
+          },
+          {
+            "line": 6,
+            "text": "owner=ROOT/'receipts/dtpo-v9-clip-u-postgroup-variance-20261019-v1/source/run_campaign.py'"
+          },
+          {
+            "line": 7,
+            "text": "assert hashlib.sha256(owner.read_bytes()).hexdigest()=='7b6abc3b613f647244cea165e5732a5c07945e70f0de599530a7140f0715a15a'"
+          },
+          {
+            "line": 8,
+            "text": "code=owner.read_text().replace('dtpo-v9-clip-u-postgroup-variance-20261019-v1',"
+          }
+        ]
+      }
+    ],
+    "manifest_keys": [
+      "version",
+      "status",
+      "collected",
+      "source_commit",
+      "segments",
+      "combinations",
+      "tuning_history",
+      "all_six_start_from_base",
+      "tuning_iterations_spliced",
+      "completion_owner",
+      "resource_receipt",
+      "selected_native_resources",
+      "execution_version",
+      "DT_method_version",
+      "credit_variance_normalization",
+      "extra_model_samples",
+      "actor_gradient_norm",
+      "method_source_commit",
+      "resource_rollback",
+      "controller"
+    ]
+  },
+  "canonical_completion_owner": {
+    "collected": 1792422495.3871324,
+    "completion_owner": "Pinned run_campaign: native exit0, metrics1..200 and eight-rank full checkpoint200",
+    "source": {
+      "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/two-task-eight-gpu-sequential-20261017-v2/source/run_campaign.py",
+      "SHA256": "f71ff4d85087c18d37bdb9fd2e40dbf7f36763e64b528e772612f24004e85441",
+      "excerpts": [
+        {
+          "line": 56,
+          "text": "        return dict(remaining_non_zombie=[], session_members=0)"
+        },
+        {
+          "line": 57,
+          "text": "    owner = AUDIT / 'source/resume_at_native_checkpoint.py'"
+        },
+        {
+          "line": 58,
+          "text": "    assert sha(owner) == 'b5be347a4ba7deb2f02b7c892f375642b91d4992290d64f1d7b7c2659b211f0f'"
+        },
+        {
+          "line": 59,
+          "text": "    template = next(n.value for n in ast.walk(ast.parse(owner.read_text()))"
+        },
+        {
+          "line": 108,
+          "text": "                output.mkdir()"
+        },
+        {
+          "line": 109,
+          "text": "                checkpoint = Path(row['checkpoints'])"
+        },
+        {
+          "line": 110,
+          "text": "                checkpoint.mkdir(parents=True, exist_ok=False)"
+        },
+        {
+          "line": 111,
+          "text": "                env = dict(os.environ)"
+        },
+        {
+          "line": 112,
+          "text": "                for key in ('DT_NATIVE_HOST_MEMORY_LEASE', 'MACA_VISIBLE_DEVICES', 'RAY_ADDRESS', 'RAY_TMPDIR'):"
+        },
+        {
+          "line": 155,
+          "text": "                        pass"
+        },
+        {
+          "line": 156,
+          "text": "                Path(row['exit_file']).write_text(str(child.returncode) + '\\n')"
+        },
+        {
+          "line": 157,
+          "text": "                snapshot = owner['collect'](str(ROOT), [row['output']])"
+        },
+        {
+          "line": 158,
+          "text": "                current, = snapshot['jobs']"
+        },
+        {
+          "line": 159,
+          "text": "                write(AUDIT / (method + '-final-source-snapshot.json'), snapshot)"
+        },
+        {
+          "line": 160,
+          "text": "                assert child.returncode == 0, 'Native job failed; retain this combination and do not skip it'"
+        },
+        {
+          "line": 161,
+          "text": "                assert owner['completed'](current) == 200"
+        },
+        {
+          "line": 162,
+          "text": "                assert {m['step'] for m in current['metrics']} >= set(range(1, 201)), 'Original complete-iteration metrics missing'"
+        },
+        {
+          "line": 163,
+          "text": "                assert current['checkpoint_step'] == 200, 'Native final checkpoint not completed'"
+        },
+        {
+          "line": 164,
+          "text": "                final = checkpoint / 'global_step_200'"
+        },
+        {
+          "line": 165,
+          "text": "                roles = ('actor', 'critic') if method == 'ppo' else ('actor',)"
+        },
+        {
+          "line": 166,
+          "text": "                files = [final / 'data.pt'] + [final / role / f'{kind}_world_size_8_rank_{rank}.pt'"
+        },
+        {
+          "line": 167,
+          "text": "                    for role in roles for rank in range(8) for kind in ('model', 'optim', 'extra_state')]"
+        },
+        {
+          "line": 168,
+          "text": "                if row['task'] == 'AppWorld':"
+        },
+        {
+          "line": 169,
+          "text": "                    files.append(final / 'loop_sampler.pt')"
+        },
+        {
+          "line": 170,
+          "text": "                assert all(p.is_file() and p.stat().st_size for p in files), 'Native final state files missing'"
+        },
+        {
+          "line": 171,
+          "text": "                row.update(status='completed_200_native_iterations', active=False, alive=False,"
+        },
+        {
+          "line": 172,
+          "text": "                           completed_iterations=200, final_native_checkpoint=str(final), finished_unix=time.time(),"
+        },
+        {
+          "line": 173,
+          "text": "                           final_checkpoint_files={str(p.relative_to(final)):p.stat().st_size for p in files})"
+        },
+        {
+          "line": 174,
+          "text": "                row['native_finished_session_cleanup'] = release_finished_session(row['pid'], row['birth'])"
+        },
+        {
+          "line": 175,
+          "text": "                assert not row['native_finished_session_cleanup']['remaining_non_zombie']"
+        },
+        {
+          "line": 178,
+          "text": "                write(AUDIT / 'campaign-state.json', state)"
+        },
+        {
+          "line": 179,
+          "text": "            state.update(status='all_three_native_200_iteration_runs_completed', finished_unix=time.time(), current_method=None)"
+        },
+        {
+          "line": 180,
+          "text": "            write(AUDIT / 'campaign-state.json', state)"
+        },
+        {
+          "line": 181,
+          "text": "        except BaseException as exc:"
+        }
+      ]
+    }
+  },
+  "criterion": {
+    "native_exit_code": 0,
+    "all_metric_steps": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      142,
+      143,
+      144,
+      145,
+      146,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153,
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      189,
+      190,
+      191,
+      192,
+      193,
+      194,
+      195,
+      196,
+      197,
+      198,
+      199,
+      200
+    ],
+    "checkpoint_step": 200,
+    "ranks": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "states": [
+      "model",
+      "optim",
+      "extra_state"
+    ],
+    "PPO_roles": [
+      "actor",
+      "critic"
+    ],
+    "other_roles": [
+      "actor"
+    ],
+    "AppWorld_additional_state": "loop_sampler.pt",
+    "all_required_nonempty": true,
+    "failure_skipping": false
+  },
+  "controller_modified": false,
+  "six_runs_completed": false
+}

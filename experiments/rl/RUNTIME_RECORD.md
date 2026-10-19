@@ -1,3 +1,15 @@
+## 2026-10-19T23:13:08.321058+08:00 第30轮及共享checkpoint30完整；八rank纯元数据读取器已安装，实际capture字节待自然回显
+
+原controller2503202/1792394518.8、driver2503287/1792394519.29已按实际出生再次确认存活。原c20559e3读取器确认完成30/200，data.pt与八rank的model/optim/extra_state共25个必要非空状态文件已在共享global_step_30齐全；原日志包含本轮save_checkpoint48.320秒。后五组仍queued。方法f26b3b37/执行cdd8ea40/VERL20bd331、u clip[-2,1]及乘g后仅方差缩放、原工作量/32k/B4/LoRA/原共享save5/save2保持；新提交62a941d4是元数据适配，不是训练源或新数值实现。
+
+此前全GPU长B4没有执行，因为保守48H上界未通过；本轮没有直接调小该阈值。复用原20c0de1e metadata observation及98661070 RPC，准备并安装读取实际replay capture的shape/stride/dtype/storage nbytes。临时类__exit__委托原capture方法，读取CPU/GPU存储元数据，不读tensor内容、不clone/to/搬移，不增加model/DT/optimizer/CUDA/event/collective，不改原observer=None、资源flag或返回对象；原root checkpoints不纳入新增replay量。按role去重storage并保留各role最大CPU量，不能将它当物理峰值或未观测长度容量证明。自然readout结束后恢复原class方法与readout/runner方法，后续用实际scope排除其计时；当前只有编译及八rank安装完成，尚无B4读取记录，真实覆盖与恢复待自然回显，不能称新容量/数值/效率验收完成。
+
+元数据源fb8bd249、提交62a941d4，client1284727/1792422249.18；原worker绑定actual-worker-imports-native-capture-storage-readonly-v1.json显示八rank均在scheduler29安装，等待之后自然DT调用。初期metrics exporter RpcError只在元数据client日志出现；同一driver存活且新30轮/CP30均已完成，没有据此重启或重装。完整状态与源/回执在results_dtpo_v9_negative2_capture_storage_installation_20261019_v4.json及共享capture-storage-observer-job/source-verification。
+
+另只读复核当前controller脚本8dc6e89c引用的既有原生完成owner f71ff4d8：交接要求exit0、原日志1..200、checkpoint marker200、八rank model/optim/extra_state；PPO包含actor+critic，AppWorld还要求loop_sampler.pt，文件均须非空，失败不跳过。此是原契约源检查，不是六组完成证明，也没有修改控制器/新增训练状态机。证据见results_dtpo_v9_negative2_native_handoff_contract_20261019_v4.json。
+
+23:10–23:11三份原绘图入口已成功保存：正式TextCraft30/0/0、AppWorld0/0/0，历史控制共同30轮PNG已展示；较上次22:45成功快照DT增加2轮。历史PPO105/GRPO191保持独立，其梯度为已注明均衡分片假设的估算，DT为全局实测。PNG/SVG/CSV与source-snapshot实际目录见current_runtime.latest_refreshed_plots。原六组goal保持active；不将待采集的字节数或已退出的安装client当成训练停止。
+
 ## 2026-10-19T22:53:45.619528+08:00 第28轮完成；长B4原生GPU留存对照按显存条件跳过，正式资源保持
 
 原controller2503202/1792394518.8和driver2503287/1792394519.29已再次核对实际出生存活；当前原日志完成28/200，八worker处于下一轮原生计算，共享checkpoint25的data.pt与八rank各model/optim/extra_state仍齐全。后五组均0/200 queued；旧历史PPO105/GRPO191不是新八卡进度。执行cdd8ea40、方法f26b3b37、VERL20bd331，clip[-2,1]、乘g后原masked_var不减均值、32k/B4/LoRA与任务工作量/save5/save2保持，goal仍active。
