@@ -1,3 +1,13 @@
+## 2026-10-20T01:56:11.593408+08:00 原43轮继续；六组准备源346条绑定匹配，下一原PPO交接配置保持
+
+原controller2503202/1792394518.8、driver2503287/1792394519.29再次按实际出生确认存活；c20559e3原日志确认43/200，已进入44轮生成，共享完整checkpoint40保持，后五组queued。原方法f26b3b37/执行cdd8ea40/VERL20bd331、逐事件u clip[-2,1]及乘g后原masked_var不减均值保持。本轮0新模型/DT/环境/optimizer调用、0生产改动。原图01:54成功保存至43轮，较上一42轮+1，历史对照PPO105/GRPO191仍独立，不当作新队列进度。
+
+两个campaign-prepared原记录的六组346条源绑定均与当前文件SHA匹配，无未接受候选进入默认launch路径。TextCraft三个方法均32组×8/global64/B4/epochs1/save5；AppWorld均40组×6/global32/B4/epochs2/save2及原取消/残批；各自32k/LoRA8/16、GPU0–7/200迭代/fresh_base_model=True/resume_mode=disable及resume_from_path=None保持。下一TextCraft原PPO使用gae，独立基础权重/新run/共享checkpoint目录；这是准备核对，不能称PPO已启动、实际导入或八rank训练已验收。此项在实际交接或源变化时再核对，不另加循环数值测试门槛。
+
+原交接owner f71ff4d8当前SHA与已检查源码一致，保留原生exit0、日志1..200、checkpoint marker200及八rank actor各model/optim/extra_state/data.pt检查；PPO另含八rank critic，AppWorld另含loop_sampler.pt。原生结束后清理原会话且无存活成员才交接，失败不跳过。详细source/配置SHA、既有源码检查摘录和本次当前指纹见results_dtpo_v9_negative2_native43_and_next_PPO_preparation_20261020_v4.json。
+
+原ec4f178f/2bb58e64窗口适配及e6f3b171归约扩展到新数据：生成1000卡样本51.109%、DT996卡样本75.0622%；mixed2520/边界3316分开，39/40验证迭代仍从效率表排除。新窗口仍在LoRA验证恢复后，输入变化不当因果提速。CPU批模板81e53d9b仍仅准备、未提交或执行；没有恢复旧gradient/v7或SQL。六组200及最终共享八rank checkpoint200/两任务最终图尚未完成，goal active。
+
 ## 2026-10-20T01:47:01.653096+08:00 原42轮继续，第43轮生成；生成/DT干净Util51.40%/76.82%，原生调用边界核清
 
 原controller2503202/1792394518.8、driver2503287/1792394519.29及rank0 2511533/1792394584.3再次按出生确认存活。原c20559e3日志确认42/200，当前第43轮生成；共享完整checkpoint40保持，后五组仍queued。方法f26b3b37/执行cdd8ea40/VERL20bd331与u clip[-2,1]及乘g后仅方差缩放保持。本轮0新增模型/DT/环境/optimizer调用，生产源码/配置无变更。完整数据及来源见results_dtpo_v9_negative2_generation_owner_contract_and_native42_20261020_v4.json。
