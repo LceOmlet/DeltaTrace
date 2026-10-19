@@ -1,12 +1,12 @@
-## 2026-10-19T12:16:47.529061+08:00 DTPO v9执行v2：原生hostalloc与RPC内缓存，六组八卡正式队列
+## 2026-10-19T12:36:17.068473+08:00 DTPO v9执行v2：原生hostalloc与RPC内缓存，六组八卡正式队列
 
 
 
 人类明确两个任务DTPO均为v5+clip v9，另外四组保持原PPO/GRPO，替代goal里过时的symmetric标签。u=clip(-expm1(-d),-1,1)，先逐事件裁剪，再乘既定带符号信用b_k并汇总；单事件为原官方已归一化GRPO g。Q0=sum b_k、V0=sum b_k*min(exp(-d),2)、A0=sum b_k*u，原self/观察/padding/future mask保持。使用固定VERL原masked_var对最终保留policy位置汇总后的A0计算一个共同尺度，Q/V/A仅方差缩放一次、不减均值，不在乘g前缩放u、不裁剪g或最终gu。原DT、actor/core/optimizer、官方任务负载和效率路径保持。
 
-方法与执行源2875c40d4ac49ba778233fb5289d6f48e59b5066已提交推送，上游VERL 20bd331bdbc9026a5668e11362178e10ab7400c8。21项原v5 CPU回归和20项v9行为通过，实际双rank每rank B4、多target及精确32768 DT通过，0 optimizer更新；六配置由原生Hydra逐section核对。此双rank验收不冒称八rank正式容量或训练质量。八rank原只读元数据RPC已核对v9模式/DP8及实际已导入源码；未自然导入的lazy DT模块不冒称已验证。 controller 1246236/1792383021.85，首组driver 1246259/1792383022.29；本次完成0/200，实际phase=ray::WorkerDict.actor_rollout_generate_sequences。实际导入路径/SHA、配置、PID出生和原日志来源见results_dtpo_v9_clip_u_20261019_v1.json及远端对应receipt。
+方法源a88d479c199f9b3171a7d29e8a5840dc4759a6ea、当前执行源2875c40d4ac49ba778233fb5289d6f48e59b5066已提交推送，上游VERL 20bd331bdbc9026a5668e11362178e10ab7400c8。21项原v5 CPU回归和20项v9行为通过，实际双rank每rank B4、多target及精确32768 DT通过，0 optimizer更新；六配置由原生Hydra逐section核对。此双rank验收不冒称八rank正式容量或训练质量。八rank原只读元数据RPC已核对v9模式/DP8及实际已导入源码；未自然导入的lazy DT模块不冒称已验证。 controller 1246236/1792383021.85，首组driver 1246259/1792383022.29；本次完成1/200，实际phase=ray::WorkerDict.actor_rollout_generate_sequences。首轮自然训练1002.954秒，DT289.211秒、更新175.328秒；与原相同八卡负载v8首轮相比整轮慢16.3%、DT慢85.2%、按输入token折算更新慢17.1%，不能将首轮通过称效率达标。八rank原只读metadata已实读Adam step4/scheduler1、各496状态；未新增模型/DT/optimizer测试。原生缓存释放每rank累计35.7–45.9秒，明确为DT内部计时；完整效率及原日志行号见results_dtpo_v9_first_iteration_efficiency_20261019_v2.json。实际导入路径/SHA、配置、PID出生和原日志来源见results_dtpo_v9_clip_u_20261019_v1.json及远端对应receipt。
 
-顺序TextCraft DTPO v9→原PPO→原GRPO→AppWorld DTPO v9→原PPO→原GRPO，每组基础权重/0轮独占物理0–7、200完整迭代。TextCraft32组×8/global64/epochs1/4更新/save5/keep2；AppWorld作者40组×6/global32/epochs2/原取消、残批、test5、loop_sampler/共享save2/keep2；32k/B4/LoRA8/16、seed/采样/LR保持。原process owner f71ff4d8仅原生exit0、日志1..200与八rank共享完整checkpoint200齐全后交接，失败不跳过。其余五组当前queued；以各自原生状态后续更新。共享检查点在/mnt/si0021787ci2/default/lzq/deltatrace_backups/{textcraft,appworld}-8gpu-20261017/<对应20261019-v1 run>/checkpoints，日志/rollout和receipt保持共享ROOT路径。
+顺序TextCraft DTPO v9→原PPO→原GRPO→AppWorld DTPO v9→原PPO→原GRPO，每组基础权重/0轮独占物理0–7、200完整迭代。TextCraft32组×8/global64/epochs1/4更新/save5/keep2；AppWorld作者40组×6/global32/epochs2/原取消、残批、test5、loop_sampler/共享save2/keep2；32k/B4/LoRA8/16、seed/采样/LR保持。原process owner f71ff4d8仅原生exit0、日志1..200与八rank共享完整checkpoint200齐全后交接，失败不跳过。其余五组当前queued；以各自原生状态后续更新。共享检查点在/mnt/si0021787ci2/default/lzq/deltatrace_backups/{textcraft,appworld}-8gpu-20261017/<对应20261019-v2 run>/checkpoints，日志/rollout和receipt保持共享ROOT路径。
 
 旧八卡v5自身exit1、0轮，首次DT原pinned capture报CUDA invalid argument，根因未确定，未向旧进程发停止信号；原日志及证据保留，不称clip修复了该环境错误。所有v1–v8及旧v5不拼入新v9。小时textcraft已ACTIVE切换新统一入口，分别保存两任务正式三算法图，另保留v9与历史PPO105/GRPO191对照；后者不当新队列进度。新全局范数实测与原local分别保存；历史显示仅按批准√2均衡分片假设估算并明确标注，原值与来源保留。goal持续至六组最终训练、共享完整checkpoint200和最终图全部完成，旧梯度/SQL等任务不恢复。
 
