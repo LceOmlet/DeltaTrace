@@ -24,7 +24,16 @@ report['exclude_from_production_efficiency_comparison']=[dict(rank=row['value'][
     start=row['value']['started'],end=row['value']['finished'],
     reason='Readout includes one additional validation-only DT call; training receives original result.') for row in scopes]
 if complete and len(report['same_input_pairs'])==8:
-    report['comparison_status']='same_input_pairs_completed_production_unchanged'
+    successful=all(row['pair']['status']=='same_input_owner_pair_completed_not_deployed'
+        for row in report['same_input_pairs'])
+    report['comparison_status']=('same_input_pairs_completed_production_unchanged' if successful
+        else 'optional_comparison_failed_original_training_results_retained')
+report['pair_failures']=[dict(rank=row['rank'],status=row['pair']['status'],
+    error=row['pair'].get('error')) for row in report['same_input_pairs']
+    if row['pair']['status']!='same_input_owner_pair_completed_not_deployed']
+report['successful_same_input_pair_count']=sum(
+    row['pair']['status']=='same_input_owner_pair_completed_not_deployed'
+    for row in report['same_input_pairs'])
 report['interpretation'].append('This readout and its whole iteration contain validation-only extra work. Do not count higher Util or its timing as a production speedup; use separately timed paired calls only as preliminary cost evidence.')
 ''' + anchor)
 anchor = 'print(json.dumps(brief, ensure_ascii=False))'

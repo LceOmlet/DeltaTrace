@@ -1,3 +1,17 @@
+## 2026-10-19T18:46:46.084569+08:00 生成/DT 原生利用率证据：root-only 传输候选有收益，尚未部署
+
+正式执行仍cdd8ea40，方法f26b3b37，VERL20bd331b；TextCraft DTPO原日志完成11/200，其余五组queued。v9仍逐事件u=clip(-expm1(-d),-2,1)、乘g后仅方差缩放，原任务/32k/B4/参数/更新不改。本次只调查生成与DT；六组goal保持active。
+
+原生runner的pin_root_host=False、pin_replay_host=True在同一轮第五个自然B4完成八rank配对：输入端点长度7262–13297，中位归因耗时128.593→107.653秒（减少16.28%）；共同配对窗口原mx-smi利用率39.732%→46.144%，原相邻阶段观察严格一致才纳入，候选24个边界样本单列。两次调用之间原B4宿主回收14.9–26.2秒另列，不混入归因耗时；单次先A后B并非整轮提速证明。八rank原DT向量一致、RNG一致、原True/True配置和方法均恢复。此前root+replay同时pageable长输入约慢一倍已拒绝。root-only v1因资源模块包名前缀缺失在候选调用前失败；v2在安装时校验原verl.utils.native_host_memory后完成。原失败证据保留，不把安装/恢复完成称比较通过。
+
+生成前8轮原调用观察含497331生成token/1808请求，567请求达到512上限；native engine API覆盖约81.53%，跨rank完成尾差仅约4.25%。相同窗口严格阶段样本GPU-Util约50.40%，缺失/边界单列。八rank各512个原调度步中510个decode已走FULL graph、2个prefill为NONE，async已启用。rank0原生64步torch.profiler中kernel区间并集覆盖GPU事件窗89.49%，LoRA expand/shrink合计约占该窗19.59%；单rank短时kernel覆盖率不等于整轮GPU-Util，CPU同步与GPU执行重叠不能全算空闲。观察器均恢复，未改生成计算/调度；原trace保存在共享盘，Git只保留摘要。
+
+容差继续绑定对应计算与固定官方测试：FA2.6.3对应输出2倍低精度参考误差、dQ/dK/dV3倍；FLA0.4.1原test_chunk分别核对o/ht、dq/dk/dv/dh0、db/dg。VERL按实际函数的输入dtype/mask/状态和参考核验；FusedLinearForPPO官方FP32参考的阈值不外推成BF16整网/PPO阈值。禁止checkpoint或多步更新0/0替代。当前root-only同向量是传输诊断，不是新官方全DT容差证书；候选32768容量和对应验收未完成，原正式配置未替换。包含额外比较/trace的第7、8、11轮排除生产效率比较；第10轮root v1错误前没有执行候选DT。
+
+完整源/输入/原日志行、各rank结果、官方断言审计及原生Util/trace见results_dtpo_v9_negative2_scoped_utilization_findings_20261019_v4.json及共享receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/scoped-utilization-findings.json。32k容量、数值正确、GPU活动率及正式整轮吞吐分别记录，不将未完成项写为通过。
+
+候选容量夹具由原requests函数在CPU构造，输入SHA f9ce3c14；八rank安装已完成（scheduler11），仅下一个自然DT阶段的rank0/1做原B4/精确32768，其余六rank保留原短B4参与相同collectives。不另加载模型，原批次结果与配置恢复；这不等于八卡同时32k容量。完成回执尚待产生，不能称通过。
+
 ## 2026-10-19T18:01:43.875682+08:00 当前v9 clip2：排除长批次慢2倍的双pageable方案，保留对应官方断言范围
 
 正式源仍为cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea、方法f26b3b37cb3b88e64978e7a472ae4244670a39f3、固定VERL20bd331b；没有部署新资源/数值版本。原controller2503202/1792394518.8、driver2503287/1792394519.29保持。最新原collect确认TextCraft DTPO完成8/200、当前ray::WorkerDict.actor_rollout_update_actor，共享checkpoint5按原owner标准核对8rank模型/optimizer/extra与data.pt均非空；这是文件完整性，不是加载或数值验证。其余五组queued。
