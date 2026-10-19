@@ -32,4 +32,29 @@ if preflight.exists():
         "summary['native_checkpoint_observer']=data.get('native_checkpoint_observer')\nsummary['resource_CPU_preflight_result']='experiments/rl/results_dtpo_v9_resource_preflight_20261019_v2.json'\nkey='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'")
     code=code.replace('当前正式DT_ROOT/runner仍6a112224，未改训练或原生保存策略。',
         "当前正式DT_ROOT/runner仍6a112224，未改训练或原生保存策略。资源比较入口已用原v9行为harness通过CPU预检：B4各32768、CUDA未初始化，GPU比较仍未启动；见results_dtpo_v9_resource_preflight_20261019_v2.json。原检查点CPU读取器已适配本六组精确身份和八rank，TextCraft检查data.pt及原模型/optimizer/scheduler/训练与rollout RNG，AppWorld额外复用原LOOP sampler状态读取。原被动观察器source e0dbb650、PID1657396/1792386726.09已提交，当前状态={str((data.get('native_checkpoint_observer') or {}).get('status'))}，无额外保存、恢复、模型或optimizer调用；不能把等待marker或CPU预检称检查点/数值/效率验收。")
+observation=Path('experiments/rl/results_dtpo_v9_native_observation_20261019_v2.json')
+if observation.exists():
+    import json
+    native_observation=json.loads(observation.read_text(encoding='utf-8'))
+    if native_observation.get('status')=='original_native_observers_recording_with_actual_current_identity':
+        observation_summary=dict(result=str(observation),recorded_at=native_observation['collected_at_beijing'],
+            receipt='/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-clip-u-postgroup-variance-20261019-v2/current-native-observation-and-phase-summary.json',
+            actual_handles=native_observation['actual_handles'],
+            phase_summary_path=native_observation['phase_reduction']['path'],
+            phase_summary_SHA256=native_observation['phase_reduction']['SHA256'],
+            scope='Resumed original dmon/proc observers during iteration5; prior gap unfilled, no complete-iteration utilization claim',
+            training_changes=0)
+        code=code.replace("key='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'",
+            "summary['native_observation']="+repr(observation_summary)+"\nkey='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'")
+        code=code.replace('本次完成{first[\'completed\']}/200，实际phase={first.get(\'phase\')}。',
+            '本次完成{first[\'completed\']}/200，实际phase={first.get(\'phase\')}。原全局dmon/宿主phase观察器在13:28:51以新PID出生恢复追加原流，source7d61fa86；旧观察器已退出、此前v9区间缺测，不补零或回填。原归约owner保持efdcb0b6，阶段仅合并八rank同phase且前后观察有效的样本；目前从第5轮中段开始，不能称整轮平均利用率。原生活动率不是峰值FLOPS比例，显存带宽缺测；路径、实际PID出生和原始phase归约见results_dtpo_v9_native_observation_20261019_v2.json。')
+        if native_observation['checkpoint_observer']['status']=='completed_original_native_checkpoint_metadata_verification':
+            code=code.replace('顺序TextCraft DTPO v9→原PPO→原GRPO',
+                '第5轮原共享checkpoint已由原CPU读取器核验：八rank模型/optimizer可读，各496状态、Adam step20/scheduler5，原CPU/CUDA/NumPy/Python及rollout RNG和data.pt齐全；原checkpoint owner f65b6538。回执textcraft-dtpo-v9-clip-u-8gpu-200-20261019-v2-checkpoint-5-verified.json/SHA07d9ccf7，无额外保存、恢复或模型调用；不是200轮目标完成。\n\n顺序TextCraft DTPO v9→原PPO→原GRPO')
+five=Path('experiments/rl/results_dtpo_v9_five_iteration_efficiency_20261019_v2.json')
+if five.exists():
+    code=code.replace("key='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'",
+        "summary['first_save5_window_efficiency_result']='experiments/rl/results_dtpo_v9_five_iteration_efficiency_20261019_v2.json'\nkey='20261019_DTPO_v9_clip_u_six_eight_GPU_runtime_v2_current'")
+    code=code.replace('首轮自然训练1002.954秒',
+        '首个save5窗口实际5轮合计4831.554秒，平均966.311秒/轮；历史八卡v8同第1–5轮为831.224秒/轮，整轮慢16.25%。生成均442秒基本相同，DT阶段271.782对159.820秒/轮，actor167.219对143.195秒/轮；按实际输入token折算actor仍慢14.8%。两侧都含一次save5，阶段对账每轮只差0.007–0.009秒。当前actor RPC原缓存回收14.92–17.58秒/轮/rank，旧v8保留同名回显约0.31–0.39秒，不能相加rank或冒称纯内核退化；完整来源见results_dtpo_v9_five_iteration_efficiency_20261019_v2.json。首轮自然训练1002.954秒')
 exec(compile(code,str(owner),'exec'),globals())
