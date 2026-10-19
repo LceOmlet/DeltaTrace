@@ -1,4 +1,8 @@
-**2026-10-18 用户批准 DTPO symmetric-probability-ratio post-group-variance v8，并要求多卡/双卡梯度记录口径一致。**
+**2026-10-19 用户要求八卡重新训练 v5，负尾处理留待随后讨论。**
+本次先提交 TextCraft DTPO v5 的独立八卡正式 run，从原基础权重和0轮开始，沿用现有八卡200迭代预算、32组×8/global64/epochs1/每轮4次actor更新、32k/B4/LoRA8/16、原seed/采样/LR和共享save5/keep2。方法恢复下文已批准的 v5：官方已归一化组相对信用、逐真实奖励事件的原未缩放EOS d、逐项指数后汇总Q/V/A，保留原训练批次优势的仅方差缩放；不在乘g前缩放u，不使用对称概率比，不增加负尾裁剪或其他新信用规则。保留已验收的DT/更新/资源效率路径，以及全局裁剪前actor/grad_norm和另存actor/grad_norm_local的记录方式。
+v1–v8历史日志、rollout和检查点保留，新八卡v5不拼接历史双卡v5，不恢复旧梯度根因或旧v7 goal。本次不自行启动其他任务组合；原生完整训练、共享检查点和现有小时绘图按本次实际run身份登记。当前没有存活的旧v8 driver/控制器时，不对失效PID发送信号。环境仅复用和恢复已记录的原服务，不重建依赖或缓存。
+
+**2026-10-18 历史批准 DTPO symmetric-probability-ratio post-group-variance v8，并要求多卡/双卡梯度记录口径一致。**
 本条替代下文 v7 的“信用不做方差缩放”。保留逐真实奖励事件的原 EOS d、u=tanh(d/2)、官方已归一化组优势 g 及多事件同尺度 b_k；先在原 token 位置汇总未缩放的 Q0/V0/A0（单事件 source A0=g*u），再在原完整训练批次参与 PPO 的保留 policy token 上调用固定 VERL 原 masked_var，s=sqrt(masked_var(A0,mask)+1e-8)。最终 Q=Q0/s、V=V0/s、A=A0/s；同一尺度只用一次，不减均值，不在乘 g 前归一化 u，不按 span 分别归一化。原观察/padding/future mask、自 target、带符号/抵消事件及原 DP row 权重保持；g=0 的已知零项仍可跳过 DT。多事件使用先逐事件对称变换再汇总后的 A0 统计，不先合并 d 或重复分配信用。
 继续使用原固定 VERL 的 masked_var、actor/core/PPO/clip/optimizer 和已验收 DT/资源优化；不使用 masked_whiten(shift_mean=False) 中隐含的减均值再加回步骤，不新增常数倍以追赶某个梯度范数。原32k/B4/LoRA8/16、两任务采样/学习工作量、200迭代、save5/save2及keep2保持。v7异常版本停止并保留日志与原完整检查点；v8以独立身份从基础权重和0轮开始，不拼接旧曲线。
 用户要求修正梯度记录口径：新正式任务的 actor/grad_norm 记录原 optimizer step 返回的裁剪前全局范数，DTensor 使用其原 full_tensor 接口物化后记录，普通Tensor保持原值；另保留 actor/grad_norm_local 原分片值。此项只作用于记录，原裁剪/反向/更新数学不改；PPO、GRPO使用同一记录规则。使用对应原生接口验证多rank记录与单进程同一梯度的范数一致，而非新跑质量验证。历史两卡/八卡仅有首rank分片值的记录不补估全局，不乘sqrt(world_size)冒充实测；图表和CSV必须明确区分两种口径。
