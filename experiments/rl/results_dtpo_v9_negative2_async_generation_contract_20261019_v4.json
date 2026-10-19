@@ -1,0 +1,29 @@
+{
+  "collected": 1792410964.4160233,
+  "status": "actual_deployed_source_contract_audit",
+  "execution_source": "cdd8ea404871d5cf2cf7eb8ff78ba0f1ed4625ea",
+  "worker": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner/verl/workers/fsdp_workers.py",
+    "SHA256": "198f509c9a0af8a03d54f22e66f5f0d5593ab4c9eb7b27777c201ef323d2fecb",
+    "matches_binding": true,
+    "class_name": "AsyncActorRolloutRefWorker",
+    "function": "generate_sequences",
+    "line": 1524,
+    "source": "def generate_sequences(self, prompts: DataProto):\n        raise NotImplementedError(\"AsyncActorRolloutRefWorker does not support generate_sequences\")"
+  },
+  "transport": {
+    "path": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/candidates/textcraft-dt-v9-negative-clip2-20261019-v3/entry/textcraft_owner_rollout.py",
+    "SHA256": "0d5bc393f68aad335043bd87d135cf0751234e7581f4229d0df8997f5b64a4d2",
+    "matching_lines": [
+      {
+        "line": 143,
+        "text": "                output = unpad_dataproto(actor_rollout_wg.generate_sequences(batch), padding)"
+      }
+    ]
+  },
+  "interpretation": "The current AgentGym transport calls worker-group generate_sequences. The pinned asynchronous worker intentionally rejects this method and instead exposes execute_method/resume/offload to its server. Merely selecting rollout.mode=async does not implement per-request tool continuation in the current owner loop.",
+  "model_calls": 0,
+  "training_changes": 0,
+  "verification_kind": "source_contract_only_not_a_new_numerical_or_performance_test",
+  "remote_receipt": "/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922/receipts/dtpo-v9-negative-clip2-postgroup-variance-20261019-v4/native-async-generation-contract-audit.json"
+}

@@ -1,3 +1,11 @@
+## 2026-10-19T19:58:28.128909+08:00 第16轮完成；新root设置的一轮自然DT计数器观察已安装
+
+上一goal轮有实际进展：排队AppWorld原root资源准备、生产15轮/共享checkpoint15核实及生成批内等待证据均已提交推送d96beef2。本轮原controller2503202/1792394518.8及driver2503287/1792394519.29再次匹配存活；TextCraft DTPO完成16/200、进入17轮生成，后五组仍queued。第16轮原日志line413：生成451.811秒、DT163.376秒、整轮859.004秒、原输入1027979 token。共享最新仍15；最近图19:48为15轮，此处16轮是新的状态采集，不冒称图已包含16。执行cdd8ea40、方法f26b3b37、VERL20bd331及clip[-2,1]/乘g后原masked_var不变。
+
+实际部署worker198f509c第1524行AsyncActorRolloutRefWorker.generate_sequences直接抛NotImplementedError，当前AgentGym transport0d5bc393第143行正调用worker-group.generate_sequences；官方async server通过另一组execute_method/resume/offload接口服务。源绑定匹配。这解释单改rollout.mode=async不能接通原逐请求环境流程；没有据接口名盲切模式、没有新增采样器或模型调用。源合同证据不是新数值/效率测试，见results_dtpo_v9_negative2_async_generation_contract_20261019_v4.json。
+
+为确认已改变root存储后的剩余DT分配/释放成本，复用原单readout host_memory_stats观察器，仅改新日志/回执身份并核对runner flags=False/True。客户端67120/1792410873.04已完成退出，八rank安装成功（source524351a3），将观察下一次自然readout后恢复原方法。0额外model/DT/optimizer/CUDA event/sync调用，实际数值实现未改；完整观察结果尚未生成，不能称成本已经定位。原客户端metrics exporter连接警告未阻止RPC完成，不据该警告判训练失败或重启。安装及PID证据见results_dtpo_v9_negative2_root_pageable_host_observer_installation_20261019_v4.json；后续仅用collect_root_pageable_DT_host_counters.py复用原解析器收集新标记。goal继续active。
+
 ## 2026-10-19T19:48:09.590561+08:00 原root配置连续两轮生产确认；排队AppWorld资源准备与生成批内等待证据
 
 TextCraft DTPO v9负clip2完成15/200（较19:29快照+1），进入第16轮生成；其余五组queued。执行源cdd8ea40、方法f26b3b37、VERL20bd331和原controller2503202/1792394518.8、driver2503287/1792394519.29保持。第15轮生成431.097秒、DT157.239秒、整轮873.101秒（含原save5检查点48.229秒），实际输入943189 token；第14轮DT164.484秒/1024807 token。两轮没有额外验证模型或DT调用。原严格阶段观察窗口DT1152个卡样本GPU-Util45.002%、生成1070个卡样本51.265%；2736个边界/缺失和909个mixed样本分开，不将此条件样本均值称全阶段时间平均。不同输入的生产耗时不替代之前同输入配对16.28%的归因调用改善。共享checkpoint15按原owner要求核实data.pt+八rank model/optim/extra_state共25文件非空，marker15。
