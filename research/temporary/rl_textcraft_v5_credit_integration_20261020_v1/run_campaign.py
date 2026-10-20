@@ -9,6 +9,8 @@ code = code.replace("    for path,digest in row['source_bindings'].items():",
     "    native=json.loads((AUDIT/'native-behavior-status.json').read_bytes())\n"
     "    assert native['status']=='completed'\n"
     "    assert native['physical_gpus']==list(range(8))\n"
+    "    transport=json.loads((AUDIT/'two-eight-rank-credit-transport.json').read_bytes())\n"
+    "    assert transport['status']=='passed' and transport['actual_trainer_advantages_bitwise_equal']\n"
     "    for rank in range(8):\n"
     "        checked=json.loads((AUDIT/f'native-multi-target-rank{rank}.json').read_bytes())\n"
     "        assert checked['status']=='completed' and checked['rank']==rank\n"
