@@ -16,4 +16,12 @@ code = code.replace("    for path,digest in row['source_bindings'].items():",
     "        assert checked['status']=='completed' and checked['rank']==rank\n"
     "        assert checked['credit_calls'] and all(x['exact_expression_equality'] for x in checked['credit_calls'])\n"
     "    for path,digest in row['source_bindings'].items():")
+# The new host's shared mount rejects flock with EIO before any job starts.
+# Keep the same owning flock call and controller lifetime on a host-local
+# file; do not bypass exclusion or alter the training/process state machine.
+anchor = "    namespace={'__name__':"
+assert code.count(anchor) == 1
+before = "with (AUDIT / 'campaign-controller.lock').open('a') as lock:"
+after = "with Path('/tmp/deltatrace-native-textcraft-v5-credit-integration-20261020-v1.lock').open('a') as lock:"
+code = code.replace(anchor, '    code = code.replace('+repr(before)+', '+repr(after)+')\n'+anchor)
 exec(compile(code, str(owner), 'exec'), globals())
