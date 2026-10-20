@@ -12,6 +12,9 @@ code = code.replace('physical_gpus=[2,3]', 'physical_gpus=list(range(8))')
 code = code.replace('num_cpus=8,num_gpus=2', 'num_cpus=16,num_gpus=8')
 code = code.replace("_temp_dir='/tmp/ray-tc-exponential-v5'", "_temp_dir='/tmp/ray-v5-integration-20261020'")
 code = code.replace('RayResourcePool([2]', 'RayResourcePool([8]')
+code = code.replace("    env.pop('CUDA_VISIBLE_DEVICES',None)",
+    "    env.pop('CUDA_VISIBLE_DEVICES',None)\n"
+    "    env['DT_FSDP_EVENT_WAIT_RECEIPTS']=str(AUDIT/'native-worker-runtime-overrides')")
 # Select only the original two native parser payloads. No synthetic capacity
 # padding or duplicate model/optimizer quality experiment is required here.
 start = code.index('    small=base.requests(')
