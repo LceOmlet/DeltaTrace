@@ -1,3 +1,9 @@
+## 2026-10-20T11:48:33.263108+08:00 新30377入口复用原环境，v5八卡启动已恢复
+
+最新人类SSH端口30377，仍使用原严格HostKeyAlias32036和原VENV_PYTHON，不解析成系统Python。连接后8卡空闲且旧controller/driver不存在；未据旧manifest推断存活或退出原因。原共享盘/模型/缓存继续复用。新主机三个平台文件实际回退到已记录原始SHA，沿原owner恢复cumem7e557a8f、gpu_worker37db3830和MRoPE6ed94945；无重装、下载或清缓存。原TextCraft官方服务通过既有作者入口恢复。具体前后SHA、服务PID出生及正式执行9bf225356b251ace356c1119e9d27c7c08550867见receipts/textcraft-v5-credit-integration-20261020-v1。
+
+共享挂载的controller flock发生已证实errno5/EIO。仅本次控制器的原flock文件移至/tmp/deltatrace-native-textcraft-v5-credit-integration-20261020-v1.lock，原排他性/生命周期保持，争用测试通过；原生训练、保存、进程管理未另写。真实8rank DT/u与DP接入已验证，正式运行当前首轮生成，0完整迭代不称容量或质量通过。
+
 ## 2026-10-19T16:02:44.733675+08:00 clip2执行v4首轮正常完成，环境/资源路径保持
 
 原8worker已自然完成首次DT与4次actor optimizer更新，当前第2轮更新；原cudaHostAlloc/CACHE_BATCH1/REPLAY_LAYER0、原VENV及严格SSH不变。没有安装、下载或清缓存操作来启动新环境；训练原B4宿主缓存回收依原owner执行。利用率调查只增加有界非阻塞栈观察及一次原metadata RPC回显已有DT计时，40原生B4/8rank观察器均已恢复原方法。新诊断提交f1ae82a4不是训练执行源；实际部署仍cdd8ea40、方法f26b3b37。共享运行/源/日志保持，完整证据及新状态见RUNTIME_RECORD首条和current_runtime中20261019_DTPO_v9_negative_clip2_six_GPU_v4_current。此自然首轮不是八rank全32768控制容量验收。

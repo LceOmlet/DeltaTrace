@@ -1,3 +1,15 @@
+## 2026-10-20T11:48:33.263108+08:00 TextCraft v5八卡原始DT/u接入验收通过，独立正式训练首轮生成中
+
+本次用户要求重新训练一次v5并检查八卡DT/u接入。独立run textcraft-dtpo-v5-exponential-verified-8gpu-200-20261020-v1 从基础权重和0轮提交，200完整迭代，原32组×8/global64/epochs1/每轮4次actor更新、32k/B4/LoRA8/16、seed/采样/LR与共享save5/keep2保持。使用原未缩放EOS d、u=-expm1(-d)、原官方已归一化GRPO及原乘g后的优势仅方差缩放；无v9裁剪、无对称比、无乘g前u归一化。算法源未改，仅选择原v5模式。
+
+21项原CPU方法/接口测试通过。新增的同一批哨兵DT向量DP2/DP8传输检查中，原Q/V/A及原trainer最终优势逐值相同，含抵消信用、重复轨迹和不同保留位置；这不冒称两卡/八卡模型预测逐值相等。实际8rank各执行原B4 DT，32个逐事件信用调用与原指数表达式逐值一致，原事件汇总和retained scatter通过。真实原parser payload复用原测试接口b=(-0.1,1)，不冒称TextCraft额外中间奖励；未运行更新前后质量比较，0验证optimizer更新。本次真实GPU检查是接入验证，不冒称新的八rank32768容量或预测精度验收。
+
+首次验证期望值索引被RPC padding副本覆盖，已通过原native pad结果标注副本修正验证器并保存全部native/driver返回张量，训练算法未改。首次controller在共享文件锁上报errno5/EIO，尚未创建训练进程；同一原排他flock转到本机/tmp后排他性检查通过。验证worker写出的运行时元数据单独保存在audit/native-preflight-runtime-receipts，未混入正式训练目录；两项原始失败均完整保留。
+
+controller 160091/1792467664.91、driver 160112/1792467665.36 已按实际出生核对；8个正式worker元数据RPC确认DT_CREDIT_MODE=reward_target_exponential_v5、DP8及已加载模块SHA。尚未自然导入的DT模块保持pending，当前完成0/200、phase=ray::WorkerDict.actor_rollout_generate_sequences，不以初始化/存活代替完整迭代。实际执行提交9bf225356b251ace356c1119e9d27c7c08550867，方法原4545c558，上游VERL 20bd331bdbc9026a5668e11362178e10ab7400c8；DT runner6a112224、actor acd3c8a5全局/分片分开记录、core fc2f992b保持。actual路径虽然复用v9候选目录，方法以实际v5模式和调用数值为准，不能据目录名推定。
+
+原生f71ff4d8 process owner仅管理这一项v5，到原生exit0、日志1..200及共享八rank完整checkpoint200才完成，失败不跳过。旧v9及其他历史原日志/rollout/检查点保留、不拼接，不恢复旧六组队列/旧梯度/v7/SQL。小时绘图textcraft已切到本次v5，历史PPO105/GRPO191独立；旧对照梯度仅按均衡分片假设×sqrt(2)估算，当前v5全局实测，不覆盖原值。完整证据见results_textcraft_v5_credit_integration_20261020_v1.json及ROOT/receipts/textcraft-v5-credit-integration-20261020-v1。
+
 ## 2026-10-20T07:02:01.063053+08:00 原70轮及共享八rank完整checkpoint70已核实；第71轮生成，对比图更新至70轮
 
 原controller2503202/1792394518.8、driver2503287/1792394519.29及全部8rank实际出生匹配，已自然完成第70轮DT、actor更新和原生save5，当前第71轮生成。c20559e3原日志有连续1..70完整指标，共享marker70及global_step_70的data.pt、8rank model/optim/extra_state共25个必要文件非空；data.pt SHAb3c8cc013469664df0120bbaf9b62dfe5cf7fda5544933f58b07e44090da44b7。只核对原生保存文件，没有加载、重算或新造检查点；后五组仍queued，原native结束交接规则保持。方法f26b3b37/实际执行cdd8ea40/VERL20bd331、clip[-2,1]及乘g后仅方差缩放保持，0生产改动、0额外模型/DT/环境/optimizer调用。
