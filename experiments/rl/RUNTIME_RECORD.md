@@ -1,3 +1,17 @@
+## 2026-10-20T12:11:04.890597+08:00 TextCraft v5八卡正式首轮完整更新完成，实际DT/u及8rank模式已核实
+
+独立run textcraft-dtpo-v5-exponential-verified-8gpu-200-20261020-v1 已自然完成1/200及4次原生actor optimizer更新，8rank实际optimizer step均为4；随后进入第2轮采样/环境交互，最新即时worker标签为ray::WorkerDict。首轮原环境回报0.555，全局裁剪前grad_norm=0.0292542197、原首rank分片=0.00947200682分别保留；优势范围[-37.943,29.99]，未把分片值直接与旧全局图混比，不由首轮范数推断根因修复或最终性能。
+
+8rank首轮各5次原B4 DT，共40批；自然使用后的实际readout均reward_target_exponential=True、clip_exponential_credit=False、symmetric_probability_ratio=False、weighted_target_credit=False，source_credit_normalization=None、event_u_clip=None，逐事件先指数再乘原官方GRPO。原未缩放d到u=-expm1(-d)的接入、原token事件汇总及实际源码导入已核实；原训练批次乘g后仅方差缩放，无乘g前u归一化。21项CPU、DP2/DP8哨兵传输及真实8rank原生32项信用表达式检查通过；DP2/DP8传输一致不冒称其全部模型预测逐值相同。
+
+首次汇总比对失败的完整返回张量当时未保存，原因仍未完全确认。验证器的同名padding副本覆盖索引缺陷已修正，第二次按原行身份比对通过并保存native/driver张量；第二次保存的副本差异为0，不能用它解释首次失败，更不能宣布八卡数值差异已全面排除。原失败及该证据边界保留在结果JSON。没有更新前后质量试验或新方法替代。
+
+原已验收DT存储选项已在本次8个新actor中重新生效：root pageable、replay pinned、paired rows<=8且extent<=16384时走原GPU mixer存储，其余保持原offloaded路线到32768；BATCH1/REPLAY_LAYER0保持。三项原owner调用只重绑定本次元数据身份，复用原same-input原DT向量相同与旧容量回执，0额外模型/DT/optimizer调用。原嵌套元数据owner仍输出read_only状态文字，不能因此将实际变更称只读；accepted-DT-resource-reuse-completed.json及结果JSON已明确分类为completed runtime resource override并记录全部8rank。首轮DT发生在这些选项重新生效前；后续自然输入不同，不据时长差冒称因果提速。
+
+首轮原rollout 256条、step/input/output身份齐全，原score均值0.5546875，原文件SHA04f55845dea08a0cfcdf01f6265c7e9eee657b5a4086e87cf700a2bf457ca4a8；原c20559e3 snapshot及路径/行号独立归档。12:07:56原六面板图更新至v5第1轮、冻结历史PPO105/GRPO191，共同窗口1；不拼接旧v5/v9。共享save5/keep2已配置，首轮未到保存周期，不声称已有正式checkpoint5。
+
+实际训练提交9bf225356b251ace356c1119e9d27c7c08550867、方法4545c558、VERL20bd331bdbc9026a5668e11362178e10ab7400c8保持；后续记录提交不冒称部署源。controller160091/1792467664.91、driver160112/1792467665.36及8rank出生/实际导入/配置/完成runtime override均随results_textcraft_v5_credit_integration_20261020_v1.json保存。原生控制器继续这唯一一项200轮，不自动恢复旧六组/旧梯度/v7/SQL；小时绘图textcraft保持ACTIVE并指向本次v5。最终200与共享完整checkpoint200尚未完成。
+
 ## 2026-10-20T11:48:33.263108+08:00 TextCraft v5八卡原始DT/u接入验收通过，独立正式训练首轮生成中
 
 本次用户要求重新训练一次v5并检查八卡DT/u接入。独立run textcraft-dtpo-v5-exponential-verified-8gpu-200-20261020-v1 从基础权重和0轮提交，200完整迭代，原32组×8/global64/epochs1/每轮4次actor更新、32k/B4/LoRA8/16、seed/采样/LR与共享save5/keep2保持。使用原未缩放EOS d、u=-expm1(-d)、原官方已归一化GRPO及原乘g后的优势仅方差缩放；无v9裁剪、无对称比、无乘g前u归一化。算法源未改，仅选择原v5模式。

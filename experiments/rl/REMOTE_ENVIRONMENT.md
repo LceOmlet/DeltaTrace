@@ -1,3 +1,7 @@
+## 2026-10-20T12:11:04.890597+08:00 新v5八卡已完成首轮；继承的DT资源选项仅作用当前actor生命周期
+
+严格SSH30377/原HostKeyAlias32036、原VENV_PYTHON、原服务/缓存及恢复的三个平台SHA保持。当前8rank实际v5模式与已加载DT source通过核对；原生首轮完整更新已完成。原已验收root pageable和paired<=8/extent<=16384的原GPU mixer存储选项，通过既有资源owner在本次8个actor上重新生效，较长输入保留原offloaded32768路线；无重装、清缓存或新增模型/DT数值计算。完成回执ROOT/receipts/textcraft-v5-credit-integration-20261020-v1/accepted-DT-resource-reuse-completed.json（适配器SHA12a806a195251e2f2ae8b9b29f5f899a57c7623298f1853432ba1d4e23689d75）。这些是当前进程的完成runtime override，重启时不能仅据文件名/旧PID当已部署。原metadata状态read_only文字不代表资源未修改，结果记录已明确分类。实际执行9bf22535，原方法与DT/core/actor数值source保持。
+
 ## 2026-10-20T11:48:33.263108+08:00 新30377入口复用原环境，v5八卡启动已恢复
 
 最新人类SSH端口30377，仍使用原严格HostKeyAlias32036和原VENV_PYTHON，不解析成系统Python。连接后8卡空闲且旧controller/driver不存在；未据旧manifest推断存活或退出原因。原共享盘/模型/缓存继续复用。新主机三个平台文件实际回退到已记录原始SHA，沿原owner恢复cumem7e557a8f、gpu_worker37db3830和MRoPE6ed94945；无重装、下载或清缓存。原TextCraft官方服务通过既有作者入口恢复。具体前后SHA、服务PID出生及正式执行9bf225356b251ace356c1119e9d27c7c08550867见receipts/textcraft-v5-credit-integration-20261020-v1。
