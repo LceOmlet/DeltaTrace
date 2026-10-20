@@ -1,3 +1,7 @@
+**2026-10-20 最新人类要求：独立重训一次八卡 TextCraft v5，并核实 DT 到 u 的实际接入。**
+恢复下文已批准的原始 v5：原未缩放逐事件 EOS d，u=-expm1(-d)，先乘官方已归一化 GRPO g/既定带符号 b_k，再按原 token 位置汇总并仅作原整批优势方差缩放；不使用 v9 裁剪、对称比或乘 g 前的 u 标准化。沿用八卡、200完整迭代、32组×8/global64/B4/epochs1/32k/LoRA8/16、原 seed/采样/LR、共享 save5/keep2，从基础权重和0轮开始，旧版本数据独立保留。
+检查实际导入/模式、原始 DT 向量、逐事件指数和带符号信用、原观察/self/future mask，以及原生 pad/balance/DP/collect/retained-position scatter；使用现有原生接口与真实 token artifact，不以 shape、守恒、进程存活或一次更新前后质量比较代替数值接入验证。实际八rank绑定与首个自然完整迭代另作记录，不凭当前 v9/PPO 曲线相近推断原因。仅提交这一项 v5，不自动重启旧六组队列。最新人类 SSH 入口为同域端口30377，严格已知 host key 和原环境继续复用。
+
 **2026-10-19 最新人类修正：DTPO v9负信用裁剪阈值由1改为2，并继续排查生成和DT的GPU Util。**
 本条将两任务DTPO的逐事件指数信用改为u_ik=clip(-expm1(-d_ik),-2,1)，不是把d裁剪到-2，也不裁剪组优势g或汇总后的g*u。对应Q0_i=sum_k b_k、V0_i=sum_k b_k*min(exp(-d_ik),3)、A0_i=sum_k b_k*u_ik；指数输入可下限到-log(3)避免已被裁剪尾部先溢出。逐事件变换后再乘带符号的既定b_k并求和；原discounts/self-target/观察/padding/future mask保持，self-target仍Q=b_k/V=0/A=b_k。汇总并恢复保留policy位置后仍使用同一原VERL masked_var(A0,mask)+1e-8尺度共同缩放Q/V/A，不减均值，不在乘g前缩放。
 新身份明确包含v9/negative-clip2，两个DTPO均从原基础权重和0轮开始；原clip1的日志、rollout、原生完整检查点保留，不拼接到clip2。原六组顺序、独占八卡、200完整迭代、两任务原工作量/save5/save2/keep2和其余四组原PPO/GRPO保持。方法改动通过现有逐事件/多target/原生传输和方差缩放检查后提交推送、登记实际部署及小时绘图，不能把准备候选称部署。
