@@ -9,7 +9,7 @@ code=owner.read_text(encoding='utf-8')
 anchor='print(json.dumps(snapshot))'
 assert code.count(anchor)==1
 code=code.replace(anchor,'''v10a=r/'receipts/textcraft-v10-target-logprob-20261021-v1'
-v10run=r/'runs/textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v1'
+v10run=r/'runs/textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v2'
 if (v10run/'source.json').is_file():
  extra=owner['collect'](str(v10a),[str(v10run/'textcraft-dt')])
  snapshot['jobs'].extend(extra['jobs'])
@@ -25,7 +25,7 @@ assert code.count(anchor)==1
 extension=r'''
 before="jobs=[old,new,reproduction]"
 assert source.count(before)==1
-source=source.replace(before,"v10=copy.deepcopy(next(j for j in current['jobs'] if Path(j['run_dir']).parent.name=='textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v1'))\nv10.update(method='dt10',norm_scope='first_returned_rank_local_preclip')\njobs=[old,new,reproduction,v10]")
+source=source.replace(before,"v10=copy.deepcopy(next(j for j in current['jobs'] if Path(j['run_dir']).parent.name=='textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v2'))\nv10.update(method='dt10',norm_scope='first_returned_rank_local_preclip')\njobs=[old,new,reproduction,v10]")
 source=source.replace("output=PLOTS/'textcraft-v5-original-two-gpu-reproduction-vs-original-and-eight-20261021-v1'",
  "output=PLOTS/'textcraft-v10-target-logprob-two-gpu-vs-v5-original-reproduction-and-eight-20261021-v1'")
 source=source.replace("DT_display_label='DTPO v5：原两卡 / 两卡正式复现 / 八卡'",

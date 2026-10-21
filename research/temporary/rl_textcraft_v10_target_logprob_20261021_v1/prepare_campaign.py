@@ -8,7 +8,7 @@ import shutil
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT = ROOT/'receipts/textcraft-v10-target-logprob-20261021-v1'
-VERSION = 'textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v1'
+VERSION = 'textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v2'
 MODE = 'reward_target_logprob_exponential_v10'
 CANDIDATE = ROOT/'candidates/textcraft-v10-target-logprob-20261021-v1'
 sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
@@ -19,12 +19,19 @@ def replace_once(text, before, after):
     return text.replace(before, after)
 
 
+def preserve_or_write_source(path, text):
+    if path.exists():
+        assert path.read_text() == text, ('Preserve verified source', str(path))
+    else:
+        path.write_text(text)
+
+
 def main():
     from omegaconf import OmegaConf
     old_audit = ROOT/'receipts/textcraft-v5-two-gpu-reproduction-20261021-v1'
     before = json.loads((old_audit/'dt-prepared.json').read_bytes())
     entry = CANDIDATE/'entry'
-    entry.mkdir(parents=True, exist_ok=False)
+    entry.mkdir(parents=True, exist_ok=True)
     old_entry = Path(before['entry'])
     original = old_entry/'reward_readout.py'
     assert sha(original) == '1797faaaa89537f5369f82b18b613100f92344f2160f3ca68c5bddfb53009017'
@@ -52,7 +59,7 @@ def main():
         "                          additional_model_forwards=0)")
     patched = prefix+'class DirectActionTargetReadout:'+body.rstrip()+'\n\n'+helper
     ast.parse(patched)
-    (entry/'reward_readout.py').write_text(patched)
+    preserve_or_write_source(entry/'reward_readout.py',patched)
     for filename in ('textcraft_owner_rollout.py', 'dt_training_batch.py'):
         text = (old_entry/filename).read_text()
         if filename == 'textcraft_owner_rollout.py':
@@ -61,7 +68,7 @@ def main():
         else:
             text = replace_once(text, "os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_v5' and any(",
                 "os.environ.get('DT_CREDIT_MODE') in ('reward_target_exponential_v5', '"+MODE+"') and any(")
-        ast.parse(text); (entry/filename).write_text(text)
+        ast.parse(text); preserve_or_write_source(entry/filename,text)
 
     run = ROOT/'runs'/VERSION
     checkpoint = ROOT.parent.parent/'deltatrace_backups/textcraft-2gpu-20261021'/VERSION/'checkpoints'
@@ -82,6 +89,8 @@ def main():
                 options[key] = env[variable]
     argv = [arg.replace(old_run,str(run)) for arg in before['argv']]
     for key,value in options.items():
+        if value == before['options'].get(key):
+            continue  # Preserve the owner's original Hydra spelling for unchanged values.
         label = key+'='
         found = sum(a.startswith(label) for a in argv)
         if found:
