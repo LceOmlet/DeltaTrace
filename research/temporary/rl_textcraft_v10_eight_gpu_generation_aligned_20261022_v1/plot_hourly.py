@@ -15,7 +15,13 @@ remote_extension = r'''
 v10eight_audit=r/'receipts/textcraft-v10-eight-gpu-generation-aligned-20261022-v1'
 v10eight_run=r/'runs/textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v2'
 if (v10eight_run/'source.json').is_file():
- extra=owner['collect'](str(v10eight_audit),[str(v10eight_run/'textcraft-dt')])
+ execution=json.loads((v10eight_run/'source.json').read_bytes())
+ if execution.get('previous_job_identity'):
+  resume_reader=v10eight_audit/'source/native_resume_chain.py'
+  assert hashlib.sha256(resume_reader.read_bytes()).hexdigest()==execution['orchestration_source_bindings'][str(resume_reader)]
+  extra=runpy.run_path(str(resume_reader),run_name='native_v10_resume_reader')['collect'](str(v10eight_audit),[str(v10eight_run/'textcraft-dt')])
+ else:
+  extra=owner['collect'](str(v10eight_audit),[str(v10eight_run/'textcraft-dt')])
  snapshot['jobs'].extend(extra['jobs'])
  snapshot['v10_eight_collected_at']=extra['collected_at']
 else:
