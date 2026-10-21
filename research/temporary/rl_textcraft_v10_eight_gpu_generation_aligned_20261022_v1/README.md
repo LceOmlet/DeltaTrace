@@ -50,3 +50,8 @@ import observations reuse the original read-only metadata owner once each.
 `plot_hourly.py` composes the existing c20559e3 parser and f6ed1ff3 renderer.
 Old runs remain independent historical references; the plot is not by itself
 a controlled comparison of v10 quality against v5.
+
+The first observer adapter retained the original two-rank assertion and exited
+before any worker RPC. That observation failure is archived separately. The
+DP8 adapter changes only that identity count and continues the original
+once-per-phase observer; the running training source and process stay fixed.
