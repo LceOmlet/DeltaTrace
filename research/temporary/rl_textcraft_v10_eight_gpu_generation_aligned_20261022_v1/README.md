@@ -55,3 +55,21 @@ The first observer adapter retained the original two-rank assertion and exited
 before any worker RPC. That observation failure is archived separately. The
 DP8 adapter changes only that identity count and continues the original
 once-per-phase observer; the running training source and process stay fixed.
+
+The natural formal first environment loop scored 154/256, while the frozen
+DP8 coupled control scored 134/256. The original context reader confirms the
+same 32 complete initial task observations. Their first generated response
+texts match for all 256 episodes, but later responses branch. One preceding
+assistant message is a fixed acknowledgement, not a generated action. The
+formal loop is therefore not claimed to be a full exact replay of that control.
+
+To check the active formal role's frozen base identity without another forward,
+`observe_frozen_generation_base_once.py` reuses the verified c7d26dfc tensor
+hash helper and public vLLM `apply_model` at the next ordinary native sync.
+It reads existing parameters only and restores the original sync before the
+optional observation. Its transfer/hash overhead is recorded separately.
+The first installation attempt selected the WorkerDict container instead of
+its actor child and failed before installing any sync hook or reading weights;
+that source/error is preserved. The corrected bridge uses the exact actor-role
+selection from the original metadata owner. This is an observation adapter;
+the training execution source remains bad0ae1d.
