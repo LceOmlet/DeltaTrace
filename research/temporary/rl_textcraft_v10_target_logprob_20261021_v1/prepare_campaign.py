@@ -8,7 +8,7 @@ import shutil
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT = ROOT/'receipts/textcraft-v10-target-logprob-20261021-v1'
-VERSION = 'textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v2'
+VERSION = 'textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v3'
 MODE = 'reward_target_logprob_exponential_v10'
 CANDIDATE = ROOT/'candidates/textcraft-v10-target-logprob-20261021-v1'
 sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
@@ -33,6 +33,12 @@ def main():
     entry = CANDIDATE/'entry'
     entry.mkdir(parents=True, exist_ok=True)
     old_entry = Path(before['entry'])
+    native_config=entry/'owner_environment_configs.json'
+    if native_config.is_symlink():
+        assert native_config.resolve() == (old_entry/native_config.name).resolve()
+    else:
+        assert not native_config.exists()
+        native_config.symlink_to(old_entry/native_config.name)
     original = old_entry/'reward_readout.py'
     assert sha(original) == '1797faaaa89537f5369f82b18b613100f92344f2160f3ca68c5bddfb53009017'
     canonical = (AUDIT/'source/canonical_reward_readout.py').read_text()
@@ -103,6 +109,7 @@ def main():
     for filename in ('reward_readout.py','textcraft_owner_rollout.py','dt_training_batch.py'):
         bindings.pop(str(old_entry/filename), None)
         bindings[str(entry/filename)] = sha(entry/filename)
+    bindings[str(native_config)] = sha(native_config)
     for path,digest in bindings.items():
         assert sha(path) == digest, path
     row.update(version=VERSION, run=str(run), output=str(run/'textcraft-dt'),

@@ -17,10 +17,11 @@ assignment=next(n for n in ast.parse(owner.read_text(encoding='utf-8')).body
                 if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='remote' for t in n.targets))
 remote=ast.literal_eval(assignment.value)
 remote=remote.replace('textcraft-v5-two-gpu-reproduction-20261021-v1','textcraft-v10-target-logprob-20261021-v1')
-remote=remote.replace('textcraft-dtpo-v5-original-2gpu-formal-20261021-v1','textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v2')
+remote=remote.replace('textcraft-dtpo-v5-original-2gpu-formal-20261021-v1','textcraft-dtpo-v10-target-logprob-2gpu-formal-20261021-v3')
 remote=remote.replace("('campaign-prepared.json',", "('CPU-behavior-verification.json','native-behavior-job.json',"
     "'native-behavior-status.json','native-verification-summary.json','native-source-shadowing-resolution.json',"
-    "'native-verifier-dtype-resolution.json','formal-CLI-serialization-resolution.json','configuration-differences.json','campaign-prepared.json',")
+    "'native-verifier-dtype-resolution.json','formal-CLI-serialization-resolution.json','owner-resource-resolution.json',"
+    "'owner-constructor-verification.json','configuration-differences.json','campaign-prepared.json',")
 observed=json.loads(run_python(remote,timeout=55))
 (HERE/'receipts').mkdir(exist_ok=True)
 (HERE/'receipts/latest-deployment-observation.json').write_text(json.dumps(observed,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
@@ -46,7 +47,7 @@ record=dict(version=row['version'],status=state.get('status','prepared_only'),re
     driver={k:job[k] for k in ('pid','birth') if k in job},
     actual_runtime_overrides={k:v for k,v in files.items() if k.startswith('runtime-overrides/')},
     CPU_checks=files['CPU-behavior-verification.json'],native_integration=files.get('native-verification-summary.json'),
-    failed_attempt_receipts={k:v for k,v in files.items() if k in ('native-source-shadowing-resolution.json','native-verifier-dtype-resolution.json','formal-CLI-serialization-resolution.json')},
+    failed_attempt_receipts={k:v for k,v in files.items() if k in ('native-source-shadowing-resolution.json','native-verifier-dtype-resolution.json','formal-CLI-serialization-resolution.json','owner-resource-resolution.json')},
     native_verification_status=native['status'],capacity_or_quality_claim=False,
     existing_v5_formal_run_continues=True,
     hourly_plot_entry=str(HERE/'plot_hourly.py'),

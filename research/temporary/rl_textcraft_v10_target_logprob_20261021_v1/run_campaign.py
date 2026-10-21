@@ -9,6 +9,7 @@ def ready():
     assert verification['status']=='completed'
     assert json.loads((AUDIT/'CPU-behavior-verification.json').read_bytes())['status']=='passed'
     assert json.loads((AUDIT/'formal-CLI-verification.json').read_bytes())['status']=='passed_original_Hydra_parser_and_native_VERL_cfg_only'
+    assert json.loads((AUDIT/'owner-constructor-verification.json').read_bytes())['status']=='passed_original_environment_factory_construction_only'
     assert row['fresh_base_model'] and row['resume_checkpoint'] is None
     for path,digest in row['source_bindings'].items():
         assert sha(path)==digest,path
