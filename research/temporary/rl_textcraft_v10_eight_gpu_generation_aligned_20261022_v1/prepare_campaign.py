@@ -16,10 +16,10 @@ import time
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT = ROOT / 'receipts/textcraft-v10-eight-gpu-generation-aligned-20261022-v1'
 GEN = ROOT / 'receipts/textcraft-generation-numerical-20261021-v1'
-CANDIDATE = ROOT / 'candidates/textcraft-v10-eight-gpu-generation-aligned-20261022-v1'
+CANDIDATE = ROOT / 'candidates/textcraft-v10-eight-gpu-generation-aligned-20261022-v2'
 PARENT = ROOT / 'candidates/textcraft-v10-target-logprob-20261021-v1/entry'
 VERL_PARENT = ROOT / 'candidates/textcraft-dt-v9-negative-clip2-20261019-v3/verl-owner'
-VERSION = 'textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v1'
+VERSION = 'textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v2'
 RUN = ROOT / 'runs' / VERSION
 CHECKPOINTS = ROOT.parent.parent / 'deltatrace_backups/textcraft-8gpu-20261022' / VERSION / 'checkpoints'
 MODE = 'task_sample_turn_v1'
@@ -175,6 +175,12 @@ def main():
         original_v10_native=str(parent_audit / 'native-behavior-status.json'),
         generation_full_native=str(GEN / 'full-first-DP2-matched-vs-DP8-coupled.json'),
         source_preparation=str(AUDIT / 'generation-control-preparation.json'))
+    row['failed_prior_eight_GPU_execution'] = dict(
+        version='textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v1',
+        status='stopped_initialization_for_specific_controller_publication_repair',
+        completed_iterations=0,
+        receipt=str(AUDIT / 'attempt1-controller-publication-repair-stop.json'),
+        history_not_joined=True)
     row['orchestration_source_bindings'] = {str(p): sha(p) for p in source.glob('*.py')}
     # The original recipe includes null total_training_steps and an untouched
     # Hydra dictionary literal. Do not reserialize those original CLI arguments.
@@ -183,6 +189,12 @@ def main():
     assert row['options']['actor_rollout_ref.actor.ppo_mini_batch_size'] == 64
     put(AUDIT / 'dt-prepared.json', row)
     put(AUDIT / 'campaign-prepared.json', dict(status='v10_eight_GPU_formal_configuration_resolved', order=['dt'], jobs=[row]))
+    # Original publish_job reads these before replacing its own task row.
+    # Initialize audit-local manifests before the process owner can spawn.
+    for name in ('formal-training.json', 'active-training.json', 'active-source.json'):
+        assert not (AUDIT / name).exists(), 'Preserve any existing publication history before preparing a fresh attempt'
+        put(AUDIT / name, dict(jobs=[], source_commit=None, updated_unix=time.time(),
+            scope='This independent v10 eight-GPU campaign only'))
     record = dict(status='prepared_only_not_deployed_or_training', prepared_unix=time.time(),
         candidate=str(CANDIDATE), run=str(RUN), native_seed_function_reuse=str(probe),
         native_seed_function_source_SHA256=sha(probe),

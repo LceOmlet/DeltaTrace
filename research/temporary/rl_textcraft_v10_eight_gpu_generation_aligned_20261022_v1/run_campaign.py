@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path('/mnt/si0021787ci2/default/lzq/deepresearch/deltatrace_rl_20260922')
 AUDIT = ROOT / 'receipts/textcraft-v10-eight-gpu-generation-aligned-20261022-v1'
-VERSION = 'textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v1'
+VERSION = 'textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v2'
 
 
 def sha(path):
@@ -18,6 +18,8 @@ def sha(path):
 
 def ready():
     row = json.loads((AUDIT / 'dt-prepared.json').read_text())
+    for name in ('formal-training.json', 'active-training.json', 'active-source.json'):
+        assert isinstance(json.loads((AUDIT / name).read_text())['jobs'], list)
     receipts = row['verification_receipts']
     assert json.loads(Path(receipts['original_v10_CPU']).read_text())['status'] == 'passed'
     assert json.loads(Path(receipts['original_v10_native']).read_text())['status'] == 'completed'

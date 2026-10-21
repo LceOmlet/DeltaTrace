@@ -13,7 +13,7 @@ source = owner.read_text(encoding='utf-8')
 
 remote_extension = r'''
 v10eight_audit=r/'receipts/textcraft-v10-eight-gpu-generation-aligned-20261022-v1'
-v10eight_run=r/'runs/textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v1'
+v10eight_run=r/'runs/textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v2'
 if (v10eight_run/'source.json').is_file():
  extra=owner['collect'](str(v10eight_audit),[str(v10eight_run/'textcraft-dt')])
  snapshot['jobs'].extend(extra['jobs'])
@@ -38,7 +38,7 @@ if stop.is_file():
 render_extension = r'''
 before='jobs=[old,new,reproduction,v10]'
 assert source.count(before)==1
-source=source.replace(before,"v10eight=copy.deepcopy(next(j for j in current['jobs'] if Path(j['run_dir']).parent.name=='textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v1'))\nv10eight.update(method='dt10eight',norm_scope='measured_global_preclip_native_DTensor_full_tensor')\njobs=[old,new,reproduction,v10,v10eight]")
+source=source.replace(before,"v10eight=copy.deepcopy(next(j for j in current['jobs'] if Path(j['run_dir']).parent.name=='textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v2'))\nv10eight.update(method='dt10eight',norm_scope='measured_global_preclip_native_DTensor_full_tensor')\njobs=[old,new,reproduction,v10,v10eight]")
 source=source.replace("output=PLOTS/'textcraft-v10-target-logprob-two-gpu-vs-v5-original-reproduction-and-eight-20261021-v1'",
  "output=PLOTS/'textcraft-v10-eight-gpu-generation-aligned-vs-v5-and-two-gpu-history-20261022-v1'")
 source=source.replace("DT_display_label='DTPO v10双卡 / v5原两卡 / v5两卡复现 / v5八卡'",

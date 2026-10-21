@@ -2,6 +2,13 @@ This run keeps the approved v10 token credit and original 30 epoch / 330
 iteration configuration. It starts from the base model and does not resume
 the stopped two-card or earlier eight-card runs.
 
+Execution v1 stopped during actor initialization at zero complete iterations:
+the process controller could not publish its row because the three audit-local
+manifests had not been initialized. Its exact session was released by the
+original owner, with no survivors and all GPUs empty. The receipts and source
+remain preserved. Execution v2 initializes those native manifests before
+launch, and the controller checks their existing schema before spawning.
+
 The full zero-update native control used the same 32 tasks × 8 episodes:
 
 | Explicit request seeds | Submission groups | Physical DP | Reward sum |
