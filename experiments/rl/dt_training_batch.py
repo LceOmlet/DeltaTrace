@@ -139,7 +139,7 @@ def compute_direct_target_credit(data, worker_group, *, eos_token_id, pad_token_
     if os.environ.get('DT_CREDIT_MODE') in (
             'reward_target_exponential_v5', 'reward_target_exponential_variance_v6',
             'reward_target_symmetric_probability_ratio_v7', 'reward_target_symmetric_probability_ratio_postgroup_variance_v8',
-            'reward_target_exponential_clipped_v9') and any(
+            'reward_target_exponential_clipped_v9', 'reward_target_logprob_exponential_v10') and any(
             'dt_reward_target_events' in item for item in selected):
         return _compute_multi_target_credit(data, selected, first, inverse, rewards,
             worker_group, eos_token_id=eos_token_id, pad_token_id=pad_token_id,

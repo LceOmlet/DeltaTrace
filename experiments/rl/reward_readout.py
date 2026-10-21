@@ -389,9 +389,10 @@ class DirectActionTargetReadout:
         self.runner, self.tokenizer = runner, tokenizer
         self.task, self.max_length = task, max_length
         self.weighted_target_credit = os.environ.get('DT_CREDIT_MODE') == 'weighted_reward_target_finite_v4'
+        self.target_token_logprob = os.environ.get('DT_CREDIT_MODE') == 'reward_target_logprob_exponential_v10'
         self.reward_target_exponential = os.environ.get('DT_CREDIT_MODE') in (
             'reward_target_exponential_v5', 'reward_target_exponential_variance_v6',
-            'reward_target_exponential_clipped_v9')
+            'reward_target_exponential_clipped_v9', 'reward_target_logprob_exponential_v10')
         self.clip_exponential_credit = os.environ.get('DT_CREDIT_MODE') == 'reward_target_exponential_clipped_v9'
         self.exponential_credit_negative_clip = (float(os.environ.get('DT_EXPONENTIAL_CREDIT_NEGATIVE_CLIP','1'))
             if self.clip_exponential_credit else 1.0)
@@ -528,6 +529,8 @@ class DirectActionTargetReadout:
                 **({'target_span_credits':[item['span_credits'] for item in batch]}
                    if self.weighted_target_credit else {}),
             )
+            if self.target_token_logprob:
+                self._restore_target_endpoint_ratios(batch, detail)
             report['finite_trace_calls'] += 1
             for b, item in enumerate(batch):
                 values = signed[b, item['prompt_length']:item['selected'].numel()].cpu()
@@ -563,7 +566,7 @@ class DirectActionTargetReadout:
                 item['ratios'][None, None, :],
                 torch.tensor([[item['reward']]], dtype=torch.float32),
                 item['future_event_mask'][None, None, :], item['policy'][None, :],
-                self_target_mask=item['target'][None, None, :],
+                self_target_mask=None if self.target_token_logprob else item['target'][None, None, :],
                 linear_attribution=self.weighted_target_credit,
                 symmetric_probability_ratio=self.symmetric_probability_ratio,
                 clip_exponential_credit=self.clip_exponential_credit,
@@ -606,6 +609,26 @@ class DirectActionTargetReadout:
                               raw_advantage_groups_semantics='unscaled_exponential_unit_credit',
                               environment_reward_is_not_this_coefficient=True)
         report['raw_advantage_groups'] = groups
+        if self.target_token_logprob:
+            report.update(target_credit_rule='per_token_native_endpoint_logprob_difference_then_exponential',
+                          target_self_constant_override=False,
+                          target_reference='original_v5_prior_source_EOS; fixed_labels_and_factual_target_prefix',
+                          additional_model_forwards=0)
         report['seconds'] = time.perf_counter() - started
         self.last_report = report
         return output
+
+    @staticmethod
+    def _restore_target_endpoint_ratios(batch, detail):
+        """Scatter the owner's already-computed packed label scores to native slots."""
+        counts = [len(item['target_offsets']) for item in batch]
+        logp0 = torch.as_tensor(detail['target_logp0']).detach().cpu()
+        logp1 = torch.as_tensor(detail['target_logp1']).detach().cpu()
+        if logp0.shape != (sum(counts),) or logp1.shape != logp0.shape:
+            raise ValueError('Native packed target endpoint scores do not match the original target rows')
+        delta = logp1 - logp0
+        if not bool(torch.isfinite(delta).all()):
+            raise FloatingPointError('Non-finite native target log-prob difference')
+        for item, values in zip(batch, delta.split(counts)):
+            positions = item['suffix_positions'][item['valid_target']]
+            item['ratios'][positions] = values.to(dtype=item['ratios'].dtype)
