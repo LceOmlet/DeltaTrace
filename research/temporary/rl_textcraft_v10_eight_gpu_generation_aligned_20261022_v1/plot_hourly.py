@@ -38,7 +38,7 @@ if stop.is_file():
 render_extension = r'''
 before='jobs=[old,new,reproduction,v10]'
 assert source.count(before)==1
-source=source.replace(before,"v10eight=copy.deepcopy(next(j for j in current['jobs'] if Path(j['run_dir']).parent.name=='textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v2'))\nv10eight.update(method='dt10eight',norm_scope='measured_global_preclip_native_DTensor_full_tensor')\njobs=[old,new,reproduction,v10,v10eight]")
+source=source.replace(before,"v10eight=copy.deepcopy(next(j for j in current['jobs'] if Path(j['run_dir']).parent.name=='textcraft-dtpo-v10-target-logprob-8gpu-formal-20261022-v2'))\nv10eight.update(method='dt10eight',norm_scope='measured_global_preclip_native_DTensor_full_tensor')\nv10eight['original_owner_devices']=copy.deepcopy(v10eight['devices'])\nif isinstance(v10eight['devices'],str): v10eight['devices']=[int(x) for x in v10eight['devices'].split(',') if x.strip()]\njobs=[old,new,reproduction,v10,v10eight]")
 source=source.replace("output=PLOTS/'textcraft-v10-target-logprob-two-gpu-vs-v5-original-reproduction-and-eight-20261021-v1'",
  "output=PLOTS/'textcraft-v10-eight-gpu-generation-aligned-vs-v5-and-two-gpu-history-20261022-v1'")
 source=source.replace("DT_display_label='DTPO v10双卡 / v5原两卡 / v5两卡复现 / v5八卡'",
@@ -55,6 +55,9 @@ source=source.replace(before,after)
 source=source.replace("label='v5（本次两卡正式复现）'", "label='v5（双卡复现，已停止）'")
 source=source.replace("label='v5（八卡）'", "label='v5（八卡，已停止）'")
 source=source.replace("else ('dt8',))]", "else ('dt8','dt10eight'))]")
+before="ax.set_title('梯度范数：分轴保留原值，口径不同',loc='left',fontsize=10.5,pad=9)"
+assert source.count(before)==1
+source=source.replace(before,"ax.set_title('梯度范数：分轴保留原值，口径不同',loc='left',fontsize=10.5,pad=9,y=1.10)")
 source=source.replace('TextCraft · v10双卡 / v5原两卡 / v5双卡复现 / v5八卡：共同前',
  'TextCraft · v10八卡与独立双卡、v5历史：共同前')
 source=source.replace('TextCraft · v10双卡 / v5原两卡 / v5双卡复现 / v5八卡：各自完整历史',

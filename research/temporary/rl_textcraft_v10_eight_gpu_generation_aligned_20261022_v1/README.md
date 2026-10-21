@@ -73,3 +73,19 @@ its actor child and failed before installing any sync hook or reading weights;
 that source/error is preserved. The corrected bridge uses the exact actor-role
 selection from the original metadata owner. This is an observation adapter;
 the training execution source remains bad0ae1d.
+
+That passive observation has completed and self-restored on all eight ranks.
+Each rank's 379 frozen named parameters has identical shape, dtype and byte
+hashes to the original two-card baseline. All trainable actor parameters are
+LoRA parameters; the observed optimizer step 12 describes the capture after
+three completed iterations. Learned adapters, buffers, RNG/cache/execution
+states and prediction equality are outside this check. Do not reinstall the
+observer or repeat its completed measurement.
+
+The plotting boundary preserves the original device field and converts its
+comma-separated representation to a list before the inherited CSV formatter
+counts world size. Earlier CSV originals are retained with companion files
+that correct only the new run's world-size metadata from 15 to 8; metric
+values are unchanged. The gradient panel title is positioned above its two
+scope-specific axes. Neither change modifies training or the original parser
+and renderer.
