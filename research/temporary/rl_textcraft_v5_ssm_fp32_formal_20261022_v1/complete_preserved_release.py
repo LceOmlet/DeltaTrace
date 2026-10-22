@@ -49,7 +49,7 @@ def main():
         value['result'] = dict(remaining_non_zombie=[], observed_after_original_cleanup_wait=True)
     function = next(n for n in ast.parse(script.read_text()).body if isinstance(n, ast.FunctionDef) and n.name == 'main')
     begin = next(i for i, n in enumerate(function.body) if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'physical' for t in n.targets))
-    ns.update(namespace=namespace, controller=controller, state=state, row=row, preserved=preserved, checkpoint=checkpoint, step=preserved['preserved_step'], completed=preserved['completed_iterations'], cleanup=cleanup)
+    ns.update(namespace=namespace, controller=controller, state=state, row=row, preserved=preserved, checkpoint=checkpoint, step=preserved['preserved_step'], completed=preserved['completed_iterations'], cleanup=cleanup, files=[checkpoint / name for name in preserved['required_files']])
     exec(compile(ast.Module(body=function.body[begin:], type_ignores=[]), str(script), 'exec'), ns)
 
 
