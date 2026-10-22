@@ -10,6 +10,7 @@ for before, after in {
     "(ROOT / 'formal-training.json')": "(AUDIT / 'formal-training.json')",
     "j.get('task') == 'AppWorld'": "j.get('task') == 'TextCraft'",
     "task='AppWorld'": "task='TextCraft'",
+    "assert len(named) == 2": "assert len(named) == 8",
     "else 'formal-v1')": "else 'v10-eight-initial-v1')",
     "source = json.loads(Path(job['source_receipt']).read_bytes())":
         "assert job['version']==" + repr(VERSION) + "\nsource = json.loads(Path(job['source_receipt']).read_bytes())",
