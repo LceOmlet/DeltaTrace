@@ -1,3 +1,8 @@
+**2026-10-24 最新人类要求：只实现无 target rollout 回退，命名 v11，并部署训练。**
+v11 只新增一个边界：原 owner 没有提供真实结算 target 的 rollout，在原 policy/future/retained mask 内广播原官方已经计算的组相对优势 g，复用原 Q/V primitive 的 Q=g、V=0、A=g 边界。观察和 padding 仍为0，g=0仍为已知零；没有 target 的项不发起额外 DT 请求。不重新计算 GRPO、解析动作、制造奖励事件或改变失败奖励。
+有 target 时逐 token target Q=g/V=0/A=g、prior-source 原未缩放 d 和 u=-expm1(-d)、原 mask、事件求和与 retained scatter 全部保持原 v5。原完整训练批次的优势方差缩放保留，其统计会随新增回退样本自然变化；不宣称最终所有优势逐值不变。明确不引入 source 均值调整、缩放阈值、RMS开关、负尾裁剪或新的奖励规则；此前暂停的均值调整候选与诊断保留，不进入 v11 默认路径。模式身份为 reward_target_exponential_v11，表示原 v5 加上述唯一回退边界，不使用 v10 target 端点规则。
+复用已修复生成随机流、原 SSM FP32 接口、已验收 DT 资源回调和固定原生 VERL/PPO/保存/进程 owner。独立 v11 八卡 run 从原基础权重和0轮开始，继承原30epoch/330完整迭代、32组×8/global64/B4/epochs1/每轮4次actor更新、32k/LoRA8/16/原seed/采样/LR/save5/keep2及共享完整检查点。先验证默认v5及有target分支保持、无target广播与原DataProto接入，再在当前v5完整原生共享检查点保留后调用原进程 owner 切换；旧v5按用户切换停止，日志/检查点独立保留，不记自然exit0或数值失败，不拼接历史。实际部署以新run/source、文件SHA、PID出生和完成导入/资源回执为准，不把准备或初始化称完整训练。
+
 **2026-10-20 最新人类要求：独立重训一次八卡 TextCraft v5，并核实 DT 到 u 的实际接入。**
 恢复下文已批准的原始 v5：原未缩放逐事件 EOS d，u=-expm1(-d)，先乘官方已归一化 GRPO g/既定带符号 b_k，再按原 token 位置汇总并仅作原整批优势方差缩放；不使用 v9 裁剪、对称比或乘 g 前的 u 标准化。沿用八卡、200完整迭代、32组×8/global64/B4/epochs1/32k/LoRA8/16、原 seed/采样/LR、共享 save5/keep2，从基础权重和0轮开始，旧版本数据独立保留。
 检查实际导入/模式、原始 DT 向量、逐事件指数和带符号信用、原观察/self/future mask，以及原生 pad/balance/DP/collect/retained-position scatter；使用现有原生接口与真实 token artifact，不以 shape、守恒、进程存活或一次更新前后质量比较代替数值接入验证。实际八rank绑定与首个自然完整迭代另作记录，不凭当前 v9/PPO 曲线相近推断原因。仅提交这一项 v5，不自动重启旧六组队列。最新人类 SSH 入口为同域端口30377，严格已知 host key 和原环境继续复用。
