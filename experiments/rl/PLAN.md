@@ -1,4 +1,10 @@
-**2026-10-24 最新人类要求：实现 v12“先归因、后组相对化”，切换独立八卡训练，继续两图。**
+**2026-10-24 最新人类要求：实现并启动 v13，提交和推送。**
+v13 以原 v5 为方法基线，只组合两项明确变化：整个 rollout 无真实结算 target span 时，沿 v11 原 owner 在保留 policy/future mask 内广播官方已经计算的 GRPO 组相对优势 g；有 target 时保留原 target Q=g、V=0、A=g，以及原 prior-source d、u=-expm1(-d)、逐事件 g*u 求和和 retained scatter。空事件组件不能冒充整个无 target rollout；不新增 DT 请求，不改变奖励或生成。
+汇总并散射后的原整批有效 response_mask policy token 共用一次中心化和标准化，复用固定 VERL 的 masked_whiten(A0, mask, shift_mean=True)。mu=原 masked_mean(A0,mask)，s=rsqrt(原 masked_var(A0,mask)+1e-8)，保留原 masked_var 的无偏修正；A13=(A0-mu)*s。为保持 Q-V 代数关系，同步 Q13=Q0*s、V13=(V0+mu)*s，returns 使用 Q13；观察/padding 最终为0。均值统计覆盖原整批实际保留 token，包含 raw g*u 为0的有效 policy 位置；中心化后这些位置不保证仍为0，也不宣称回退轨迹的最终优势逐值等于 g。默认 v5/v11 分支不变。
+这是先 GRPO 得 g、再原 DT 归因、最后对 gu 整批归一化；不采用 v12 的原奖励先归因后逐组统计，不做 source/target 分通道统计、u均值除法、阈值、额外回退、裁剪或第二次STD。所有 policy token、原 Q/V primitive、mask、PPO actor/core/optimizer 和原生训练调度继续由原 owner 负责。
+先验证默认路径、有target原始QVA、无target回退、原整批masked_whiten与Q-V/mask/有限值，并复用既有真实DT输出和原DataProto检查接入；旧DP2保存数据不作为新八卡质量或稳定性验收。在保留当前v12完整原生共享检查点与日志后，按用户切换停止v12，通过原进程owner启动一项独立base0 v13八卡训练，沿原30epoch/330完整迭代、32组×8/global64/B4/epochs1/每轮4更新、32k/LoRA8/16/seed/采样/LR/save5/keep2。旧运行不拼接，不记自然exit0或数值失败。继续每小时同一次source快照的共同窗口与固定0–200两图，另存完整v13前缀；登记实际部署/导入/SHA/PID出生并提交推送本次改动。
+
+**2026-10-24 历史人类要求：实现 v12“先归因、后组相对化”，切换独立八卡训练，继续两图。**
 在原 owner 保留的同一张训练 token 表上先构造未组相对化的奖励：可计算反事实信用的 source 为 r_i*(-expm1(-d_it))，同事件 target 或整个无 target rollout 为 r_i。r_i 复用原 VERL token_level_rewards.sum(-1) 的原环境 outcome，不能先调用 GRPO 得到 g 再乘 u；原 DT d、逐事件指数、target 边界、奖励身份与 retained scatter 保留。0奖励的乘积为已知0，不追加 DT；其保留 policy token 仍参与后续组基线，因此组均值为正时获得负优势。
 在原 uid 标识的同一任务组内，source/target/无target共用一组统计，覆盖原 response_mask 保留的全部有效 policy token；观察/padding不计入、不广播。组均值是这张表有效 token 的等权均值，sigma 是其总体标准差（PyTorch correction=0），epsilon 沿原 GRPO 的1e-6放在标准差外。变长轨迹按实际保留 token 数计权，不把各轨迹均值再平均，不按通道分别统计。A12=(tilde_r-mu_G)/(sigma_G+epsilon)。不再做原先整批优势STD缩放或第二次GRPO，不除平均u，不加阈值、均值恢复、裁剪或额外奖励/回退。恒定表得到0；全零组仍为0；mu不为正时不擅自强制失败优势为负。
 复用原 Q0/V0/A0（A0=tilde_r）并记录组仿射变换：s=sigma+epsilon，Q12=Q0/s，V12=(V0+mu)/s，A12=(A0-mu)/s，故代数上仍A12=Q12-V12；group baseline在V侧添加，原Q0/V0语义和原始奖励不被改写。原future/event mask用于构造原始奖励表，随后组中心化可以使原始0信用的有效policy位置获得负优势，这是本次公式的作用，不能再以旧“0信用必须保持0”的规则屏蔽。观察/padding最终仍为0。
